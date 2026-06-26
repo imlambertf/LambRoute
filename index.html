@@ -30,6 +30,18 @@
   --radius-lg: 20px;
 }
 
+.light-mode {
+  --bg: #f2f2f7;
+  --bg2: #ffffff;
+  --card: #ffffff;
+  --card2: #e5e5ea;
+  --border: #c6c6c8;
+  --text: #000000;
+  --text2: rgba(0,0,0,0.55);
+  --text3: rgba(0,0,0,0.3);
+  --green-soft: rgba(48,209,88,0.12);
+}
+
 html, body {
   height: 100%;
   background: var(--bg);
@@ -90,6 +102,32 @@ body {
   color: #000;
 }
 
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  display: flex;
+  background: var(--card);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.theme-opt {
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+}
+.theme-opt.active {
+  background: var(--text);
+  color: var(--bg);
+}
+
 /* ── ONBOARDING ── */
 #screenOnboard {
   padding: env(safe-area-inset-top, 44px) 0 env(safe-area-inset-bottom, 34px);
@@ -98,7 +136,8 @@ body {
 
 .onboard-top-bar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   padding: 16px 20px 0;
 }
 
@@ -106,12 +145,11 @@ body {
   padding: 24px 24px 8px;
 }
 .onboard-eyebrow {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
   color: var(--green);
-  text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .onboard-title {
   font-size: 34px;
@@ -355,7 +393,15 @@ body {
   flex-shrink: 0;
 }
 #reminders.show { display: block; }
-.rem-label { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); margin-bottom: 9px; }
+#reminders.dismissed { display: none !important; }
+.rem-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.rem-label { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); }
+.rem-dismiss {
+  background: none; border: none; color: var(--text3);
+  font-size: 14px; cursor: pointer; padding: 2px 4px;
+  line-height: 1; font-family: inherit; transition: color 0.2s;
+}
+.rem-dismiss:active { color: var(--text2); }
 .rem-item { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--text2); padding: 3px 0; line-height: 1.4; }
 .rem-item span { font-size: 15px; flex-shrink: 0; }
 
@@ -441,6 +487,28 @@ body {
 .tag-next { background: rgba(255,255,255,0.08); color: var(--text2); }
 .tag-dest { background: rgba(10,132,255,0.15); color: var(--blue); }
 .tag-dist { background: var(--card); color: var(--text3); border: 1px solid var(--border); }
+.tag-peek { background: var(--card); color: var(--text3); border: 1px solid var(--border); }
+
+.peek-section {
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  padding-top: 4px;
+  opacity: 0.35;
+}
+.peek-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 6px 0 4px;
+}
+.peek-more {
+  font-size: 11px;
+  color: var(--text3);
+  text-align: center;
+  padding: 4px 0 8px;
+}
 
 .bottom-bar {
   position: absolute; bottom: 0; left: 0; right: 0;
@@ -448,6 +516,7 @@ body {
   background: linear-gradient(to top, var(--bg) 60%, transparent);
   display: flex; gap: 10px; flex-shrink: 0;
 }
+.light-mode .lang-opt.active { color: #ffffff; }
 .btn-primary {
   flex: 1; padding: 15px;
   background: var(--green); color: #000;
@@ -479,6 +548,10 @@ body {
     <div class="lang-toggle">
       <button class="lang-opt active" id="ob-en" onclick="setLang('en')">English</button>
       <button class="lang-opt" id="ob-tl" onclick="setLang('tl')">Tagalog</button>
+    </div>
+    <div class="theme-toggle">
+      <button class="theme-opt active" id="ob-dark" onclick="setTheme('dark')">🌙</button>
+      <button class="theme-opt" id="ob-light" onclick="setTheme('light')">☀️</button>
     </div>
   </div>
   <div class="onboard-header">
@@ -523,6 +596,10 @@ body {
         <button class="lang-opt active" id="tr-en" onclick="setLang('en')">English</button>
         <button class="lang-opt" id="tr-tl" onclick="setLang('tl')">Tagalog</button>
       </div>
+      <div class="theme-toggle">
+        <button class="theme-opt active" id="tr-dark" onclick="setTheme('dark')">🌙</button>
+        <button class="theme-opt" id="tr-light" onclick="setTheme('light')">☀️</button>
+      </div>
       <button class="gps-chip" id="gpsChip" onclick="toggleGps()">
         <div class="gps-pip" id="gpsPip"></div>
         <span id="gpsChipLabel">Locate</span>
@@ -549,11 +626,24 @@ body {
   </div>
 
   <div id="reminders">
-    <div class="rem-label" id="rem-label">Reminders</div>
-    <div class="rem-item"><span>🎒</span> <span id="rem1">Close your bag or backpack zipper.</span></div>
-    <div class="rem-item"><span>👛</span> <span id="rem2">Check your wallet or coin purse.</span></div>
-    <div class="rem-item"><span>📦</span> <span id="rem3">Don't leave your stuff on the seat.</span></div>
-    <div class="rem-item"><span>📱</span> <span id="rem4">Hold on to your phone and earphones.</span></div>
+    <div class="rem-header">
+      <div class="rem-label" id="rem-label">Reminders</div>
+      <button class="rem-dismiss" onclick="dismissReminders()" aria-label="Dismiss reminders">✕</button>
+    </div>
+    <div id="rem-body">
+      <div class="rem-item"><span>🎒</span> <span id="rem1">Close your bag or backpack zipper.</span></div>
+      <div class="rem-item"><span>👛</span> <span id="rem2">Check your wallet or coin purse.</span></div>
+      <div class="rem-item"><span>📦</span> <span id="rem3">Don't leave your stuff on the seat.</span></div>
+      <div class="rem-item"><span>📱</span> <span id="rem4">Hold on to your phone and earphones.</span></div>
+      <div class="rem-item"><span>💼</span> <span id="rem5">Keep your valuables in front of you.</span></div>
+      <div class="rem-item"><span>👁️</span> <span id="rem6">Watch your stop.</span></div>
+      <div class="rem-item"><span>🤚</span> <span id="rem7">Hold the handrail while standing.</span></div>
+      <div class="rem-item"><span>🚶</span> <span id="rem8">Don't block the aisle.</span></div>
+      <div class="rem-item"><span>🎫</span> <span id="rem9">Keep your ticket or fare ready.</span></div>
+      <div class="rem-item"><span>👀</span> <span id="rem10">Be aware of your surroundings.</span></div>
+      <div class="rem-item"><span>🧳</span> <span id="rem11">Take all your belongings before getting off.</span></div>
+      <div class="rem-item"><span>👜</span> <span id="rem12">Keep your bag close to your body.</span></div>
+    </div>
   </div>
 
   <div class="list-label" id="listLabel">Bus Stops</div>
@@ -561,7 +651,7 @@ body {
 
   <div class="bottom-bar">
     <button class="btn-primary" id="mainBtn" onclick="toggleGps()">📍 <span id="btn-locate-text">Locate Me</span></button>
-    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change</button>
+    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change Destination</button>
   </div>
 </div>
 
@@ -667,11 +757,19 @@ const T = {
     rem2: "Check your wallet or coin purse.",
     rem3: "Don't leave your stuff on the seat.",
     rem4: "Hold on to your phone and earphones.",
+    rem5: "Keep your valuables in front of you.",
+    rem6: "Watch your stop.",
+    rem7: "Hold the handrail while standing.",
+    rem8: "Don't block the aisle.",
+    rem9: "Keep your ticket or fare ready.",
+    rem10: "Be aware of your surroundings.",
+    rem11: "Take all your belongings before getting off.",
+    rem12: "Keep your bag close to your body.",
     list_label: "Bus Stops",
     btn_locate: "Locate Me",
     btn_stop: "Stop",
     btn_locating: "Locating…",
-    btn_back: "↩ Change",
+    btn_back: "↩ Change Dest",
     tag_here: "📍 You're here",
     tag_next: "Next →",
     tag_dest: "🏁 Get off here",
@@ -706,11 +804,19 @@ const T = {
     rem2: "I-check ang wallet o coin purse mo.",
     rem3: "Huwag mag-iwan ng gamit sa upuan.",
     rem4: "Hawakan ang phone at earphones mo.",
+    rem5: "Ilagay sa harap ang mga importanteng gamit mo.",
+    rem6: "Abangan ang bababaan mo.",
+    rem7: "Kumapit sa handrail kung nakatayo ka.",
+    rem8: "Huwag harangan ang daanan.",
+    rem9: "Ihanda ang ticket o pamasahe mo.",
+    rem10: "Maging alerto sa paligid mo.",
+    rem11: "Siguraduhing dala mo lahat ng gamit bago bumaba.",
+    rem12: "Panatilihing malapit sa'yo ang bag mo.",
     list_label: "Mga Hintuan",
     btn_locate: "I-locate Ako",
     btn_stop: "I-stop",
     btn_locating: "Hinahanap…",
-    btn_back: "↩ Baguhin",
+    btn_back: "↩ Baguhin Dest",
     tag_here: "📍 Nandito ka",
     tag_next: "Susunod →",
     tag_dest: "🏁 Bababa dito",
@@ -727,11 +833,22 @@ const T = {
 };
 
 let lang = 'en';
+let theme = 'dark';
 let selectedDest = null;
 let tracking = false;
 let watchId = null;
 let userLat = null, userLng = null;
 let gpsState = 'off';
+
+// ══ THEME ══
+function setTheme(t) {
+  theme = t;
+  document.body.classList.toggle('light-mode', t === 'light');
+  ['ob-dark','ob-light','tr-dark','tr-light'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', el.id.endsWith(t === 'light' ? 'light' : 'dark'));
+  });
+}
 
 // ══ LANGUAGE ══
 function setLang(l) {
@@ -768,6 +885,8 @@ function applyTranslations() {
   set('nogps-sub','nogps_sub');
   set('rem-label','rem_label');
   set('rem1','rem1'); set('rem2','rem2'); set('rem3','rem3'); set('rem4','rem4');
+  set('rem5','rem5'); set('rem6','rem6'); set('rem7','rem7'); set('rem8','rem8');
+  set('rem9','rem9'); set('rem10','rem10'); set('rem11','rem11'); set('rem12','rem12');
   set('listLabel','list_label');
   set('btn-back','btn_back');
   document.getElementById('ob-btn-start').textContent =
@@ -845,12 +964,18 @@ function goBack() {
   document.getElementById('noGps').classList.add('show');
   document.getElementById('curCard').classList.remove('show');
   document.getElementById('reminders').classList.remove('show');
+  document.getElementById('reminders').classList.remove('dismissed');
   document.getElementById('destAlert').classList.remove('show');
 }
 
 // ══ TICKET ══
 function dismissTicket() {
   document.getElementById('ticketBanner').classList.add('gone');
+}
+
+// ══ REMINDERS ══
+function dismissReminders() {
+  document.getElementById('reminders').classList.add('dismissed');
 }
 
 // ══ GPS ══
@@ -970,16 +1095,21 @@ function render() {
 
 function renderList(currentIdx=-1, closestIdx=-1) {
   const list=document.getElementById('stopList');
-  list.innerHTML=STOPS.map((stop,i)=>{
-    const isPassed=userLat!==null && currentIdx!==-1 && i<currentIdx;
-    const isCurrent=i===currentIdx;
-    const isNext=currentIdx!==-1 && i===currentIdx+1;
-    const isDest=selectedDest>=0 && i===selectedDest;
-    const isLast=i===STOPS.length-1;
 
-    const dotCls=isCurrent?(isDest?'tl-node current dest':'tl-node current'):isPassed?'tl-node passed':isDest?'tl-node dest':'tl-node';
-    const segCls=isCurrent?'tl-seg flowing':isPassed?'tl-seg filled':'tl-seg';
-    const cardCls=isCurrent?(isDest?'stop-card current dest-card':'stop-card current'):isPassed?'stop-card passed':isDest?'stop-card dest-card':'stop-card';
+  const hasFilter = selectedDest >= 0 && selectedDest < STOPS.length - 1;
+  const visibleCount = hasFilter ? selectedDest + 1 : STOPS.length;
+  const peekStops = hasFilter ? STOPS.slice(selectedDest + 1) : [];
+
+  let html = STOPS.slice(0, visibleCount).map((stop, i) => {
+    const isPassed = userLat!==null && currentIdx!==-1 && i<currentIdx;
+    const isCurrent = i===currentIdx;
+    const isNext = currentIdx!==-1 && i===currentIdx+1;
+    const isDest = selectedDest>=0 && i===selectedDest;
+    const isLast = i===visibleCount-1 && peekStops.length===0;
+
+    const dotCls = isCurrent?(isDest?'tl-node current dest':'tl-node current'):isPassed?'tl-node passed':isDest?'tl-node dest':'tl-node';
+    const segCls = isCurrent?'tl-seg flowing':isPassed?'tl-seg filled':'tl-seg';
+    const cardCls = isCurrent?(isDest?'stop-card current dest-card':'stop-card current'):isPassed?'stop-card passed':isDest?'stop-card dest-card':'stop-card';
 
     let tags='';
     if(isCurrent) tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
@@ -997,7 +1127,7 @@ function renderList(currentIdx=-1, closestIdx=-1) {
           <div class="${segCls}"></div>
         </div>
         <div class="${cardCls}">
-          <div class="stop-seq-num">${T[lang].stop_of(i+1,STOPS.length)}</div>
+          <div class="stop-seq-num">${T[lang].stop_of(i+1,visibleCount)}</div>
           <div class="stop-name-main">${stop.name}</div>
           <div class="stop-lm">${stop.landmarks}</div>
           ${tags?`<div class="stop-tags">${tags}</div>`:''}
@@ -1005,9 +1135,38 @@ function renderList(currentIdx=-1, closestIdx=-1) {
       </div>`;
   }).join('');
 
+  if (peekStops.length > 0) {
+    const peekLabel = lang==='tl' ? 'Mga susunod na hintuan pagkatapos ng iyong destinasyon' : 'Stops after your destination';
+    const showPeek = peekStops.slice(0, 2);
+    const remaining = peekStops.length - showPeek.length;
+
+    html += `<div class="peek-section"><div class="peek-label">${peekLabel}</div>`;
+    html += showPeek.map((stop, pi) => {
+      const isLast = pi === showPeek.length - 1 && remaining === 0;
+      return `
+        <div class="stop-row peek-row${isLast?' stop-last':''}">
+          <div class="tl-col">
+            <div class="tl-node"></div>
+            <div class="tl-seg"></div>
+          </div>
+          <div class="stop-card">
+            <div class="stop-name-main">${stop.name}</div>
+            <div class="stop-lm">${stop.landmarks}</div>
+            <div class="stop-tags"><span class="tag tag-peek">${lang==='tl'?'lampas na sa stop mo':'beyond your stop'}</span></div>
+          </div>
+        </div>`;
+    }).join('');
+    if (remaining > 0) {
+      html += `<div class="peek-more">+ ${remaining} ${lang==='tl'?'pang hintuan':'more stop'}${remaining>1&&lang==='en'?'s':''}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  list.innerHTML = html;
+
   if(currentIdx>=0){
     setTimeout(()=>{
-      const rows=list.querySelectorAll('.stop-row');
+      const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
       if(rows[currentIdx]) rows[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});
     },200);
   }
