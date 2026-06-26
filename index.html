@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sakay">
+<meta name="theme-color" content="#000000">
+<title>Sakay Tracker</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #000000;
+  --bg2: #0a0a0a;
+  --card: #1c1c1e;
+  --card2: #2c2c2e;
+  --border: #38383a;
+  --green: #30d158;
+  --green-soft: rgba(48,209,88,0.14);
+  --green-mid: #25a244;
+  --text: #ffffff;
+  --text2: rgba(255,255,255,0.6);
+  --text3: rgba(255,255,255,0.3);
+  --yellow: #ffd60a;
+  --blue: #0a84ff;
+  --red: #ff453a;
+  --radius: 13px;
+  --radius-lg: 20px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  height: 100dvh;
+  position: relative;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1;
+}
+.screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+  z-index: 0;
+}
+
+/* ── ONBOARDING ── */
+#screenOnboard {
+  padding: env(safe-area-inset-top, 44px) 0 env(safe-area-inset-bottom, 34px);
+  overflow-y: auto;
+}
+
+.onboard-header {
+  padding: 32px 24px 8px;
+}
+.onboard-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.onboard-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+.onboard-sub {
+  font-size: 15px;
+  color: var(--text2);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.2px;
+  padding: 20px 24px 8px;
+  text-transform: uppercase;
+}
+
+/* Destination list */
+.dest-list {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dest-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--card);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s;
+  gap: 14px;
+}
+.dest-item:active { background: var(--card2); }
+.dest-item.selected {
+  background: var(--green-soft);
+  outline: 1.5px solid var(--green);
+}
+
+.dest-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--card2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.dest-item.selected .dest-num {
+  background: var(--green);
+  color: #000;
+}
+
+.dest-info { flex: 1; }
+.dest-name { font-size: 16px; font-weight: 500; }
+.dest-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+.dest-check {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  display: none;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.dest-item.selected .dest-check { display: flex; }
+
+/* Skip option */
+.skip-row {
+  padding: 12px 16px 0;
+}
+.skip-btn-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--card);
+  border-radius: var(--radius);
+  cursor: pointer;
+  gap: 14px;
+  transition: background 0.15s;
+}
+.skip-btn-row:active { background: var(--card2); }
+.skip-btn-row.selected { background: rgba(10,132,255,0.12); outline: 1.5px solid var(--blue); }
+.skip-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--card2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.skip-btn-row.selected .skip-icon { background: var(--blue); }
+.skip-text .dest-name { font-size: 16px; font-weight: 500; }
+.skip-text .dest-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+/* Start button */
+.onboard-footer {
+  padding: 20px 16px 0;
+  padding-bottom: 8px;
+}
+.btn-start {
+  width: 100%;
+  padding: 16px;
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 17px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: -0.2px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+.btn-start.ready { opacity: 1; pointer-events: all; }
+.btn-start:active { transform: scale(0.98); opacity: 0.85; }
+
+/* ── MAIN TRACKER SCREEN ── */
+#screenTracker {
+  overflow: hidden;
+}
+
+/* Ticket banner */
+#ticketBanner {
+  background: rgba(255,214,10,0.1);
+  border-bottom: 1px solid rgba(255,214,10,0.25);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding-top: max(10px, env(safe-area-inset-top));
+}
+#ticketBanner.gone { display: none; }
+
+.ticket-icon { font-size: 16px; flex-shrink: 0; }
+.ticket-text {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--yellow);
+  line-height: 1.4;
+}
+.ticket-text span { opacity: 0.7; font-weight: 400; }
+.ticket-x {
+  background: none; border: none;
+  color: rgba(255,214,10,0.4);
+  font-size: 16px; cursor: pointer;
+  padding: 4px; line-height: 1; flex-shrink: 0;
+  font-family: inherit;
+}
+
+/* Nav bar */
+.nav-bar {
+  padding: 12px 20px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.nav-left {}
+.nav-route-label { font-size: 12px; color: var(--text3); font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; }
+.nav-route-name { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; margin-top: 1px; }
+
+.gps-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px; font-weight: 600;
+  color: var(--text2);
+  cursor: pointer; transition: all 0.2s;
+  font-family: inherit;
+}
+.gps-chip.on { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+.gps-chip:active { transform: scale(0.95); }
+.gps-pip {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text3); transition: all 0.3s; flex-shrink: 0;
+}
+.gps-pip.on { background: var(--green); box-shadow: 0 0 5px var(--green); }
+.gps-pip.searching { background: var(--yellow); animation: blink 0.7s infinite; }
+
+/* Current stop card */
+#curCard {
+  margin: 12px 14px 0;
+  background: var(--green-soft);
+  border: 1.5px solid var(--green);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: none;
+  flex-shrink: 0;
+  animation: fadeUp 0.3s ease;
+}
+#curCard.show { display: block; }
+
+.cur-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--green);
+  color: #000;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  border-radius: 6px;
+  padding: 3px 8px;
+  margin-bottom: 8px;
+}
+.cur-stop-name {
+  font-size: 24px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1;
+}
+.cur-landmark {
+  font-size: 12px; color: var(--text2); margin-top: 5px; line-height: 1.5;
+}
+.cur-next {
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid rgba(48,209,88,0.2);
+  font-size: 13px; color: var(--text2);
+}
+.cur-next b { color: var(--text); }
+
+/* Destination alert */
+#destAlert {
+  margin: 8px 14px 0;
+  background: rgba(10,132,255,0.12);
+  border: 1.5px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  display: none;
+  font-size: 13px; color: rgba(10,132,255,1);
+  flex-shrink: 0;
+}
+#destAlert.show { display: flex; align-items: center; gap: 8px; }
+#destAlert b { color: var(--text); }
+
+/* Reminders */
+#reminders {
+  margin: 8px 14px 0;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: none;
+  flex-shrink: 0;
+}
+#reminders.show { display: block; }
+.rem-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 9px;
+}
+.rem-item {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13px; color: var(--text2);
+  padding: 3px 0; line-height: 1.4;
+}
+.rem-item span { font-size: 15px; flex-shrink: 0; }
+
+/* Stop list */
+.list-label {
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--text3);
+  padding: 14px 20px 6px;
+  flex-shrink: 0;
+  display: none;
+}
+.list-label.show { display: block; }
+
+.stop-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 14px calc(env(safe-area-inset-bottom, 20px) + 80px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.stop-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 68px;
+}
+
+/* Timeline */
+.tl-col {
+  width: 38px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.tl-node {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  flex-shrink: 0;
+  z-index: 2;
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+}
+.tl-node.passed { background: var(--green-mid); border-color: var(--green-mid); }
+.tl-node.current {
+  width: 16px; height: 16px;
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(48,209,88,0.2), 0 0 16px rgba(48,209,88,0.5);
+}
+.tl-node.dest {
+  border-color: var(--blue);
+}
+.tl-node.dest.current {
+  background: var(--blue);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(10,132,255,0.2), 0 0 16px rgba(10,132,255,0.4);
+}
+
+.tl-seg {
+  width: 3px;
+  flex: 1;
+  min-height: 24px;
+  border-radius: 2px;
+  background: var(--border);
+  position: relative;
+  overflow: hidden;
+  margin-top: 2px;
+}
+/* filled = fully green */
+.tl-seg.filled { background: var(--green-mid); }
+/* flowing = animated green waterfall */
+.tl-seg.flowing {
+  background: var(--border);
+}
+.tl-seg.flowing::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: -100%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--green) 30%,
+    var(--green) 70%,
+    transparent 100%
+  );
+  animation: flowDown 1.6s linear infinite;
+}
+
+@keyframes flowDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+.stop-last .tl-seg { display: none; }
+
+/* Stop card */
+.stop-card {
+  flex: 1;
+  padding: 12px 8px 12px 6px;
+  border-radius: var(--radius);
+  margin: 3px 0;
+  transition: background 0.15s;
+}
+.stop-card.current {
+  background: rgba(48,209,88,0.07);
+}
+.stop-card.passed { opacity: 0.4; }
+.stop-card.dest-card {
+  background: rgba(10,132,255,0.07);
+}
+
+.stop-seq-num {
+  font-size: 11px; color: var(--text3); margin-bottom: 2px;
+  font-weight: 500;
+}
+.stop-name-main {
+  font-size: 15px; font-weight: 600; line-height: 1.2;
+}
+.stop-lm {
+  font-size: 11px; color: var(--text3); margin-top: 3px; line-height: 1.4;
+}
+.stop-tags {
+  display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;
+}
+.tag {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 5px;
+  letter-spacing: 0.2px;
+}
+.tag-here { background: rgba(48,209,88,0.15); color: var(--green); }
+.tag-next { background: rgba(255,255,255,0.08); color: var(--text2); }
+.tag-dest { background: rgba(10,132,255,0.15); color: var(--blue); }
+.tag-dist { background: var(--card); color: var(--text3); border: 1px solid var(--border); }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 12px 14px calc(env(safe-area-inset-bottom, 20px) + 4px);
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.btn-primary {
+  flex: 1;
+  padding: 15px;
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  transition: all 0.2s;
+  letter-spacing: -0.2px;
+}
+.btn-primary:active { transform: scale(0.97); opacity: 0.85; }
+.btn-primary.stop-mode { background: var(--card2); color: var(--text); }
+
+.btn-secondary {
+  padding: 15px 18px;
+  background: var(--card);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  transition: all 0.2s;
+}
+.btn-secondary:active { background: var(--card2); transform: scale(0.97); }
+
+/* No GPS state */
+#noGps {
+  margin: 20px 14px 0;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  text-align: center;
+  display: none;
+}
+#noGps.show { display: block; }
+.no-gps-icon { font-size: 40px; margin-bottom: 12px; }
+.no-gps-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.no-gps-sub { font-size: 14px; color: var(--text2); line-height: 1.5; }
+
+/* Animations */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN 1: ONBOARDING ══ -->
+<div class="screen" id="screenOnboard">
+  <div class="onboard-header">
+    <div class="onboard-eyebrow">🚌 Sakay Tracker</div>
+    <div class="onboard-title">Saan ka<br>pupunta?</div>
+    <div class="onboard-sub">Piliin ang destination mo para ma-alert ka kapag malapit ka na.</div>
+  </div>
+
+  <div class="section-label">Mga Hintuan</div>
+  <div class="dest-list" id="destList"></div>
+
+  <div class="skip-row">
+    <div class="skip-btn-row" id="skipBtn" onclick="selectDest(-1)">
+      <div class="skip-icon">🗺️</div>
+      <div class="skip-text">
+        <div class="dest-name">Hindi pa alam / I-track lang</div>
+        <div class="dest-sub">Makikita mo kung saang stop ka na</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="onboard-footer">
+    <button class="btn-start" id="btnStart" onclick="startApp()">Magsimula</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 2: TRACKER ══ -->
+<div class="screen hidden" id="screenTracker">
+
+  <!-- Ticket banner -->
+  <div id="ticketBanner">
+    <span class="ticket-icon">🎫</span>
+    <div class="ticket-text">
+      I-ready ang ticket para sa inspection.
+      <span>Keep your tickets — conductor may check anytime.</span>
+    </div>
+    <button class="ticket-x" onclick="dismissTicket()">✕</button>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-bar">
+    <div class="nav-left">
+      <div class="nav-route-label">Ruta</div>
+      <div class="nav-route-name" id="navRouteName">Ortigas → Monumento</div>
+    </div>
+    <button class="gps-chip" id="gpsChip" onclick="toggleGps()">
+      <div class="gps-pip" id="gpsPip"></div>
+      <span id="gpsChipLabel">I-locate</span>
+    </button>
+  </div>
+
+  <!-- Current stop card -->
+  <div id="curCard">
+    <div class="cur-pill">📍 Nandito ka</div>
+    <div class="cur-stop-name" id="curName">—</div>
+    <div class="cur-landmark" id="curLandmark"></div>
+    <div class="cur-next" id="curNext"></div>
+  </div>
+
+  <!-- Destination alert -->
+  <div id="destAlert">
+    <span>🏁</span>
+    <div id="destAlertText"></div>
+  </div>
+
+  <!-- No GPS -->
+  <div id="noGps" class="show">
+    <div class="no-gps-icon">📡</div>
+    <div class="no-gps-title">I-enable ang GPS</div>
+    <div class="no-gps-sub">I-tap ang I-locate para malaman<br>kung saang hintuan ka na.</div>
+  </div>
+
+  <!-- Reminders -->
+  <div id="reminders">
+    <div class="rem-label">Huwag kalimutan</div>
+    <div class="rem-item"><span>🎒</span> Isara ang zipper ng bag / backpack mo.</div>
+    <div class="rem-item"><span>👛</span> I-check ang wallet o coin purse mo.</div>
+    <div class="rem-item"><span>📦</span> Huwag mag-iwan ng gamit sa upuan.</div>
+    <div class="rem-item"><span>📱</span> Hawakan ang phone at earphones.</div>
+  </div>
+
+  <!-- List label -->
+  <div class="list-label" id="listLabel">Mga Hintuan</div>
+
+  <!-- Stop list -->
+  <div class="stop-list" id="stopList"></div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <button class="btn-primary" id="mainBtn" onclick="toggleGps()">📍 I-locate Ako</button>
+    <button class="btn-secondary" onclick="goBack()">↩ Baguhin</button>
+  </div>
+
+</div>
+
+<script>
+// ══ STOP DATA ══
+const STOPS = [
+  {
+    name: "Ortigas / SM Megamall",
+    coords: [[14.58651,121.05617],[14.58635,121.05621]],
+    landmarks: "SM Megamall · SM Busway Station"
+  },
+  {
+    name: "Santolan-Annapolis",
+    coords: [[14.60880,121.05593]],
+    landmarks: "PNP · Bagong Lipunan ng Crame"
+  },
+  {
+    name: "Cubao",
+    coords: [[14.61437,121.05326],[14.61419,121.05355],[14.61435,121.05334]],
+    landmarks: "SM Hypermarket · INGCO · EDSA-Bonny Serrano Footbridge"
+  },
+  {
+    name: "Qmart",
+    coords: [[14.62801,121.04712],[14.62837,121.04689],[14.62799,121.04713]],
+    landmarks: "Nepa Q-Mart · Pinagkaisahan"
+  },
+  {
+    name: "Kamuning",
+    coords: [[14.63610,121.04210],[14.63599,121.04223]],
+    landmarks: "Victoria Sports Tower · VS Hotel · South Triangle"
+  },
+  {
+    name: "Pinyahan / Cyberpod",
+    coords: [[14.64170,121.03940],[14.64190,121.03937]],
+    landmarks: "Cyberpod Two · Kenny Rogers · Tokyo Tokyo"
+  },
+  {
+    name: "Quezon Avenue",
+    coords: [[14.64763,121.03563],[14.64700,121.03576],[14.64748,121.03520]],
+    landmarks: "Vertis North · Bagong Pag-asa"
+  },
+  {
+    name: "Trinoma / North Ave",
+    coords: [[14.65169,121.03289],[14.65161,121.03229],[14.65160,121.03230],[14.65159,121.03235]],
+    landmarks: "Trinoma Mall · East Maya Drive · Phil-Am"
+  },
+  {
+    name: "SM North EDSA",
+    coords: [[14.65614,121.02858],[14.65612,121.02863],[14.65579,121.02829],[14.65576,121.02835]],
+    landmarks: "SM North EDSA · Word of Hope · Santo Cristo"
+  },
+  {
+    name: "Roosevelt / Muñoz",
+    coords: [[14.65786,121.01987],[14.65773,121.02024],[14.65759,121.01922],[14.65764,121.01937],[14.65763,121.01928]],
+    landmarks: "EDSA-Muñoz Pedestrian Footbridge · Congressional Ave"
+  },
+  {
+    name: "Kaingin",
+    coords: [[14.65754,121.01111],[14.65776,121.01122],[14.65747,121.01186],[14.65745,121.01183]],
+    landmarks: "Floor Center · Apolonio Samson"
+  },
+  {
+    name: "Balintawak",
+    coords: [[14.65753,121.00486],[14.65737,121.00545]],
+    landmarks: "1160 EDSA · Apolonio Samson"
+  },
+  {
+    name: "Bagong Barrio",
+    coords: [[14.65729,120.99717]],
+    landmarks: "488–576 EDSA · Caloocan"
+  },
+  {
+    name: "Monumento",
+    coords: [
+      [14.65730,120.98838],[14.65724,120.98836],[14.65722,120.98835],[14.65732,120.98832],
+      [14.65710,120.99674],[14.65727,120.99671],[14.65708,120.99682],
+      [14.65742,120.98791],[14.65737,120.98795],[14.65732,120.98635]
+    ],
+    landmarks: "Motortrade · Jollibee · KFC · Goldilocks · Greenwich · Tapa King · Shakey's · MCU · Honda · PNB"
+  }
+];
+
+const THRESHOLD = 320; // meters
+
+let selectedDest = null; // null = not chosen yet, -1 = skip, 0-13 = stop index
+let tracking = false;
+let watchId = null;
+let userLat = null, userLng = null;
+
+// ══ HAVERSINE ══
+function hav(la1,lo1,la2,lo2) {
+  const R=6371000, dLa=(la2-la1)*Math.PI/180, dLo=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// Min distance from user to any coord of a stop
+function distToStop(stopIdx) {
+  if (userLat===null) return Infinity;
+  return Math.min(...STOPS[stopIdx].coords.map(([la,lo])=>hav(userLat,userLng,la,lo)));
+}
+
+function fmt(m) { return m<1000?`${Math.round(m)}m`:`${(m/1000).toFixed(1)}km`; }
+
+// ══ ONBOARDING ══
+function buildDestList() {
+  const el = document.getElementById('destList');
+  el.innerHTML = STOPS.map((s,i) => `
+    <div class="dest-item" id="di${i}" onclick="selectDest(${i})">
+      <div class="dest-num">${i+1}</div>
+      <div class="dest-info">
+        <div class="dest-name">${s.name}</div>
+        <div class="dest-sub">${s.landmarks.split('·')[0].trim()}</div>
+      </div>
+      <div class="dest-check">✓</div>
+    </div>
+  `).join('');
+}
+
+function selectDest(idx) {
+  selectedDest = idx;
+  document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('skipBtn').classList.remove('selected');
+  if (idx === -1) {
+    document.getElementById('skipBtn').classList.add('selected');
+  } else {
+    document.getElementById(`di${idx}`).classList.add('selected');
+  }
+  const btn = document.getElementById('btnStart');
+  btn.classList.add('ready');
+  btn.textContent = idx === -1 ? 'Magsimula →' : `Pumunta sa ${STOPS[idx].name} →`;
+}
+
+function startApp() {
+  if (selectedDest === null) return;
+  document.getElementById('screenOnboard').classList.add('hidden');
+  document.getElementById('screenTracker').classList.remove('hidden');
+  // Update route name if dest chosen
+  if (selectedDest >= 0) {
+    document.getElementById('navRouteName').textContent = `Ortigas → ${STOPS[selectedDest].name}`;
+  }
+  // Show list label immediately
+  document.getElementById('listLabel').classList.add('show');
+  renderList();
+  // Auto-start GPS
+  startGps();
+}
+
+function goBack() {
+  stopGps();
+  document.getElementById('screenTracker').classList.add('hidden');
+  document.getElementById('screenOnboard').classList.remove('hidden');
+  document.getElementById('noGps').classList.add('show');
+  document.getElementById('curCard').classList.remove('show');
+  document.getElementById('reminders').classList.remove('show');
+  document.getElementById('destAlert').classList.remove('show');
+}
+
+// ══ TICKET ══
+function dismissTicket() {
+  document.getElementById('ticketBanner').classList.add('gone');
+}
+
+// ══ GPS ══
+function toggleGps() { tracking ? stopGps() : startGps(); }
+
+function startGps() {
+  if (!navigator.geolocation) { alert("Hindi supported ang GPS sa browser mo."); return; }
+  setChip('searching');
+  watchId = navigator.geolocation.watchPosition(onPos, onErr, {
+    enableHighAccuracy: true, maximumAge: 4000, timeout: 15000
+  });
+}
+
+function stopGps() {
+  if (watchId!=null) { navigator.geolocation.clearWatch(watchId); watchId=null; }
+  tracking=false; userLat=null; userLng=null;
+  setChip('off');
+  document.getElementById('noGps').classList.add('show');
+  document.getElementById('curCard').classList.remove('show');
+  document.getElementById('reminders').classList.remove('show');
+  document.getElementById('destAlert').classList.remove('show');
+  renderList();
+}
+
+function onPos(pos) {
+  userLat=pos.coords.latitude; userLng=pos.coords.longitude;
+  if (!tracking) {
+    tracking=true;
+    setChip('on');
+    document.getElementById('noGps').classList.remove('show');
+    document.getElementById('reminders').classList.add('show');
+  }
+  render();
+}
+
+function onErr(e) {
+  setChip('off');
+  const msg = e.code===1
+    ? "I-allow ang location sa browser settings mo."
+    : "Hindi ma-detect ang location. Subukan sa labas.";
+  document.getElementById('noGps').innerHTML =
+    `<div class="no-gps-icon">❌</div>
+     <div class="no-gps-title">Location Error</div>
+     <div class="no-gps-sub">${msg}</div>`;
+  document.getElementById('noGps').classList.add('show');
+}
+
+function setChip(state) {
+  const pip=document.getElementById('gpsPip');
+  const lbl=document.getElementById('gpsChipLabel');
+  const chip=document.getElementById('gpsChip');
+  const btn=document.getElementById('mainBtn');
+  pip.className='gps-pip'+(state==='on'?' on':state==='searching'?' searching':'');
+  if (state==='on') {
+    lbl.textContent='GPS On'; chip.classList.add('on');
+    btn.textContent='🛑 I-stop'; btn.className='btn-primary stop-mode';
+  } else if (state==='searching') {
+    lbl.textContent='Hinahanap…'; chip.classList.remove('on');
+    btn.textContent='⏳ Locating…'; btn.className='btn-primary';
+  } else {
+    lbl.textContent='I-locate'; chip.classList.remove('on');
+    btn.textContent='📍 I-locate Ako'; btn.className='btn-primary';
+  }
+}
+
+// ══ RENDER ══
+function render() {
+  if (userLat===null) return;
+
+  // Find closest stop (min dist to any coord)
+  let closestIdx=0, closestDist=Infinity;
+  STOPS.forEach((_,i)=>{
+    const d=distToStop(i);
+    if(d<closestDist){closestDist=d;closestIdx=i;}
+  });
+
+  const atStop = closestDist <= THRESHOLD;
+  const currentIdx = atStop ? closestIdx : -1;
+
+  // Current card
+  const card=document.getElementById('curCard');
+  if (atStop) {
+    card.classList.add('show');
+    document.getElementById('curName').textContent=STOPS[closestIdx].name;
+    document.getElementById('curLandmark').textContent=STOPS[closestIdx].landmarks;
+    const nxt=STOPS[closestIdx+1];
+    document.getElementById('curNext').innerHTML = nxt
+      ? `Susunod: <b>${nxt.name}</b>`
+      : `<b>🎉 Last stop na — Monumento!</b>`;
+  } else {
+    card.classList.remove('show');
+  }
+
+  // Destination alert
+  const da=document.getElementById('destAlert');
+  const dat=document.getElementById('destAlertText');
+  if (selectedDest>=0) {
+    if (atStop && currentIdx===selectedDest) {
+      da.classList.add('show');
+      dat.innerHTML=`<b>Bababa ka na! ${STOPS[selectedDest].name}</b> — ito na ang stop mo.`;
+      vibrate();
+    } else if (!atStop || currentIdx!==selectedDest) {
+      const d=distToStop(selectedDest);
+      if (d<2000 && d>THRESHOLD) {
+        da.classList.add('show');
+        dat.innerHTML=`Malapit na ang <b>${STOPS[selectedDest].name}</b> — ${fmt(d)} na lang!`;
+      } else {
+        da.classList.remove('show');
+      }
+    }
+  }
+
+  renderList(currentIdx, closestIdx);
+}
+
+function renderList(currentIdx=-1, closestIdx=-1) {
+  const list=document.getElementById('stopList');
+  list.innerHTML=STOPS.map((stop,i)=>{
+    const isPassed = userLat!==null && i<closestIdx && currentIdx!==-1 && i<currentIdx;
+    const isCurrent = i===currentIdx;
+    const isNext = currentIdx!==-1 && i===currentIdx+1;
+    const isDest = selectedDest>=0 && i===selectedDest;
+    const isLast = i===STOPS.length-1;
+
+    const dotCls = isCurrent?(isDest?'tl-node current dest':'tl-node current')
+                  :isPassed?'tl-node passed'
+                  :isDest?'tl-node dest'
+                  :'tl-node';
+    const segCls = isCurrent?'tl-seg flowing':isPassed?'tl-seg filled':'tl-seg';
+    const cardCls = isCurrent?(isDest?'stop-card current dest-card':'stop-card current')
+                   :isPassed?'stop-card passed'
+                   :isDest?'stop-card dest-card':'stop-card';
+
+    let tags='';
+    if (isCurrent) tags+=`<span class="tag tag-here">📍 Nandito ka</span>`;
+    if (isNext) tags+=`<span class="tag tag-next">Susunod →</span>`;
+    if (isDest && !isCurrent) tags+=`<span class="tag tag-dest">🏁 Bababa dito</span>`;
+    if (userLat!==null && !isCurrent && !isPassed) {
+      const d=distToStop(i);
+      tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;
+    }
+
+    return `
+      <div class="stop-row${isLast?' stop-last':''}">
+        <div class="tl-col">
+          <div class="${dotCls}"></div>
+          <div class="${segCls}"></div>
+        </div>
+        <div class="${cardCls}">
+          <div class="stop-seq-num">Stop ${i+1} / ${STOPS.length}</div>
+          <div class="stop-name-main">${stop.name}</div>
+          ${stop.landmarks?`<div class="stop-lm">${stop.landmarks}</div>`:''}
+          ${tags?`<div class="stop-tags">${tags}</div>`:''}
+        </div>
+      </div>`;
+  }).join('');
+
+  // Scroll current into view
+  if (currentIdx>=0) {
+    setTimeout(()=>{
+      const rows=list.querySelectorAll('.stop-row');
+      if(rows[currentIdx]) rows[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});
+    },200);
+  }
+}
+
+function vibrate() {
+  if (navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+
+// ══ INIT ══
+buildDestList();
+renderList();
+</script>
+</body>
+</html>
