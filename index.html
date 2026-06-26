@@ -272,22 +272,6 @@ body {
   border-radius: 3px;
   transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* flowing pulse on top of the fill for current segment */
-.tl-seg.flowing::before {
-  content: '';
-  position: absolute; left: 0; right: 0;
-  bottom: calc(var(--fill, 0) * 100%);
-  height: 28px;
-  background: linear-gradient(to top, var(--green), transparent);
-  border-radius: 3px;
-  animation: pulse-up 1.4s ease-in-out infinite;
-  opacity: 0.6;
-}
-@keyframes pulse-up {
-  0%   { transform: translateY(0);   opacity: 0.6; }
-  50%  { transform: translateY(-8px); opacity: 0.3; }
-  100% { transform: translateY(0);   opacity: 0.6; }
-}
 
 .stop-last .tl-seg { display: none; }
 
@@ -438,7 +422,7 @@ body {
     <div class="rem-item"><span>📦</span><span id="rem3">Don't leave your stuff on the seat.</span></div>
     <div class="rem-item"><span>📱</span><span id="rem4">Hold on to your phone and earphones.</span></div>
     <div class="rem-item"><span>💼</span><span id="rem5">Keep your valuables in front of you.</span></div>
-    <div class="rem-item"><span>🤚</span><span id="rem7">Hold the handrail while standing.</span></div>
+    <div class="rem-item"><span>💼</span><span id="rem7">Hold the handrail while standing.</span></div>
     <div class="rem-item"><span>👀</span><span id="rem10">Be aware of your surroundings.</span></div>
     <div class="rem-item"><span>🧳</span><span id="rem11">Take all belongings before getting off.</span></div>
   </div>
@@ -863,8 +847,7 @@ function renderList(currentIdx=-1, closestIdx=-1){
       :isPassed?'tl-node passed'
       :isDest?'tl-node dest':'tl-node';
 
-    // Segment class: flowing if current segment, else use fill
-    const segClass=isCurrent?'tl-seg flowing':'tl-seg';
+    const segClass='tl-seg';
     const fillStyle=`--fill:${fillFrac.toFixed(3)}`;
 
     const cardCls=isCurrent?(isDest?'stop-card current dest-card':'stop-card current')
