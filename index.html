@@ -519,10 +519,7 @@ body {
       <div class="nav-route-name" id="navRouteName">Ortigas → Monumento</div>
     </div>
     <div class="nav-right">
-      <div class="lang-toggle">
-        <button class="lang-opt active" id="tr-en" onclick="setLang('en')">English</button>
-        <button class="lang-opt" id="tr-tl" onclick="setLang('tl')">Tagalog</button>
-      </div>
+      <button class="gear-btn" onclick="openSettings()" aria-label="Settings">⚙️</button>
       <button class="gps-chip" id="gpsChip" onclick="toggleGps()">
         <div class="gps-pip" id="gpsPip"></div>
         <span id="gpsChipLabel">Locate</span>
@@ -549,11 +546,23 @@ body {
   </div>
 
   <div id="reminders">
-    <div class="rem-label" id="rem-label">Reminders</div>
-    <div class="rem-item"><span>🎒</span> <span id="rem1">Close your bag or backpack zipper.</span></div>
-    <div class="rem-item"><span>👛</span> <span id="rem2">Check your wallet or coin purse.</span></div>
-    <div class="rem-item"><span>📦</span> <span id="rem3">Don't leave your stuff on the seat.</span></div>
-    <div class="rem-item"><span>📱</span> <span id="rem4">Hold on to your phone and earphones.</span></div>
+    <div class="rem-header">
+      <div class="rem-label" id="rem-label">Reminders</div>
+      <button class="rem-dismiss" onclick="dismissReminders()" aria-label="Dismiss reminders">✕</button>
+    </div>
+    <div id="rem-body">
+      <div class="rem-item"><span>🎒</span> <span id="rem1">Close your bag or backpack zipper.</span></div>
+      <div class="rem-item"><span>👛</span> <span id="rem2">Check your wallet or coin purse.</span></div>
+      <div class="rem-item"><span>📦</span> <span id="rem3">Don't leave your stuff on the seat.</span></div>
+      <div class="rem-item"><span>📱</span> <span id="rem4">Hold on to your phone and earphones.</span></div>
+      <div class="rem-item"><span>💼</span> <span id="rem5">Keep your valuables in front of you.</span></div>
+      <div class="rem-item"><span>👁️</span> <span id="rem6">Watch your stop.</span></div>
+      <div class="rem-item"><span>🤚</span> <span id="rem7">Hold the handrail while standing.</span></div>
+      <div class="rem-item"><span>🚶</span> <span id="rem8">Don't block the aisle.</span></div>
+      <div class="rem-item"><span>👀</span> <span id="rem10">Be aware of your surroundings.</span></div>
+      <div class="rem-item"><span>🧳</span> <span id="rem11">Take all your belongings before getting off.</span></div>
+      <div class="rem-item"><span>👜</span> <span id="rem12">Keep your bag close to your body.</span></div>
+    </div>
   </div>
 
   <div class="list-label" id="listLabel">Bus Stops</div>
@@ -562,6 +571,27 @@ body {
   <div class="bottom-bar">
     <button class="btn-primary" id="mainBtn" onclick="toggleGps()">📍 <span id="btn-locate-text">Locate Me</span></button>
     <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change</button>
+  </div>
+
+  <!-- ══ SETTINGS SHEET ══ -->
+  <div id="settingsOverlay" onclick="closeSettings()"></div>
+  <div id="settingsSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="settings-title">Settings</div>
+    <div class="setting-row">
+      <div class="setting-label" id="settings-lang-label">Language</div>
+      <div class="lang-toggle">
+        <button class="lang-opt active" id="tr-en" onclick="setLang('en')">English</button>
+        <button class="lang-opt" id="tr-tl" onclick="setLang('tl')">Tagalog</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label" id="settings-theme-label">Theme</div>
+      <div class="theme-toggle">
+        <button class="theme-opt active" id="tr-dark" onclick="setTheme('dark')">🌙</button>
+        <button class="theme-opt" id="tr-light" onclick="setTheme('light')">☀️</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -871,6 +901,11 @@ function goBack() {
 // ══ TICKET ══
 function dismissTicket() {
   document.getElementById('ticketBanner').classList.add('gone');
+}
+
+// ══ REMINDERS ══
+function dismissReminders() {
+  document.getElementById('reminders').classList.add('dismissed');
 }
 
 // ══ GPS ══
