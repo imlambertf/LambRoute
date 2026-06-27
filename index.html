@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LambRoute">
 <meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
 <title>LambRoute</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -24,271 +25,161 @@
   --text3: rgba(255,255,255,0.3);
   --yellow: #ffd60a;
   --blue: #0a84ff;
+  --red: #ff453a;
   --radius: 13px;
   --radius-lg: 20px;
+  --font-scale: 1;
 }
 .light-mode {
-  --bg: #f2f2f7;
-  --card: #ffffff;
-  --card2: #e5e5ea;
-  --border: #c6c6c8;
-  --text: #000000;
-  --text2: rgba(0,0,0,0.55);
-  --text3: rgba(0,0,0,0.3);
+  --bg: #f2f2f7; --card: #ffffff; --card2: #e5e5ea; --border: #c6c6c8;
+  --text: #000000; --text2: rgba(0,0,0,0.55); --text3: rgba(0,0,0,0.3);
   --green-soft: rgba(48,209,88,0.12);
 }
+.oled-mode { --bg: #000000; --card: #0a0a0a; --card2: #111111; --border: #1c1c1c; }
 
 html, body {
   height: 100%; background: var(--bg); color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased; overflow: hidden;
+  font-size: calc(16px * var(--font-scale));
 }
-body {
-  display: flex; flex-direction: column;
-  max-width: 430px; margin: 0 auto;
-  height: 100dvh; position: relative;
-}
+body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; height: 100dvh; position: relative; }
 
-/* SCREENS */
-.screen {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  background: var(--bg);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 1;
-}
+.screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--bg); transition: opacity 0.3s ease, transform 0.3s ease; z-index: 1; }
 .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(20px); z-index: 0; }
 
-/* ONBOARDING */
-#screenOnboard {
-  padding-top: env(safe-area-inset-top, 44px);
-  padding-bottom: env(safe-area-inset-bottom, 34px);
-  overflow-y: auto;
-}
-.onboard-top-bar {
-  display: flex; justify-content: flex-end;
-  padding: 12px 16px 0;
-}
+/* ── ONBOARDING ── */
+#screenOnboard { padding-top: env(safe-area-inset-top,44px); padding-bottom: env(safe-area-inset-bottom,34px); overflow-y: auto; }
+.onboard-top-bar { display: flex; justify-content: flex-end; padding: 12px 16px 0; }
 .gear-btn {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 10px; width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; cursor: pointer; transition: background 0.15s;
-  font-family: inherit; flex-shrink: 0;
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer; transition: background 0.15s; font-family: inherit; flex-shrink: 0;
 }
 .gear-btn:active { background: var(--card2); transform: scale(0.93); }
-
 .onboard-header { padding: 20px 24px 8px; }
-.onboard-eyebrow { font-size: 22px; font-weight: 700; color: var(--green); margin-bottom: 2px; }
-.onboard-tagline { font-size: 13px; color: var(--text3); margin-bottom: 14px; }
-.onboard-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
-.onboard-sub { font-size: 15px; color: var(--text2); margin-top: 8px; line-height: 1.5; }
-
-.section-label { font-size: 12px; font-weight: 600; color: var(--text3); letter-spacing: 0.5px; padding: 18px 24px 8px; text-transform: uppercase; }
-
+.onboard-eyebrow { font-size: calc(22px * var(--font-scale)); font-weight: 700; color: var(--green); margin-bottom: 2px; }
+.onboard-tagline { font-size: calc(13px * var(--font-scale)); color: var(--text3); margin-bottom: 14px; }
+.onboard-title { font-size: calc(32px * var(--font-scale)); font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
+.onboard-sub { font-size: calc(15px * var(--font-scale)); color: var(--text2); margin-top: 8px; line-height: 1.5; }
+.section-label { font-size: calc(12px * var(--font-scale)); font-weight: 600; color: var(--text3); letter-spacing: 0.5px; padding: 18px 24px 8px; text-transform: uppercase; }
 .dest-list { padding: 0 16px; display: flex; flex-direction: column; gap: 2px; }
-.dest-item {
-  display: flex; align-items: center; padding: 13px 16px;
-  background: var(--card); border-radius: var(--radius);
-  cursor: pointer; transition: background 0.15s; gap: 13px;
-}
+.dest-item { display: flex; align-items: center; padding: 13px 16px; background: var(--card); border-radius: var(--radius); cursor: pointer; transition: background 0.15s; gap: 13px; }
 .dest-item:active { background: var(--card2); }
 .dest-item.selected { background: var(--green-soft); outline: 1.5px solid var(--green); }
-.dest-num {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--card2); display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 600; color: var(--text2); flex-shrink: 0;
-}
+.dest-num { width: 26px; height: 26px; border-radius: 50%; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: calc(11px * var(--font-scale)); font-weight: 600; color: var(--text2); flex-shrink: 0; }
 .dest-item.selected .dest-num { background: var(--green); color: #000; }
 .dest-info { flex: 1; }
-.dest-name { font-size: 15px; font-weight: 500; }
-.dest-lm { font-size: 11px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
+.dest-name { font-size: calc(15px * var(--font-scale)); font-weight: 500; }
+.dest-lm { font-size: calc(11px * var(--font-scale)); color: var(--text2); margin-top: 2px; line-height: 1.4; }
 .dest-check { width: 20px; height: 20px; border-radius: 50%; background: var(--green); display: none; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; }
 .dest-item.selected .dest-check { display: flex; }
-
 .skip-row { padding: 10px 16px 0; }
-.skip-btn-row {
-  display: flex; align-items: center; padding: 13px 16px;
-  background: var(--card); border-radius: var(--radius);
-  cursor: pointer; gap: 13px; transition: background 0.15s;
-}
+.skip-btn-row { display: flex; align-items: center; padding: 13px 16px; background: var(--card); border-radius: var(--radius); cursor: pointer; gap: 13px; transition: background 0.15s; }
 .skip-btn-row:active { background: var(--card2); }
 .skip-btn-row.selected { background: rgba(10,132,255,0.12); outline: 1.5px solid var(--blue); }
 .skip-icon { width: 26px; height: 26px; border-radius: 50%; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
 .skip-btn-row.selected .skip-icon { background: var(--blue); }
-
 .onboard-footer { padding: 18px 16px 8px; }
-.btn-start {
-  width: 100%; padding: 15px; background: var(--green); color: #000;
-  border: none; border-radius: var(--radius-lg); font-size: 16px; font-weight: 700;
-  font-family: inherit; cursor: pointer; transition: opacity 0.2s, transform 0.15s;
-  opacity: 0.4; pointer-events: none;
-}
+.btn-start { width: 100%; padding: 15px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(16px * var(--font-scale)); font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 0.2s, transform 0.15s; opacity: 0.4; pointer-events: none; }
 .btn-start.ready { opacity: 1; pointer-events: all; }
 .btn-start:active { transform: scale(0.98); opacity: 0.85; }
 
-/* TRACKER */
-#screenTracker { 
-  overflow: hidden;
-  padding-top: env(safe-area-inset-top, 44px);
-}
-
-/* Ticket banner */
-#ticketBanner {
-  background: rgba(255,214,10,0.08);
-  border-bottom: 1px solid rgba(255,214,10,0.18);
-  padding: 10px 14px;
-  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-  margin-top: 4px;
-}
+/* ── TRACKER ── */
+#screenTracker { overflow: hidden; padding-top: env(safe-area-inset-top,44px); }
+#ticketBanner { background: rgba(255,214,10,0.08); border-bottom: 1px solid rgba(255,214,10,0.18); padding: 10px 14px; margin-top: 4px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 #ticketBanner.gone { display: none; }
 .ticket-icon { font-size: 15px; flex-shrink: 0; }
-.ticket-text { flex: 1; font-size: 12px; font-weight: 600; line-height: 1.4; color: #6b4f00; }
-.ticket-text span { display: block; margin-top: 1px; font-weight: 400; color: #4a3600; }
+.ticket-text { flex: 1; font-size: calc(12px * var(--font-scale)); font-weight: 600; line-height: 1.4; color: #b8860b; }
+.ticket-text span { display: block; margin-top: 1px; font-weight: 400; color: #8b6914; }
 .light-mode .ticket-text { color: #5a3e00; }
 .light-mode .ticket-text span { color: #3d2b00; }
-.ticket-x { background: none; border: none; color: rgba(107,79,0,0.4); font-size: 18px; cursor: pointer; padding: 4px 6px; line-height: 1; flex-shrink: 0; font-family: inherit; }
+.ticket-x { background: none; border: none; color: rgba(107,79,0,0.5); font-size: 18px; cursor: pointer; padding: 4px 6px; line-height: 1; flex-shrink: 0; font-family: inherit; }
 
-/* Nav bar — fixed layout gap issues */
-.nav-bar {
-  padding: 12px 14px;
-  display: flex; justify-content: space-between; align-items: center;
-  flex-shrink: 0; border-bottom: 1px solid var(--border); gap: 12px;
-  background: var(--bg);
-  position: relative; z-index: 10;
-}
+.nav-bar { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-bottom: 1px solid var(--border); gap: 10px; background: var(--bg); position: relative; z-index: 10; }
 .nav-left { flex: 1; min-width: 0; }
-.nav-route-label {
-  font-size: 10px; color: var(--text3); font-weight: 600;
-  letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 2px;
-}
-.nav-route-name {
-  font-size: 15px; font-weight: 700; letter-spacing: -0.2px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.nav-route-label { font-size: calc(10px * var(--font-scale)); color: var(--text3); font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 1px; }
+.nav-route-name { font-size: calc(15px * var(--font-scale)); font-weight: 700; letter-spacing: -0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-.gps-chip {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 20px; padding: 6px 11px;
-  font-size: 12px; font-weight: 600; color: var(--text2);
-  cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap;
-}
+/* ETA chip in nav */
+#etaChip { font-size: calc(11px * var(--font-scale)); color: var(--text3); background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 4px 8px; display: none; flex-shrink: 0; font-weight: 600; }
+#etaChip.show { display: block; }
+
+.gps-chip { display: flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 6px 11px; font-size: calc(12px * var(--font-scale)); font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; }
 .gps-chip.on { border-color: var(--green); color: var(--green); background: var(--green-soft); }
 .gps-chip:active { transform: scale(0.95); }
 .gps-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); transition: all 0.3s; flex-shrink: 0; }
 .gps-pip.on { background: var(--green); box-shadow: 0 0 5px var(--green); }
 .gps-pip.searching { background: var(--yellow); animation: blink 0.7s infinite; }
 
-/* Current card */
-#curCard {
-  margin: 10px 13px 0; background: var(--green-soft);
-  border: 1.5px solid var(--green); border-radius: var(--radius-lg);
-  padding: 13px 15px; display: none; flex-shrink: 0;
-  animation: fadeUp 0.3s ease;
-}
+/* Auto-scroll lock button */
+#scrollLockBtn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 8px; font-size: 14px; cursor: pointer; font-family: inherit; color: var(--text3); transition: all 0.2s; flex-shrink: 0; display: none; }
+#scrollLockBtn.show { display: block; }
+#scrollLockBtn.locked { color: var(--green); border-color: var(--green); background: var(--green-soft); }
+
+#curCard { margin: 10px 13px 0; background: var(--green-soft); border: 1.5px solid var(--green); border-radius: var(--radius-lg); padding: 13px 15px; display: none; flex-shrink: 0; animation: fadeUp 0.3s ease; }
 #curCard.show { display: block; }
-.cur-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--green); color: #000;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
-  border-radius: 5px; padding: 3px 7px; margin-bottom: 7px;
-}
-.cur-stop-name { font-size: 21px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.1; }
-.cur-landmark { font-size: 11px; color: var(--text2); margin-top: 4px; line-height: 1.5; }
-.cur-next { margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(48,209,88,0.2); font-size: 12px; color: var(--text2); }
+.cur-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--green); color: #000; font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 5px; padding: 3px 7px; margin-bottom: 7px; }
+.cur-stop-name { font-size: calc(21px * var(--font-scale)); font-weight: 700; letter-spacing: -0.4px; line-height: 1.1; }
+.cur-landmark { font-size: calc(11px * var(--font-scale)); color: var(--text2); margin-top: 4px; line-height: 1.5; }
+.cur-next { margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(48,209,88,0.2); font-size: calc(12px * var(--font-scale)); color: var(--text2); }
 .cur-next b { color: var(--text); }
 
-/* Dest alert */
-#destAlert {
-  margin: 7px 13px 0; background: rgba(10,132,255,0.12);
-  border: 1.5px solid var(--blue); border-radius: var(--radius);
-  padding: 10px 13px; display: none; font-size: 13px; color: var(--blue);
-  flex-shrink: 0; gap: 8px; align-items: center;
-}
+/* Stop photo */
+.stop-photo { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; margin-top: 8px; opacity: 0.85; }
+
+#missedAlert { margin: 6px 13px 0; background: rgba(255,69,58,0.12); border: 1.5px solid var(--red); border-radius: var(--radius); padding: 9px 13px; display: none; font-size: calc(13px * var(--font-scale)); color: var(--red); flex-shrink: 0; gap: 8px; align-items: center; }
+#missedAlert.show { display: flex; }
+
+#destAlert { margin: 7px 13px 0; background: rgba(10,132,255,0.12); border: 1.5px solid var(--blue); border-radius: var(--radius); padding: 10px 13px; display: none; font-size: calc(13px * var(--font-scale)); color: var(--blue); flex-shrink: 0; gap: 8px; align-items: center; }
 #destAlert.show { display: flex; }
 #destAlert b { color: var(--text); }
 
-/* No GPS */
 #noGps { margin: 18px 13px 0; background: var(--card); border-radius: var(--radius-lg); padding: 26px 18px; text-align: center; display: none; }
 #noGps.show { display: block; }
 .no-gps-icon { font-size: 38px; margin-bottom: 10px; }
-.no-gps-title { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
-.no-gps-sub { font-size: 13px; color: var(--text2); line-height: 1.5; }
+.no-gps-title { font-size: calc(16px * var(--font-scale)); font-weight: 600; margin-bottom: 5px; }
+.no-gps-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.5; }
 
-/* Reminders */
 #reminders { margin: 7px 13px 0; background: var(--card); border-radius: var(--radius); padding: 11px 13px; display: none; flex-shrink: 0; }
 #reminders.show { display: block; }
 #reminders.dismissed { display: none !important; }
 .rem-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.rem-label { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); }
+.rem-label { font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); }
 .rem-dismiss { background: none; border: none; color: var(--text3); font-size: 17px; cursor: pointer; padding: 2px 5px; line-height: 1; font-family: inherit; }
-.rem-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); padding: 2px 0; line-height: 1.4; }
-.rem-item span { font-size: 14px; flex-shrink: 0; }
+.rem-item { display: flex; align-items: center; gap: 8px; font-size: calc(12px * var(--font-scale)); color: var(--text2); padding: 2px 0; line-height: 1.4; }
+.rem-item span:first-child { font-size: 14px; flex-shrink: 0; }
 
-.list-label { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); padding: 13px 18px 5px; flex-shrink: 0; display: none; }
+.list-label { font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); padding: 13px 18px 5px; flex-shrink: 0; display: none; }
 .list-label.show { display: block; }
 
-/* ── STOP LIST ── */
-.stop-list {
-  flex: 1; overflow-y: auto;
-  padding: 4px 13px calc(env(safe-area-inset-bottom, 20px) + 80px);
-  -webkit-overflow-scrolling: touch;
-}
-.stop-row { display: flex; align-items: stretch; min-height: 70px; }
+.stop-list { flex: 1; overflow-y: auto; padding: 0 13px calc(env(safe-area-inset-bottom,20px) + 80px); -webkit-overflow-scrolling: touch; position: relative; }
+.stop-list.scroll-locked { overflow-y: hidden; }
 
-/* Timeline */
-.tl-col { width: 44px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 18px; }
-
-.tl-node {
-  width: 13px; height: 13px; border-radius: 50%;
-  border: 2px solid var(--border); background: transparent;
-  flex-shrink: 0; z-index: 2;
-  transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  position: relative;
-}
-.tl-node.passed { background: var(--green); border-color: var(--green); }
-.tl-node.current {
-  width: 22px; height: 22px;
-  background: var(--green); border-color: var(--green);
-  box-shadow: 0 0 0 6px rgba(48,209,88,0.2), 0 0 24px rgba(48,209,88,0.6);
-}
-.tl-node.dest { border-color: var(--blue); }
-.tl-node.dest.current {
-  background: var(--blue); border-color: var(--blue);
-  box-shadow: 0 0 0 6px rgba(10,132,255,0.2), 0 0 24px rgba(10,132,255,0.5);
-}
-
-/* Smooth fill segment — top to bottom fill style */
-.tl-seg {
-  width: 5px; flex: 1; min-height: 26px;
-  border-radius: 3px; background: var(--border);
-  position: relative; overflow: hidden; margin-top: 3px;
-}
-/* Fixed to fill from top to bottom */
-.tl-seg::after {
-  content: '';
-  position: absolute; left: 0; right: 0; top: 0;
-  height: calc(var(--fill, 0) * 100%);
-  background: var(--green);
-  border-radius: 3px;
-  transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
+.stop-row { display: flex; align-items: flex-start; position: relative; min-height: 64px; }
+.tl-col { width: 42px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; align-self: stretch; position: relative; }
+.tl-dot { width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--border); background: var(--bg); flex-shrink: 0; z-index: 3; margin-top: 20px; transition: border-color 0.4s, background 0.4s, box-shadow 0.4s; position: relative; }
+.tl-dot.passed { background: var(--green); border-color: var(--green); }
+.tl-dot.current { width: 20px; height: 20px; background: var(--green); border-color: var(--green); box-shadow: 0 0 0 5px rgba(48,209,88,0.22), 0 0 20px rgba(48,209,88,0.55); margin-top: 17px; }
+.tl-dot.dest { border-color: var(--blue); }
+.tl-dot.dest.current { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 0 5px rgba(10,132,255,0.22), 0 0 20px rgba(10,132,255,0.5); }
+.tl-seg { width: 7px; flex: 1; background: var(--border); border-radius: 4px; margin-top: 3px; position: relative; overflow: hidden; min-height: 20px; }
+.tl-seg::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--fill,0) * 100%); background: var(--green); border-radius: 4px; transition: height 1.8s cubic-bezier(0.25,0.46,0.45,0.94); }
 .stop-last .tl-seg { display: none; }
-
-/* Stop card */
-.stop-card { flex: 1; padding: 11px 8px 11px 5px; border-radius: var(--radius); margin: 3px 0; transition: background 0.15s; }
+.stop-card { flex: 1; padding: 16px 8px 16px 4px; border-radius: var(--radius); margin: 0; transition: background 0.2s; }
 .stop-card.current { background: rgba(48,209,88,0.07); }
-.stop-card.passed { opacity: 0.38; }
+.stop-card.passed { opacity: 0.36; }
 .stop-card.dest-card { background: rgba(10,132,255,0.07); }
-.stop-seq-num { font-size: 10px; color: var(--text3); margin-bottom: 2px; font-weight: 500; }
-.stop-card.passed .stop-seq-num { opacity: 0.5; }
-.stop-name-main { font-size: 15px; font-weight: 600; line-height: 1.2; }
-.stop-lm { font-size: 11px; color: var(--text3); margin-top: 3px; line-height: 1.4; }
+.stop-seq-num { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 2px; font-weight: 500; }
+.stop-name-main { font-size: calc(15px * var(--font-scale)); font-weight: 600; line-height: 1.2; }
+.stop-lm { font-size: calc(11px * var(--font-scale)); color: var(--text3); margin-top: 3px; line-height: 1.4; }
+
+/* ETA per stop */
+.stop-eta { font-size: calc(10px * var(--font-scale)); color: var(--blue); margin-top: 2px; font-weight: 600; }
+
 .stop-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
-.tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+.tag { font-size: calc(10px * var(--font-scale)); font-weight: 700; padding: 2px 7px; border-radius: 5px; }
 .tag-here { background: rgba(48,209,88,0.15); color: var(--green); }
 .tag-next { background: rgba(255,255,255,0.08); color: var(--text2); }
 .tag-dest { background: rgba(10,132,255,0.15); color: var(--blue); }
@@ -296,52 +187,75 @@ body {
 .tag-peek { background: var(--card); color: var(--text3); border: 1px solid var(--border); }
 
 .peek-section { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px; opacity: 0.3; }
-.peek-label { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text3); padding: 5px 0 3px; }
-.peek-more { font-size: 11px; color: var(--text3); text-align: center; padding: 3px 0 6px; }
+.peek-label { font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text3); padding: 5px 0 3px; }
+.peek-more { font-size: calc(11px * var(--font-scale)); color: var(--text3); text-align: center; padding: 3px 0 8px; }
 
-/* Bottom bar */
-.bottom-bar {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 12px 13px calc(env(safe-area-inset-bottom, 20px) + 4px);
-  background: linear-gradient(to top, var(--bg) 55%, transparent);
-  display: flex; gap: 10px;
-}
-.btn-primary {
-  flex: 1; padding: 14px; background: var(--green); color: #000;
-  border: none; border-radius: var(--radius-lg); font-size: 15px; font-weight: 700;
-  cursor: pointer; font-family: inherit; transition: all 0.2s;
-}
+.bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 13px calc(env(safe-area-inset-bottom,20px) + 4px); background: linear-gradient(to top, var(--bg) 55%, transparent); display: flex; gap: 10px; }
+.btn-primary { flex: 1; padding: 14px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
 .btn-primary:active { transform: scale(0.97); opacity: 0.85; }
 .btn-primary.stop-mode { background: var(--card2); color: var(--text); }
-.btn-secondary {
-  padding: 14px 17px; background: var(--card); color: var(--text2);
-  border: 1px solid var(--border); border-radius: var(--radius-lg);
-  font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s;
-}
+.btn-secondary { padding: 14px 15px; background: var(--card); color: var(--text2); border: 1px solid var(--border); border-radius: var(--radius-lg); font-size: calc(13px * var(--font-scale)); font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
 .btn-secondary:active { background: var(--card2); transform: scale(0.97); }
 
-/* Settings sheet */
+/* ── SETTINGS SHEET ── */
 #settingsSheet { position: fixed; inset: 0; z-index: 200; display: none; }
 #settingsSheet.open { display: block; }
 .sheet-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-.sheet-panel {
-  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: 430px; background: var(--card);
-  border-radius: 20px 20px 0 0;
-  padding-bottom: calc(env(safe-area-inset-bottom,20px) + 16px);
-  animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1);
-}
+.sheet-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--card); border-radius: 20px 20px 0 0; padding-bottom: calc(env(safe-area-inset-bottom,20px) + 16px); max-height: 88vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1); }
 @keyframes slideUp { from{transform:translateX(-50%) translateY(100%)} to{transform:translateX(-50%) translateY(0)} }
 .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 0; }
-.sheet-title { font-size: 17px; font-weight: 700; text-align: center; padding: 14px 20px 16px; border-bottom: 1px solid var(--border); }
-.sheet-section { padding: 18px 20px 0; }
-.sheet-section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+.sheet-title { font-size: calc(17px * var(--font-scale)); font-weight: 700; text-align: center; padding: 14px 20px 16px; border-bottom: 1px solid var(--border); }
+.sheet-section { padding: 16px 20px 0; }
+.sheet-section-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
 .pill-toggle { display: flex; background: var(--card2); border-radius: 12px; padding: 3px; gap: 3px; width: 100%; }
-.pill-opt { flex: 1; padding: 9px 0; border-radius: 9px; font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s; border: none; background: transparent; font-family: inherit; text-align: center; }
+.pill-opt { flex: 1; padding: 9px 0; border-radius: 9px; font-size: calc(14px * var(--font-scale)); font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s; border: none; background: transparent; font-family: inherit; text-align: center; }
 .pill-opt.active { background: var(--text); color: #000; }
 .light-mode .pill-opt.active { background: #1c1c1e; color: #fff; }
-.sheet-done { margin: 18px 20px 0; width: calc(100% - 40px); padding: 13px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+/* Font size 3-way toggle */
+.font-toggle { display: flex; background: var(--card2); border-radius: 12px; padding: 3px; gap: 3px; width: 100%; }
+.font-opt { flex: 1; padding: 8px 0; border-radius: 9px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s; border: none; background: transparent; font-family: inherit; text-align: center; }
+.font-opt:nth-child(1) { font-size: 11px; }
+.font-opt:nth-child(2) { font-size: 14px; }
+.font-opt:nth-child(3) { font-size: 17px; }
+.font-opt.active { background: var(--text); color: #000; }
+.light-mode .font-opt.active { background: #1c1c1e; color: #fff; }
+
+/* Report & Notes buttons in settings */
+.sheet-action-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 16px; background: var(--card2); border: none; border-radius: var(--radius); font-family: inherit; font-size: calc(14px * var(--font-scale)); font-weight: 500; color: var(--text); cursor: pointer; transition: all 0.15s; margin-bottom: 8px; text-align: left; }
+.sheet-action-btn:active { opacity: 0.7; transform: scale(0.98); }
+.sheet-action-btn .sab-icon { font-size: 20px; flex-shrink: 0; }
+.sheet-action-btn .sab-sub { font-size: calc(11px * var(--font-scale)); color: var(--text3); display: block; margin-top: 1px; }
+
+.sheet-done { margin: 16px 20px 0; width: calc(100% - 40px); padding: 13px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; }
 .sheet-done:active { opacity: 0.8; }
+
+/* ── REPORT ISSUE MODAL ── */
+#reportModal, #notesModal { position: fixed; inset: 0; z-index: 300; display: none; }
+#reportModal.open, #notesModal.open { display: block; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+.modal-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--card); border-radius: 20px 20px 0 0; padding: 0 20px calc(env(safe-area-inset-bottom,20px) + 16px); animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1); }
+.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 14px; }
+.modal-title { font-size: calc(17px * var(--font-scale)); font-weight: 700; margin-bottom: 14px; }
+.modal-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+
+/* Report issue options */
+.report-opts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.report-opt { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--card2); border-radius: var(--radius); cursor: pointer; font-size: calc(14px * var(--font-scale)); transition: background 0.15s; border: 1.5px solid transparent; }
+.report-opt.selected { border-color: var(--blue); background: rgba(10,132,255,0.1); }
+.report-opt:active { opacity: 0.7; }
+
+/* Trip notes textarea */
+.notes-area { width: 100%; min-height: 120px; background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: inherit; font-size: calc(14px * var(--font-scale)); padding: 12px; resize: none; line-height: 1.5; margin-bottom: 8px; }
+.notes-area:focus { outline: none; border-color: var(--blue); }
+.notes-history { margin-top: 12px; }
+.notes-history-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.note-entry { background: var(--card2); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; font-size: calc(12px * var(--font-scale)); color: var(--text2); line-height: 1.4; }
+.note-entry-date { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 3px; }
+
+.modal-btn { width: 100%; padding: 13px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 8px; }
+.modal-btn:active { opacity: 0.8; }
+.modal-btn-cancel { background: var(--card2); color: var(--text2); margin-top: 6px; }
 
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
@@ -349,7 +263,7 @@ body {
 </head>
 <body>
 
-<!-- ONBOARDING -->
+<!-- ══ ONBOARDING ══ -->
 <div class="screen" id="screenOnboard">
   <div class="onboard-top-bar">
     <button class="gear-btn" onclick="openSettings()">⚙️</button>
@@ -376,7 +290,7 @@ body {
   </div>
 </div>
 
-<!-- TRACKER -->
+<!-- ══ TRACKER ══ -->
 <div class="screen hidden" id="screenTracker">
   <div id="ticketBanner">
     <span class="ticket-icon">🎫</span>
@@ -389,10 +303,12 @@ body {
 
   <div class="nav-bar">
     <div class="nav-left">
-      <div class="nav-route-label" id="nav-label">Route</div>
+      <div class="nav-route-label" id="nav-label">ROUTE</div>
       <div class="nav-route-name" id="navRouteName">Ortigas → Monumento</div>
     </div>
     <div class="nav-right">
+      <div id="etaChip">—</div>
+      <button id="scrollLockBtn" onclick="toggleScrollLock()" title="Auto-scroll lock">🔓</button>
       <button class="gear-btn" onclick="openSettings()">⚙️</button>
       <button class="gps-chip" id="gpsChip" onclick="toggleGps()">
         <div class="gps-pip" id="gpsPip"></div>
@@ -408,6 +324,7 @@ body {
     <div class="cur-next" id="curNext"></div>
   </div>
 
+  <div id="missedAlert"><span>⚠️</span><div id="missedAlertText">You may have passed your stop!</div></div>
   <div id="destAlert"><span>🏁</span><div id="destAlertText"></div></div>
 
   <div id="noGps" class="show">
@@ -426,7 +343,7 @@ body {
     <div class="rem-item"><span>📦</span><span id="rem3">Don't leave your stuff on the seat.</span></div>
     <div class="rem-item"><span>📱</span><span id="rem4">Hold on to your phone and earphones.</span></div>
     <div class="rem-item"><span>💼</span><span id="rem5">Keep your valuables in front of you.</span></div>
-    <div class="rem-item"><span>💼</span><span id="rem7">Hold the handrail while standing.</span></div>
+    <div class="rem-item"><span>🤚</span><span id="rem7">Hold the handrail while standing.</span></div>
     <div class="rem-item"><span>👀</span><span id="rem10">Be aware of your surroundings.</span></div>
     <div class="rem-item"><span>🧳</span><span id="rem11">Take all belongings before getting off.</span></div>
   </div>
@@ -440,12 +357,13 @@ body {
   </div>
 </div>
 
-<!-- SETTINGS SHEET -->
+<!-- ══ SETTINGS SHEET ══ -->
 <div id="settingsSheet">
   <div class="sheet-backdrop" onclick="closeSettings()"></div>
   <div class="sheet-panel">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="sh-title">Settings</div>
+
     <div class="sheet-section">
       <div class="sheet-section-label" id="sh-lang-label">Language</div>
       <div class="pill-toggle">
@@ -453,96 +371,101 @@ body {
         <button class="pill-opt" id="sh-tl" onclick="setLang('tl')">Tagalog</button>
       </div>
     </div>
+
     <div class="sheet-section" style="margin-top:14px">
       <div class="sheet-section-label" id="sh-theme-label">Appearance</div>
       <div class="pill-toggle">
         <button class="pill-opt active" id="sh-dark" onclick="setTheme('dark')">🌙 Dark</button>
+        <button class="pill-opt" id="sh-oled" onclick="setTheme('oled')">⚫ OLED</button>
         <button class="pill-opt" id="sh-light" onclick="setTheme('light')">☀️ Light</button>
       </div>
     </div>
+
+    <div class="sheet-section" style="margin-top:14px">
+      <div class="sheet-section-label" id="sh-font-label">Text Size</div>
+      <div class="font-toggle">
+        <button class="font-opt active" id="fs-small" onclick="setFontSize('small')">A</button>
+        <button class="font-opt" id="fs-normal" onclick="setFontSize('normal')">A</button>
+        <button class="font-opt" id="fs-large" onclick="setFontSize('large')">A</button>
+      </div>
+    </div>
+
+    <div class="sheet-section" style="margin-top:18px">
+      <div class="sheet-section-label" id="sh-tools-label">Tools</div>
+      <button class="sheet-action-btn" onclick="openNotes()">
+        <span class="sab-icon">📝</span>
+        <div>
+          <span id="sh-notes-label">Trip Notes</span>
+          <span class="sab-sub" id="sh-notes-sub">Write notes about your commute</span>
+        </div>
+      </button>
+      <button class="sheet-action-btn" onclick="openReport()">
+        <span class="sab-icon">🚨</span>
+        <div>
+          <span id="sh-report-label">Report an Issue</span>
+          <span class="sab-sub" id="sh-report-sub">Wrong stop info, broken coords, etc.</span>
+        </div>
+      </button>
+    </div>
+
     <button class="sheet-done" id="sh-done" onclick="closeSettings()">Done</button>
   </div>
 </div>
 
+<!-- ══ REPORT ISSUE MODAL ══ -->
+<div id="reportModal">
+  <div class="modal-backdrop" onclick="closeReport()"></div>
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="rep-title">Report an Issue</div>
+    <div class="modal-sub" id="rep-sub">What's the problem?</div>
+    <div class="report-opts" id="reportOpts">
+      <div class="report-opt" onclick="selectReport(this,'wrong_coords')">📍 Wrong stop coordinates</div>
+      <div class="report-opt" onclick="selectReport(this,'wrong_name')">✏️ Wrong stop name or landmark</div>
+      <div class="report-opt" onclick="selectReport(this,'gps_issue')">📡 GPS not detecting my location</div>
+      <div class="report-opt" onclick="selectReport(this,'missing_stop')">🚏 Missing bus stop</div>
+      <div class="report-opt" onclick="selectReport(this,'other')">💬 Other issue</div>
+    </div>
+    <textarea class="notes-area" id="reportNote" placeholder="Add details (optional)..." rows="3"></textarea>
+    <button class="modal-btn" onclick="submitReport()" id="rep-submit">Submit Report</button>
+    <button class="modal-btn modal-btn-cancel" onclick="closeReport()" id="rep-cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- ══ TRIP NOTES MODAL ══ -->
+<div id="notesModal">
+  <div class="modal-backdrop" onclick="closeNotes()"></div>
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="notes-title">Trip Notes</div>
+    <div class="modal-sub" id="notes-sub">Jot down anything about your commute.</div>
+    <textarea class="notes-area" id="tripNoteInput" placeholder="e.g. Umuulan, madaming tao sa Cubao..."></textarea>
+    <button class="modal-btn" onclick="saveNote()" id="notes-save">Save Note</button>
+    <button class="modal-btn modal-btn-cancel" onclick="closeNotes()" id="notes-cancel">Cancel</button>
+    <div class="notes-history" id="notesHistory"></div>
+  </div>
+</div>
+
 <script>
-// ── STOP DATA — exact coordinates only ──
+// ══ STOP DATA ══
 const STOPS = [
-  {
-    name: "Ortigas / SM Megamall",
-    coords: [[14.58651,121.05617],[14.58635,121.05621]],
-    landmarks: "SM Megamall · SM Busway Station"
-  },
-  {
-    name: "Santolan-Annapolis",
-    coords: [[14.60880,121.05593]],
-    landmarks: "PNP · Bagong Lipunan ng Crame"
-  },
-  {
-    name: "Main Avenue",
-    coords: [[14.61437,121.05326],[14.61419,121.05355],[14.61435,121.05334]],
-    landmarks: "Cubao · SM Hypermarket · INGCO · EDSA-Bonny Serrano Footbridge"
-  },
-  {
-    name: "Nepa Qmart",
-    coords: [[14.62801,121.04712],[14.62837,121.04689],[14.62799,121.04713]],
-    landmarks: "Q-Mart · Pinagkaisahan"
-  },
-  {
-    name: "GMA Kamuning",
-    coords: [[14.63610,121.04210],[14.63599,121.04223]],
-    landmarks: "Victoria Sports Tower · VS Hotel · South Triangle"
-  },
-  {
-    name: "Quezon Avenue",
-    coords: [[14.64170,121.03940],[14.64190,121.03937]],
-    landmarks: "Cyberpod Two · Kenny Rogers · Tokyo Tokyo · Pinyahan"
-  },
-  {
-    name: "PHILAM QC",
-    coords: [[14.64763,121.03563],[14.64700,121.03576],[14.64748,121.03520]],
-    landmarks: "Vertis North · Bagong Pag-asa · Quezon Avenue Station"
-  },
-  {
-    name: "Trinoma / North Avenue",
-    coords: [[14.65169,121.03289],[14.65161,121.03229],[14.65160,121.03230],[14.65159,121.03235]],
-    landmarks: "Trinoma Mall · East Maya Drive · Phil-Am"
-  },
-  {
-    name: "SM North EDSA",
-    coords: [[14.65614,121.02858],[14.65612,121.02863],[14.65579,121.02829],[14.65576,121.02835]],
-    landmarks: "SM North EDSA · Word of Hope · Santo Cristo"
-  },
-  {
-    name: "Roosevelt / Muñoz",
-    coords: [[14.65786,121.01987],[14.65773,121.02024],[14.65759,121.01922],[14.65764,121.01937],[14.65763,121.01928]],
-    landmarks: "EDSA-Muñoz Pedestrian Footbridge · Congressional Ave"
-  },
-  {
-    name: "Kaingin/Royal",
-    coords: [[14.65754,121.01111],[14.65776,121.01122],[14.65747,121.01186],[14.65745,121.01183]],
-    landmarks: "Floor Center · Apolonio Samson"
-  },
-  {
-    name: "Balintawak",
-    coords: [[14.65753,121.00486],[14.65737,121.00545]],
-    landmarks: "1160 EDSA · Apolonio Samson"
-  },
-  {
-    name: "Bagong Barrio",
-    coords: [[14.65729,120.99717]],
-    landmarks: "488–576 EDSA · Caloocan"
-  },
-  {
-    name: "Monumento",
-    coords: [
-      [14.65730,120.98838],[14.65724,120.98836],[14.65722,120.98835],[14.65732,120.98832],
-      [14.65710,120.99674],[14.65727,120.99671],[14.65708,120.99682],
-      [14.65742,120.98791],[14.65737,120.98795],[14.65732,120.98635]
-    ],
-    landmarks: "Motortrade · Jollibee · KFC · Goldilocks · Greenwich · Tapa King · Shakey's · MCU · Honda · PNB"
-  }
+  { name:"Ortigas / SM Megamall", coords:[[14.58651,121.05617],[14.58635,121.05621]], landmarks:"SM Megamall · SM Busway Station", photo:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/SM_Megamall_2019.jpg/640px-SM_Megamall_2019.jpg" },
+  { name:"Santolan-Annapolis", coords:[[14.60880,121.05593]], landmarks:"PNP · Bagong Lipunan ng Crame", photo:"" },
+  { name:"Main Avenue", coords:[[14.61437,121.05326],[14.61419,121.05355],[14.61435,121.05334]], landmarks:"Cubao · SM Hypermarket · INGCO · EDSA-Bonny Serrano Footbridge", photo:"" },
+  { name:"Nepa Qmart", coords:[[14.62801,121.04712],[14.62837,121.04689],[14.62799,121.04713]], landmarks:"Q-Mart · Pinagkaisahan", photo:"" },
+  { name:"GMA Kamuning", coords:[[14.63610,121.04210],[14.63599,121.04223]], landmarks:"Victoria Sports Tower · VS Hotel · South Triangle", photo:"" },
+  { name:"Quezon Avenue", coords:[[14.64170,121.03940],[14.64190,121.03937]], landmarks:"Cyberpod Two · Kenny Rogers · Tokyo Tokyo · Pinyahan", photo:"" },
+  { name:"PHILAM QC", coords:[[14.64763,121.03563],[14.64700,121.03576],[14.64748,121.03520]], landmarks:"Vertis North · Bagong Pag-asa · Quezon Avenue Station", photo:"" },
+  { name:"Trinoma / North Avenue", coords:[[14.65169,121.03289],[14.65161,121.03229],[14.65160,121.03230],[14.65159,121.03235]], landmarks:"Trinoma Mall · East Maya Drive · Phil-Am", photo:"" },
+  { name:"SM North EDSA", coords:[[14.65614,121.02858],[14.65612,121.02863],[14.65579,121.02829],[14.65576,121.02835]], landmarks:"SM North EDSA · Word of Hope · Santo Cristo", photo:"" },
+  { name:"Roosevelt / Muñoz", coords:[[14.65786,121.01987],[14.65773,121.02024],[14.65759,121.01922],[14.65764,121.01937],[14.65763,121.01928]], landmarks:"EDSA-Muñoz Pedestrian Footbridge · Congressional Ave", photo:"" },
+  { name:"Kaingin / Royal", coords:[[14.65754,121.01111],[14.65776,121.01122],[14.65747,121.01186],[14.65745,121.01183]], landmarks:"Floor Center · Apolonio Samson", photo:"" },
+  { name:"Balintawak", coords:[[14.65753,121.00486],[14.65737,121.00545]], landmarks:"1160 EDSA · Apolonio Samson", photo:"" },
+  { name:"Bagong Barrio", coords:[[14.65729,120.99717]], landmarks:"488–576 EDSA · Caloocan", photo:"" },
+  { name:"Monumento", coords:[[14.65730,120.98838],[14.65724,120.98836],[14.65722,120.98835],[14.65732,120.98832],[14.65710,120.99674],[14.65727,120.99671],[14.65708,120.99682],[14.65742,120.98791],[14.65737,120.98795],[14.65732,120.98635]], landmarks:"Motortrade · Jollibee · KFC · Goldilocks · Greenwich · Tapa King · Shakey's · MCU · Honda · PNB", photo:"" }
 ];
 
+// ══ TRANSLATIONS ══
 const T = {
   en: {
     ob_title:"Where are you headed?", ob_sub:"Choose your destination so we can alert you when you're almost there.",
@@ -551,23 +474,29 @@ const T = {
     ob_btn_dest:n=>`Going to ${n} →`,
     tk_main:"Have your ticket ready for inspection.", tk_sub:"Keep it — conductor may check anytime.",
     nav_label:"ROUTE", cur_pill:"📍 You are here", cur_next_prefix:"Next stop:",
-    cur_last:"🎉 Last stop — Monumento!",
-    nogps_title:"Enable GPS", nogps_sub:"Tap Locate to find out which stop you're at.",
-    rem_label:"Reminders",
+    cur_last:"🎉 Last stop — Monumento!", nogps_title:"Enable GPS",
+    nogps_sub:"Tap Locate to find out which stop you're at.", rem_label:"Reminders",
     rem1:"Close your bag or backpack zipper.", rem2:"Check your wallet or coin purse.",
     rem3:"Don't leave your stuff on the seat.", rem4:"Hold on to your phone and earphones.",
     rem5:"Keep your valuables in front of you.", rem7:"Hold the handrail while standing.",
     rem10:"Be aware of your surroundings.", rem11:"Take all belongings before getting off.",
     list_label:"Bus Stops", btn_locate:"Locate Me", btn_stop:"Stop", btn_locating:"Locating…",
-    btn_back:"↩ Change Destination",
-    tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
+    btn_back:"↩ Change", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
     dest_alert_arrive:n=>`<b>Get off now! ${n}</b> — this is your stop.`,
     dest_alert_near:(n,d)=>`Almost at <b>${n}</b> — only ${d} away!`,
+    missed_alert:n=>`⚠️ Did you miss <b>${n}</b>?`,
     stop_of:(i,t)=>`Stop ${i} of ${t}`,
     gps_on:"GPS On", gps_searching:"Locating…", gps_off:"Locate",
     err_denied:"Location permission denied. Check your browser settings.",
     err_unavail:"Can't detect location. Try going outside.", err_title:"Location Error",
-    sh_title:"Settings", sh_lang:"Language", sh_theme:"Appearance", sh_done:"Done"
+    sh_title:"Settings", sh_lang:"Language", sh_theme:"Appearance", sh_font:"Text Size",
+    sh_tools:"Tools", sh_notes:"Trip Notes", sh_notes_sub:"Write notes about your commute",
+    sh_report:"Report an Issue", sh_report_sub:"Wrong stop info, broken coords, etc.", sh_done:"Done",
+    rep_title:"Report an Issue", rep_sub:"What's the problem?", rep_submit:"Submit Report", rep_cancel:"Cancel",
+    notes_title:"Trip Notes", notes_sub:"Jot down anything about your commute.", notes_save:"Save Note", notes_cancel:"Cancel",
+    scroll_locked:"🔒", scroll_unlocked:"🔓",
+    eta_prefix:"~", eta_min:"min",
+    countdown_stops:(n)=>n===1?"🚨 1 stop away!":n===2?"⚠️ 2 stops away":"📍 3 stops away",
   },
   tl: {
     ob_title:"Saan ka pupunta?", ob_sub:"Piliin ang iyong destinasyon para ma-alert ka kapag malapit ka na.",
@@ -576,111 +505,228 @@ const T = {
     ob_btn_dest:n=>`Pupunta sa ${n} →`,
     tk_main:"I-ready ang ticket para sa inspection.", tk_sub:"Huwag itapon — maaaring mag-check ang kondaktor.",
     nav_label:"RUTA", cur_pill:"📍 Nandito ka", cur_next_prefix:"Susunod:",
-    cur_last:"🎉 Last stop na — Monumento!",
-    nogps_title:"I-enable ang GPS", nogps_sub:"I-tap ang I-locate para malaman kung saang hintuan ka na.",
-    rem_label:"Huwag kalimutan",
+    cur_last:"🎉 Last stop na — Monumento!", nogps_title:"I-enable ang GPS",
+    nogps_sub:"I-tap ang I-locate para malaman kung saang hintuan ka na.", rem_label:"Huwag kalimutan",
     rem1:"Isara ang zipper ng bag o backpack mo.", rem2:"I-check ang wallet o coin purse mo.",
     rem3:"Huwag mag-iwan ng gamit sa upuan.", rem4:"Hawakan ang phone at earphones mo.",
     rem5:"Ilagay sa harap ang mga importanteng gamit mo.", rem7:"Kumapit sa handrail kung nakatayo.",
     rem10:"Maging alerto sa paligid mo.", rem11:"Siguraduhing dala mo lahat bago bumaba.",
     list_label:"Mga Hintuan", btn_locate:"I-locate Ako", btn_stop:"I-stop", btn_locating:"Hinahanap…",
-    btn_back:"↩ Baguhin",
-    tag_here:"📍 Nandito ka", tag_next:"Susunod →", tag_dest:"🏁 Bababa dito",
+    btn_back:"↩ Baguhin", tag_here:"📍 Nandito ka", tag_next:"Susunod →", tag_dest:"🏁 Bababa dito",
     dest_alert_arrive:n=>`<b>Bababa ka na! ${n}</b> — ito na ang stop mo.`,
     dest_alert_near:(n,d)=>`Malapit na ang <b>${n}</b> — ${d} na lang!`,
+    missed_alert:n=>`⚠️ Nalagpasan mo ba ang <b>${n}</b>?`,
     stop_of:(i,t)=>`Stop ${i} ng ${t}`,
     gps_on:"GPS On", gps_searching:"Hinahanap…", gps_off:"I-locate",
     err_denied:"Hindi pinayagan ang location. I-check ang settings ng browser mo.",
     err_unavail:"Hindi ma-detect ang location. Subukan sa labas.", err_title:"Location Error",
-    sh_title:"Mga Setting", sh_lang:"Wika", sh_theme:"Hitsura", sh_done:"Tapos na"
+    sh_title:"Mga Setting", sh_lang:"Wika", sh_theme:"Hitsura", sh_font:"Laki ng Teksto",
+    sh_tools:"Mga Kasangkapan", sh_notes:"Trip Notes", sh_notes_sub:"Mag-sulat tungkol sa biyahe mo",
+    sh_report:"Mag-report ng Issue", sh_report_sub:"Maling impormasyon, coords, atbp.", sh_done:"Tapos na",
+    rep_title:"Mag-report ng Issue", rep_sub:"Ano ang problema?", rep_submit:"I-submit", rep_cancel:"Kanselahin",
+    notes_title:"Trip Notes", notes_sub:"Isulat ang tungkol sa iyong biyahe.", notes_save:"I-save", notes_cancel:"Kanselahin",
+    scroll_locked:"🔒", scroll_unlocked:"🔓",
+    eta_prefix:"~", eta_min:"min",
+    countdown_stops:(n)=>n===1?"🚨 1 hintuan na lang!":n===2?"⚠️ 2 hintuan na lang":"📍 3 hintuan pa",
   }
 };
 
-let lang='en', theme='dark', selectedDest=null, tracking=false;
+// ══ STATE ══
+let lang='en', theme='dark', fontSize='small';
+let selectedDest=null, tracking=false;
 let watchId=null, userLat=null, userLng=null, gpsState='off';
+let segFills=new Array(STOPS.length).fill(0);
+let scrollLocked=false;
+let wakeLock=null;
+let lastSpeed=0, speedHistory=[];
+let prevClosestIdx=-1;
+let tripNotes=JSON.parse(localStorage.getItem('lambNotes')||'[]');
+let selectedReportType=null;
+let countdownFired={};
 
-// ── SETTINGS ──
-function openSettings() { document.getElementById('settingsSheet').classList.add('open'); }
-function closeSettings() { document.getElementById('settingsSheet').classList.remove('open'); }
+// ══ HAVERSINE ══
+function hav(la1,lo1,la2,lo2){
+  const R=6371000,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function distToStop(i){ if(userLat===null) return Infinity; return Math.min(...STOPS[i].coords.map(([la,lo])=>hav(userLat,userLng,la,lo))); }
+function fmt(m){return m<1000?`${Math.round(m)}m`:`${(m/1000).toFixed(1)}km`;}
 
-function setTheme(t) {
-  theme=t;
-  document.body.classList.toggle('light-mode', t==='light');
-  document.getElementById('sh-dark').classList.toggle('active', t==='dark');
-  document.getElementById('sh-light').classList.toggle('active', t==='light');
+// Centroids & cumulative distance
+const CENTROIDS=STOPS.map(s=>{
+  const lats=s.coords.map(c=>c[0]),lngs=s.coords.map(c=>c[1]);
+  return [lats.reduce((a,b)=>a+b,0)/lats.length,lngs.reduce((a,b)=>a+b,0)/lngs.length];
+});
+const CUM_DIST=[0];
+for(let i=1;i<STOPS.length;i++){
+  const[la1,lo1]=CENTROIDS[i-1],[la2,lo2]=CENTROIDS[i];
+  CUM_DIST.push(CUM_DIST[i-1]+hav(la1,lo1,la2,lo2));
+}
+const TOTAL_DIST=CUM_DIST[CUM_DIST.length-1];
+
+function computeRouteProgress(ci){
+  if(userLat===null||ci<0) return 0;
+  const n=STOPS.length;
+  if(ci===0){ const d0=distToStop(0),d1=distToStop(1); return (CUM_DIST[0]/TOTAL_DIST)*(1-d0/(d0+d1+0.001)); }
+  if(ci>=n-1) return 1;
+  const dPrev=hav(userLat,userLng,...CENTROIDS[ci-1]),dCur=distToStop(ci),dNxt=ci+1<n?distToStop(ci+1):Infinity;
+  const dNext=hav(userLat,userLng,...CENTROIDS[ci]);
+  if(dNxt<dPrev){ const seg=hav(...CENTROIDS[ci],...CENTROIDS[ci+1]),f=Math.max(0,Math.min(1,dCur/(dCur+dNxt+0.001))); return (CUM_DIST[ci]+f*seg)/TOTAL_DIST; }
+  else { const seg=hav(...CENTROIDS[ci-1],...CENTROIDS[ci]),f=Math.max(0,Math.min(1,dPrev/(dPrev+dNext+0.001))); return (CUM_DIST[ci-1]+f*seg)/TOTAL_DIST; }
 }
 
-function setLang(l) {
+// ETA computation (meters per second → minutes)
+function computeETA(destIdx){
+  if(userLat===null||destIdx<0||lastSpeed<0.5) return null;
+  const d=distToStop(destIdx);
+  if(d===Infinity) return null;
+  const mins=Math.ceil(d/lastSpeed/60);
+  return mins;
+}
+
+const THRESHOLD=150;
+
+// ══ SETTINGS ══
+function openSettings(){ document.getElementById('settingsSheet').classList.add('open'); }
+function closeSettings(){ document.getElementById('settingsSheet').classList.remove('open'); }
+
+function setTheme(t){
+  theme=t;
+  document.body.classList.toggle('light-mode',t==='light');
+  document.body.classList.toggle('oled-mode',t==='oled');
+  ['sh-dark','sh-oled','sh-light'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active', (t==='dark'&&id==='sh-dark')||(t==='oled'&&id==='sh-oled')||(t==='light'&&id==='sh-light'));
+  });
+}
+
+function setFontSize(size){
+  fontSize=size;
+  const scales={small:0.9,normal:1,large:1.15};
+  document.documentElement.style.setProperty('--font-scale',scales[size]);
+  ['fs-small','fs-normal','fs-large'].forEach(id=>{
+    document.getElementById(id).classList.toggle('active',id===`fs-${size}`);
+  });
+}
+
+function setLang(l){
   lang=l;
-  document.getElementById('sh-en').classList.toggle('active', l==='en');
-  document.getElementById('sh-tl').classList.toggle('active', l==='tl');
-  applyTranslations();
-  buildDestList();
+  document.getElementById('sh-en').classList.toggle('active',l==='en');
+  document.getElementById('sh-tl').classList.toggle('active',l==='tl');
+  applyTranslations(); buildDestList();
   if(tracking||userLat!==null) render(); else renderList();
 }
 
-function applyTranslations() {
+function applyTranslations(){
   const s=(id,k)=>{const el=document.getElementById(id);if(el)el.textContent=T[lang][k];};
-  // apply all text translations
-  const pairs = [
-    ['ob-title','ob_title'],['ob-sub','ob_sub'],['ob-sec-label','ob_sec_label'],
-    ['ob-skip-title','ob_skip_title'],['ob-skip-sub','ob_skip_sub'],
-    ['tk-main','tk_main'],['tk-sub','tk_sub'],['nav-label','nav_label'],
-    ['cur-pill-label','cur_pill'],['nogps-title','nogps_title'],['nogps-sub','nogps_sub'],
-    ['rem-label','rem_label'],['rem1','rem1'],['rem2','rem2'],['rem3','rem3'],['rem4','rem4'],
-    ['rem5','rem5'],['rem7','rem7'],['rem10','rem10'],['rem11','rem11'],
-    ['listLabel','list_label'],['btn-back','btn_back'],
-    ['sh-title','sh_title'],['sh-lang-label','sh_lang'],['sh-theme-label','sh_theme'],['sh-done','sh_done']
-  ];
-  pairs.forEach(([id,k])=>s(id,k));
-  document.getElementById('ob-btn-start').textContent =
-    selectedDest===null||selectedDest===-1 ? T[lang].ob_btn_start : T[lang].ob_btn_dest(STOPS[selectedDest].name);
+  [['ob-title','ob_title'],['ob-sub','ob_sub'],['ob-sec-label','ob_sec_label'],
+   ['ob-skip-title','ob_skip_title'],['ob-skip-sub','ob_skip_sub'],
+   ['tk-main','tk_main'],['tk-sub','tk_sub'],['nav-label','nav_label'],
+   ['cur-pill-label','cur_pill'],['nogps-title','nogps_title'],['nogps-sub','nogps_sub'],
+   ['rem-label','rem_label'],['rem1','rem1'],['rem2','rem2'],['rem3','rem3'],['rem4','rem4'],
+   ['rem5','rem5'],['rem7','rem7'],['rem10','rem10'],['rem11','rem11'],
+   ['listLabel','list_label'],['btn-back','btn_back'],
+   ['sh-title','sh_title'],['sh-lang-label','sh_lang'],['sh-theme-label','sh_theme'],
+   ['sh-font-label','sh_font'],['sh-tools-label','sh_tools'],
+   ['sh-notes-label','sh_notes'],['sh-notes-sub','sh_notes_sub'],
+   ['sh-report-label','sh_report'],['sh-report-sub','sh_report_sub'],['sh-done','sh_done'],
+   ['rep-title','rep_title'],['rep-sub','rep_sub'],['rep-submit','rep_submit'],['rep-cancel','rep_cancel'],
+   ['notes-title','notes_title'],['notes-sub','notes_sub'],['notes-save','notes_save'],['notes-cancel','notes_cancel']
+  ].forEach(([id,k])=>s(id,k));
+  document.getElementById('ob-btn-start').textContent=
+    selectedDest===null||selectedDest===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[selectedDest].name);
   setChipLabel();
+  updateScrollLockBtn();
 }
 
-function setChipLabel() {
-  const lbl=document.getElementById('gpsChipLabel'), btn=document.getElementById('btn-locate-text');
+function setChipLabel(){
+  const lbl=document.getElementById('gpsChipLabel'),btn=document.getElementById('btn-locate-text');
   const map={on:['gps_on','btn_stop'],searching:['gps_searching','btn_locating'],off:['gps_off','btn_locate']};
-  const [lk,bk]=map[gpsState]||map.off;
-  if(lbl) lbl.textContent=T[lang][lk];
-  if(btn) btn.textContent=T[lang][bk];
+  const[lk,bk]=map[gpsState]||map.off;
+  if(lbl)lbl.textContent=T[lang][lk];
+  if(btn)btn.textContent=T[lang][bk];
 }
 
-// ── ONBOARDING ──
-function buildDestList() {
+// ══ SCROLL LOCK ══
+function toggleScrollLock(){
+  scrollLocked=!scrollLocked;
+  const list=document.getElementById('stopList');
+  list.classList.toggle('scroll-locked',scrollLocked);
+  updateScrollLockBtn();
+}
+function updateScrollLockBtn(){
+  const btn=document.getElementById('scrollLockBtn');
+  if(!btn) return;
+  btn.textContent=scrollLocked?T[lang].scroll_locked:T[lang].scroll_unlocked;
+  btn.classList.toggle('locked',scrollLocked);
+}
+
+// ══ WAKE LOCK ══
+async function requestWakeLock(){
+  try{ if('wakeLock' in navigator){ wakeLock=await navigator.wakeLock.request('screen'); } }catch(e){}
+}
+function releaseWakeLock(){ try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){} }
+
+// ══ AUDIO ══
+function playAudio(type){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator(),gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if(type==='arrive'){ osc.frequency.value=880; gain.gain.setValueAtTime(0.3,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6); osc.start(); osc.stop(ctx.currentTime+0.6); }
+    else if(type==='near'){ osc.frequency.value=660; gain.gain.setValueAtTime(0.2,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4); osc.start(); osc.stop(ctx.currentTime+0.4); }
+    else if(type==='countdown'){ osc.frequency.value=440; gain.gain.setValueAtTime(0.15,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3); }
+  }catch(e){}
+}
+
+// ══ SHAKE TO LOCATE ══
+let shakeThreshold=15, lastShakeTime=0;
+function initShake(){
+  if(!window.DeviceMotionEvent) return;
+  window.addEventListener('devicemotion',e=>{
+    const a=e.accelerationIncludingGravity;
+    if(!a) return;
+    const force=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z);
+    const now=Date.now();
+    if(force>shakeThreshold*2&&now-lastShakeTime>2000){
+      lastShakeTime=now;
+      if(!tracking){ startGps(); }
+      else { render(); }
+    }
+  });
+}
+
+// ══ ONBOARDING ══
+function buildDestList(){
   document.getElementById('destList').innerHTML=STOPS.map((s,i)=>`
     <div class="dest-item${selectedDest===i?' selected':''}" id="di${i}" onclick="selectDest(${i})">
       <div class="dest-num">${i+1}</div>
-      <div class="dest-info">
-        <div class="dest-name">${s.name}</div>
-        <div class="dest-lm">${s.landmarks}</div>
-      </div>
+      <div class="dest-info"><div class="dest-name">${s.name}</div><div class="dest-lm">${s.landmarks}</div></div>
       <div class="dest-check">✓</div>
     </div>`).join('');
 }
-
-function selectDest(idx) {
+function selectDest(idx){
   selectedDest=idx;
   document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
   document.getElementById('skipBtn').classList.remove('selected');
   if(idx===-1) document.getElementById('skipBtn').classList.add('selected');
-  else { const el=document.getElementById(`di${idx}`); if(el) el.classList.add('selected'); }
+  else{ const el=document.getElementById(`di${idx}`);if(el)el.classList.add('selected'); }
   document.getElementById('btnStart').classList.add('ready');
   document.getElementById('ob-btn-start').textContent=idx===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[idx].name);
 }
-
-function startApp() {
+function startApp(){
   if(selectedDest===null) return;
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
-  document.getElementById('navRouteName').textContent=
-    selectedDest>=0?`Ortigas → ${STOPS[selectedDest].name}`:'Ortigas → Monumento';
+  document.getElementById('navRouteName').textContent=selectedDest>=0?`Ortigas → ${STOPS[selectedDest].name}`:'Ortigas → Monumento';
   document.getElementById('listLabel').classList.add('show');
+  document.getElementById('scrollLockBtn').classList.add('show');
+  countdownFired={};
   applyTranslations(); renderList(); startGps();
 }
-
-function goBack() {
-  stopGps();
+function goBack(){
+  stopGps(); releaseWakeLock(); closeSettings();
   document.getElementById('screenTracker').classList.add('hidden');
   document.getElementById('screenOnboard').classList.remove('hidden');
   document.getElementById('noGps').classList.add('show');
@@ -688,49 +734,57 @@ function goBack() {
   document.getElementById('reminders').classList.remove('show');
   document.getElementById('reminders').classList.remove('dismissed');
   document.getElementById('destAlert').classList.remove('show');
+  document.getElementById('missedAlert').classList.remove('show');
+  document.getElementById('etaChip').classList.remove('show');
+  document.getElementById('scrollLockBtn').classList.remove('show');
+  scrollLocked=false;
+  document.getElementById('stopList').classList.remove('scroll-locked');
+  prevClosestIdx=-1; countdownFired={};
 }
+function dismissTicket(){ document.getElementById('ticketBanner').classList.add('gone'); }
+function dismissReminders(){ document.getElementById('reminders').classList.add('dismissed'); }
 
-function dismissTicket() { document.getElementById('ticketBanner').classList.add('gone'); }
-function dismissReminders() { document.getElementById('reminders').classList.add('dismissed'); }
-
-// ── GPS ──
-function toggleGps() { tracking?stopGps():startGps(); }
-
-function startGps() {
-  if(!navigator.geolocation){alert("GPS not supported.");return;}
+// ══ GPS ══
+function toggleGps(){ tracking?stopGps():startGps(); }
+function startGps(){
+  if(!navigator.geolocation){ alert("GPS not supported."); return; }
   gpsState='searching'; setChipState();
+  requestWakeLock();
+  initShake();
   watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:3000,timeout:15000});
 }
-
-function stopGps() {
-  if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
-  tracking=false; userLat=null; userLng=null; gpsState='off'; setChipState();
+function stopGps(){
+  if(watchId!=null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+  tracking=false; userLat=null; userLng=null; gpsState='off'; lastSpeed=0; speedHistory=[];
+  setChipState();
+  releaseWakeLock();
   document.getElementById('noGps').classList.add('show');
   document.getElementById('curCard').classList.remove('show');
   document.getElementById('reminders').classList.remove('show');
   document.getElementById('destAlert').classList.remove('show');
+  document.getElementById('missedAlert').classList.remove('show');
+  document.getElementById('etaChip').classList.remove('show');
+  segFills=new Array(STOPS.length).fill(0);
   renderList();
 }
-
-function onPos(pos) {
-  userLat=pos.coords.latitude; userLng=pos.coords.longitude;
-  if(!tracking){
-    tracking=true; gpsState='on'; setChipState();
-    document.getElementById('noGps').classList.remove('show');
-    document.getElementById('reminders').classList.add('show');
+function onPos(pos){
+  // Track speed
+  if(pos.coords.speed!==null&&pos.coords.speed>=0){
+    speedHistory.push(pos.coords.speed);
+    if(speedHistory.length>5) speedHistory.shift();
+    lastSpeed=speedHistory.reduce((a,b)=>a+b,0)/speedHistory.length;
   }
+  userLat=pos.coords.latitude; userLng=pos.coords.longitude;
+  if(!tracking){ tracking=true; gpsState='on'; setChipState(); document.getElementById('noGps').classList.remove('show'); document.getElementById('reminders').classList.add('show'); }
   render();
 }
-
-function onErr(e) {
+function onErr(e){
   gpsState='off'; setChipState();
   const msg=e.code===1?T[lang].err_denied:T[lang].err_unavail;
-  document.getElementById('noGps').innerHTML=
-    `<div class="no-gps-icon">❌</div><div class="no-gps-title">${T[lang].err_title}</div><div class="no-gps-sub">${msg}</div>`;
+  document.getElementById('noGps').innerHTML=`<div class="no-gps-icon">❌</div><div class="no-gps-title">${T[lang].err_title}</div><div class="no-gps-sub">${msg}</div>`;
   document.getElementById('noGps').classList.add('show');
 }
-
-function setChipState() {
+function setChipState(){
   const pip=document.getElementById('gpsPip'),chip=document.getElementById('gpsChip'),btn=document.getElementById('mainBtn');
   pip.className='gps-pip'+(gpsState==='on'?' on':gpsState==='searching'?' searching':'');
   chip.classList.toggle('on',gpsState==='on');
@@ -738,31 +792,14 @@ function setChipState() {
   setChipLabel();
 }
 
-// ── HAVERSINE ──
-function hav(la1,lo1,la2,lo2){
-  const R=6371000,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
-  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-function distToStop(i){
-  if(userLat===null) return Infinity;
-  return Math.min(...STOPS[i].coords.map(([la,lo])=>hav(userLat,userLng,la,lo)));
-}
-function fmt(m){return m<1000?`${Math.round(m)}m`:`${(m/1000).toFixed(1)}km`;}
-
-const THRESHOLD=150;
-
-// ── RENDER ──
-function render() {
+// ══ RENDER ══
+function render(){
   if(userLat===null) return;
-
-  // find closest stop
-  let ci=0, cd=Infinity;
+  let ci=0,cd=Infinity;
   STOPS.forEach((_,i)=>{const d=distToStop(i);if(d<cd){cd=d;ci=i;}});
-  const atStop=cd<=THRESHOLD;
-  const currentIdx=atStop?ci:-1;
+  const atStop=cd<=THRESHOLD,currentIdx=atStop?ci:-1;
 
-  // current card
+  // Current card
   document.getElementById('cur-pill-label').textContent=T[lang].cur_pill;
   const card=document.getElementById('curCard');
   if(atStop){
@@ -770,101 +807,129 @@ function render() {
     document.getElementById('curName').textContent=STOPS[ci].name;
     document.getElementById('curLandmark').textContent=STOPS[ci].landmarks;
     const nxt=STOPS[ci+1];
-    document.getElementById('curNext').innerHTML=nxt
-      ?`${T[lang].cur_next_prefix} <b>${nxt.name}</b>`
-      :`<b>${T[lang].cur_last}</b>`;
+    document.getElementById('curNext').innerHTML=nxt?`${T[lang].cur_next_prefix} <b>${nxt.name}</b>`:`<b>${T[lang].cur_last}</b>`;
   } else card.classList.remove('show');
 
-  // dest alert
+  // ETA chip
+  const etaChip=document.getElementById('etaChip');
+  if(selectedDest>=0){
+    const mins=computeETA(selectedDest);
+    if(mins!==null){ etaChip.textContent=`${T[lang].eta_prefix}${mins} ${T[lang].eta_min}`; etaChip.classList.add('show'); }
+    else etaChip.classList.remove('show');
+  } else etaChip.classList.remove('show');
+
+  // Dest alert
   const da=document.getElementById('destAlert');
   if(selectedDest>=0){
     if(atStop&&currentIdx===selectedDest){
       da.classList.add('show');
       document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_arrive(STOPS[selectedDest].name);
-      vibrate();
+      playAudio('arrive'); vibrate([200,100,200,100,400]);
     } else {
       const d=distToStop(selectedDest);
-      if(d<1500&&d>THRESHOLD){
-        da.classList.add('show');
-        document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_near(STOPS[selectedDest].name,fmt(d));
-      } else if(!(atStop&&currentIdx===selectedDest)){
-        da.classList.remove('show');
-      }
+      if(d<1500&&d>THRESHOLD){ da.classList.add('show'); document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_near(STOPS[selectedDest].name,fmt(d)); playAudio('near'); }
+      else if(!(atStop&&currentIdx===selectedDest)) da.classList.remove('show');
     }
   }
 
-  renderList(currentIdx, ci);
+  // Missed stop alert (#9)
+  const ma=document.getElementById('missedAlert');
+  if(selectedDest>=0&&currentIdx>selectedDest){
+    document.getElementById('missedAlertText').innerHTML=T[lang].missed_alert(STOPS[selectedDest].name);
+    ma.classList.add('show');
+  } else ma.classList.remove('show');
+
+  // Countdown vibrate (#6) — fire at 3, 2, 1 stops away
+  if(selectedDest>=0&&currentIdx>=0){
+    const stopsAway=selectedDest-currentIdx;
+    if(stopsAway>=1&&stopsAway<=3&&!countdownFired[stopsAway]){
+      countdownFired[stopsAway]=true;
+      vibrate(stopsAway===1?[300,100,300]:stopsAway===2?[200,100,200]:[150]);
+      playAudio('countdown');
+    }
+  }
+
+  prevClosestIdx=ci;
+
+  // Progress fill
+  const progress=computeRouteProgress(ci);
+  const newFills=STOPS.map((_,i)=>{
+    if(i>=STOPS.length-1) return 0;
+    const s=CUM_DIST[i]/TOTAL_DIST,e=CUM_DIST[i+1]/TOTAL_DIST,len=e-s;
+    return len===0?0:Math.max(0,Math.min(1,(progress-s)/len));
+  });
+
+  const list=document.getElementById('stopList');
+  const segs=list.querySelectorAll('.tl-seg');
+  if(segs.length===0){ renderList(currentIdx,ci,newFills); }
+  else {
+    segs.forEach((seg,i)=>{ const f=(newFills[i]||0).toFixed(3); if(seg.style.getPropertyValue('--fill')!==f) seg.style.setProperty('--fill',f); });
+    updateDotsAndCards(currentIdx,ci,newFills);
+  }
+  segFills=newFills;
+
+  // Auto-scroll
+  if(!scrollLocked&&currentIdx>=0){
+    setTimeout(()=>{
+      const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
+      if(rows[currentIdx]) rows[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});
+    },200);
+  }
 }
 
-function renderList(currentIdx=-1, closestIdx=-1){
+function updateDotsAndCards(currentIdx,closestIdx,fills){
+  const list=document.getElementById('stopList');
+  const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
+  const hasFilter=selectedDest>=0&&selectedDest<STOPS.length-1;
+  const visCount=hasFilter?selectedDest+1:STOPS.length;
+  rows.forEach((row,i)=>{
+    if(i>=visCount) return;
+    const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
+    const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===selectedDest;
+    const dot=row.querySelector('.tl-dot');
+    if(dot) dot.className='tl-dot'+(isCurrent?(isDest?' dest current':' current'):isPassed?' passed':isDest?' dest':'');
+    const card=row.querySelector('.stop-card');
+    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':'');
+    const tagsEl=row.querySelector('.stop-tags');
+    let tags='';
+    if(isCurrent) tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
+    if(isNext) tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
+    if(isDest&&!isCurrent) tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
+    if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
+    if(tagsEl) tagsEl.innerHTML=tags;
+  });
+}
+
+function renderList(currentIdx=-1,closestIdx=-1,fills=null){
   const list=document.getElementById('stopList');
   const hasFilter=selectedDest>=0&&selectedDest<STOPS.length-1;
   const visCount=hasFilter?selectedDest+1:STOPS.length;
   const peekStops=hasFilter?STOPS.slice(selectedDest+1):[];
 
-  // Compute smooth fill per segment
-  let progress = 0; 
-  if(userLat!==null){
-    if(currentIdx>=0){
-      progress = currentIdx + 0.5; // at a stop = halfway through that node
-    } else if(closestIdx>=0){
-      const dCurrent = distToStop(closestIdx);
-      const nextIdx = closestIdx+1 < STOPS.length ? closestIdx+1 : closestIdx;
-      const dNext = distToStop(nextIdx);
-      if(nextIdx!==closestIdx){
-        const frac = dCurrent/(dCurrent+dNext);
-        progress = closestIdx + frac;
-      } else {
-        progress = closestIdx;
-      }
-    }
-  }
-
   let html=STOPS.slice(0,visCount).map((stop,i)=>{
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
-    const isCurrent=i===currentIdx;
-    const isNext=currentIdx!==-1&&i===currentIdx+1;
-    const isDest=selectedDest>=0&&i===selectedDest;
+    const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===selectedDest;
     const isLast=i===visCount-1&&peekStops.length===0;
-
-    // Fixed math for descending progress filling down
-    let fillFrac=0;
-    if(userLat!==null){
-      if(i<Math.floor(progress)) fillFrac=1;
-      else if(i===Math.floor(progress)) fillFrac=progress-Math.floor(progress);
-      else fillFrac=0;
-    }
-
-    const dotCls=isCurrent?(isDest?'tl-node current dest':'tl-node current')
-      :isPassed?'tl-node passed'
-      :isDest?'tl-node dest':'tl-node';
-
-    const segClass='tl-seg';
-    const fillStyle=`--fill:${fillFrac.toFixed(3)}`;
-
-    const cardCls=isCurrent?(isDest?'stop-card current dest-card':'stop-card current')
-      :isPassed?'stop-card passed'
-      :isDest?'stop-card dest-card':'stop-card';
-
+    const fill=fills?(fills[i]||0):0;
+    const dotCls='tl-dot'+(isCurrent?(isDest?' dest current':' current'):isPassed?' passed':isDest?' dest':'');
+    const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':'');
     let tags='';
     if(isCurrent) tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
     if(isNext) tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
     if(isDest&&!isCurrent) tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
-    if(userLat!==null&&!isCurrent&&!isPassed){
-      const d=distToStop(i);
-      tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;
-    }
-
+    if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
+    // ETA per stop
+    const etaMins=computeETA(i);
+    const etaHtml=etaMins!==null&&!isCurrent&&!isPassed?`<div class="stop-eta">~${etaMins} min</div>`:'';
+    // Stop photo
+    const photoHtml=isCurrent&&stop.photo?`<img class="stop-photo" src="${stop.photo}" alt="${stop.name}" loading="lazy" onerror="this.style.display='none'">`:'';
     return `<div class="stop-row${isLast?' stop-last':''}">
-      <div class="tl-col">
-        <div class="${dotCls}"></div>
-        <div class="${segClass}" style="${fillStyle}"></div>
-      </div>
+      <div class="tl-col"><div class="${dotCls}"></div><div class="tl-seg" style="--fill:${fill.toFixed(3)}"></div></div>
       <div class="${cardCls}">
         <div class="stop-seq-num">${T[lang].stop_of(i+1,visCount)}</div>
         <div class="stop-name-main">${stop.name}</div>
         <div class="stop-lm">${stop.landmarks}</div>
-        ${tags?`<div class="stop-tags">${tags}</div>`:''}
+        ${etaHtml}${tags?`<div class="stop-tags">${tags}</div>`:''}${photoHtml}
       </div>
     </div>`;
   }).join('');
@@ -876,10 +941,9 @@ function renderList(currentIdx=-1, closestIdx=-1){
     html+=showPeek.map((stop,pi)=>{
       const isLast=pi===showPeek.length-1&&remaining===0;
       return `<div class="stop-row peek-row${isLast?' stop-last':''}">
-        <div class="tl-col"><div class="tl-node"></div><div class="tl-seg"></div></div>
+        <div class="tl-col"><div class="tl-dot"></div><div class="tl-seg"></div></div>
         <div class="stop-card">
-          <div class="stop-name-main">${stop.name}</div>
-          <div class="stop-lm">${stop.landmarks}</div>
+          <div class="stop-name-main">${stop.name}</div><div class="stop-lm">${stop.landmarks}</div>
           <div class="stop-tags"><span class="tag tag-peek">${lang==='tl'?'lampas sa stop mo':'beyond your stop'}</span></div>
         </div>
       </div>`;
@@ -887,23 +951,55 @@ function renderList(currentIdx=-1, closestIdx=-1){
     if(remaining>0) html+=`<div class="peek-more">+ ${remaining} ${lang==='tl'?'pang hintuan':'more stop'}${remaining>1&&lang==='en'?'s':''}</div>`;
     html+=`</div>`;
   }
-
   list.innerHTML=html;
-
-  if(currentIdx>=0){
-    setTimeout(()=>{
-      const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
-      if(rows[currentIdx]) rows[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});
-    },200);
-  }
 }
 
-function vibrate(){if(navigator.vibrate)navigator.vibrate([200,100,200]);}
+function vibrate(pattern){ if(navigator.vibrate) navigator.vibrate(pattern); }
 
-// INIT
+// ══ REPORT ISSUE ══
+function openReport(){ closeSettings(); selectedReportType=null; document.querySelectorAll('.report-opt').forEach(el=>el.classList.remove('selected')); document.getElementById('reportNote').value=''; document.getElementById('reportModal').classList.add('open'); }
+function closeReport(){ document.getElementById('reportModal').classList.remove('open'); }
+function selectReport(el,type){ selectedReportType=type; document.querySelectorAll('.report-opt').forEach(e=>e.classList.remove('selected')); el.classList.add('selected'); }
+function submitReport(){
+  if(!selectedReportType){ alert('Please select an issue type.'); return; }
+  const note=document.getElementById('reportNote').value.trim();
+  const report={ type:selectedReportType, note, date:new Date().toLocaleString(), location:userLat?`${userLat.toFixed(5)},${userLng.toFixed(5)}`:'unknown' };
+  const reports=JSON.parse(localStorage.getItem('lambReports')||'[]');
+  reports.unshift(report); localStorage.setItem('lambReports',JSON.stringify(reports.slice(0,50)));
+  closeReport();
+  alert(lang==='tl'?'Salamat! Na-save ang iyong report.':'Thanks! Your report has been saved.');
+}
+
+// ══ TRIP NOTES ══
+function openNotes(){ closeSettings(); document.getElementById('tripNoteInput').value=''; renderNoteHistory(); document.getElementById('notesModal').classList.add('open'); }
+function closeNotes(){ document.getElementById('notesModal').classList.remove('open'); }
+function saveNote(){
+  const txt=document.getElementById('tripNoteInput').value.trim();
+  if(!txt) return;
+  tripNotes.unshift({ text:txt, date:new Date().toLocaleString() });
+  localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30)));
+  document.getElementById('tripNoteInput').value='';
+  renderNoteHistory();
+}
+function renderNoteHistory(){
+  const hist=document.getElementById('notesHistory');
+  if(!tripNotes.length){ hist.innerHTML=''; return; }
+  hist.innerHTML=`<div class="notes-history-label">${lang==='tl'?'Nakaraang Tala':'Past Notes'}</div>`+
+    tripNotes.slice(0,5).map(n=>`<div class="note-entry"><div class="note-entry-date">${n.date}</div>${n.text}</div>`).join('');
+}
+
+// ══ PWA SERVICE WORKER ══
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+// ══ INIT ══
 applyTranslations();
 buildDestList();
 renderList();
+initShake();
 </script>
 </body>
 </html>
