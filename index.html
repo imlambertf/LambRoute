@@ -76,6 +76,50 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .btn-start.ready { opacity: 1; pointer-events: all; }
 .btn-start:active { transform: scale(0.98); opacity: 0.85; }
 
+/* ── REMINDERS MODAL ── */
+#remindersModal {
+  position: fixed; inset: 0; z-index: 400;
+  display: none; align-items: flex-end; justify-content: center;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+#remindersModal.open { display: flex; animation: fadeIn 0.25s ease; }
+.rem-modal-panel {
+  background: var(--card); border-radius: 24px 24px 0 0;
+  width: 100%; max-width: 430px;
+  padding: 0 0 calc(env(safe-area-inset-bottom,24px) + 8px);
+  animation: slideUp 0.32s cubic-bezier(0.34,1.1,0.64,1);
+  max-height: 85vh; overflow-y: auto;
+}
+.rem-modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
+.rem-modal-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 0;
+}
+.rem-modal-title { font-size: calc(18px * var(--font-scale)); font-weight: 700; }
+.rem-modal-x {
+  background: var(--card2); border: none; border-radius: 50%;
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--text2); cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+}
+.rem-modal-x:active { background: var(--border); }
+.rem-modal-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); padding: 4px 20px 14px; line-height: 1.5; }
+.rem-modal-list { padding: 0 16px; display: flex; flex-direction: column; gap: 2px; }
+.rem-modal-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; background: var(--card2); border-radius: var(--radius);
+  font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.4;
+}
+.rem-modal-item .rmi { font-size: 18px; flex-shrink: 0; }
+.rem-modal-footer { padding: 16px 16px 0; }
+.btn-rem-go {
+  width: 100%; padding: 15px; background: var(--green); color: #000;
+  border: none; border-radius: var(--radius-lg);
+  font-size: calc(16px * var(--font-scale)); font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all 0.2s;
+}
+.btn-rem-go:active { transform: scale(0.98); opacity: 0.85; }
+
 /* ── TRACKER ── */
 #screenTracker { overflow: hidden; }
 
@@ -348,6 +392,30 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
   </div>
 </div>
 
+<!-- ══ REMINDERS MODAL ══ -->
+<div id="remindersModal">
+  <div class="rem-modal-panel">
+    <div class="rem-modal-handle"></div>
+    <div class="rem-modal-top">
+      <div class="rem-modal-title" id="rm-title">Before you go</div>
+      <button class="rem-modal-x" onclick="closeRemindersModal()">✕</button>
+    </div>
+    <div class="rem-modal-sub" id="rm-sub">Quick reminders before boarding.</div>
+    <div class="rem-modal-list">
+      <div class="rem-modal-item"><span class="rmi">🎒</span><span id="rm1">Close your bag or backpack zipper.</span></div>
+      <div class="rem-modal-item"><span class="rmi">👛</span><span id="rm2">Check your wallet or coin purse.</span></div>
+      <div class="rem-modal-item"><span class="rmi">📱</span><span id="rm3">Hold on to your phone and earphones.</span></div>
+      <div class="rem-modal-item"><span class="rmi">💼</span><span id="rm5">Keep your valuables in front of you.</span></div>
+      <div class="rem-modal-item"><span class="rmi">🤚</span><span id="rm6">Hold the handrail while standing.</span></div>
+      <div class="rem-modal-item"><span class="rmi">👀</span><span id="rm7">Be aware of your surroundings.</span></div>
+      <div class="rem-modal-item"><span class="rmi">🧳</span><span id="rm8">Take all belongings before getting off.</span></div>
+    </div>
+    <div class="rem-modal-footer">
+      <button class="btn-rem-go" onclick="closeRemindersModal()" id="rm-go-btn">Let's go! 🚀</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ TRACKER ══ -->
 <div class="screen hidden safe-top" id="screenTracker">
   <div id="ticketBanner">
@@ -516,18 +584,18 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 const STOPS = [
   { name:"Monumento", coords:[[14.65730,120.98838],[14.65724,120.98836],[14.65722,120.98835],[14.65732,120.98832],[14.65710,120.99674],[14.65727,120.99671],[14.65708,120.99682],[14.65742,120.98791],[14.65737,120.98795],[14.65732,120.98635]], landmarks:"Motortrade · Jollibee · KFC · Goldilocks · Greenwich · Tapa King · Shakey's · MCU · Honda · PNB" },
   { name:"Bagong Barrio", coords:[[14.65729,120.99717]], landmarks:"Uncle John's · Pag-Ibig Fund Caloocan-EDSA" },
-  { name:"Balintawak", coords:[[14.65753,121.00486],[14.65737,121.00545]], landmarks:"Puregold Balintawak" },
-  { name:"Kaingin / Royal", coords:[[14.65754,121.01111],[14.65776,121.01122],[14.65747,121.01186],[14.65745,121.01183]], landmarks:"Floor Center · SINOTRUK" },
-  { name:"Roosevelt / Muñoz", coords:[[14.65786,121.01987],[14.65773,121.02024],[14.65759,121.01922],[14.65764,121.01937],[14.65763,121.01928]], landmarks:"EDSA-Muñoz Pedestrian Footbridge · Muñoz Market · Jollibee / Philtrust Bank / Vapeshop" },
-  { name:"SM North EDSA", coords:[[14.65614,121.02858],[14.65612,121.02863],[14.65579,121.02829],[14.65576,121.02835]], landmarks:"SM North EDSA · Word of Hope · INGCO" },
-  { name:"Trinoma / North Avenue", coords:[[14.65169,121.03289],[14.65161,121.03229],[14.65160,121.03230],[14.65159,121.03235]], landmarks:"Trinoma Mall / MRT North-Avenue" },
-  { name:"PHILAM QC", coords:[[14.64763,121.03563],[14.64700,121.03576],[14.64748,121.03520]], landmarks:"Vertis North · MRT Quezon Avenue Station" },
+  { name:"Balintawak", coords:[[14.65753,121.00486],[14.65737,121.00545]], landmarks:"Puregold Balintawak · 1160 EDSA" },
+  { name:"Kaingin / Royal", coords:[[14.65754,121.01111],[14.65776,121.01122],[14.65747,121.01186],[14.65745,121.01183]], landmarks:"Floor Center · Apolonio Samson" },
+  { name:"Roosevelt / Muñoz", coords:[[14.65786,121.01987],[14.65773,121.02024],[14.65759,121.01922],[14.65764,121.01937],[14.65763,121.01928]], landmarks:"EDSA-Muñoz Pedestrian Footbridge · Muñoz Market · Jollibee" },
+  { name:"SM North EDSA", coords:[[14.65614,121.02858],[14.65612,121.02863],[14.65579,121.02829],[14.65576,121.02835]], landmarks:"SM North EDSA · Word of Hope · Santo Cristo" },
+  { name:"Trinoma / North Avenue", coords:[[14.65169,121.03289],[14.65161,121.03229],[14.65160,121.03230],[14.65159,121.03235]], landmarks:"Trinoma Mall · East Maya Drive · Phil-Am" },
+  { name:"PHILAM QC", coords:[[14.64763,121.03563],[14.64700,121.03576],[14.64748,121.03520]], landmarks:"Vertis North · Bagong Pag-asa · Quezon Avenue Station" },
   { name:"Quezon Avenue", coords:[[14.64170,121.03940],[14.64190,121.03937]], landmarks:"Cyberpod Two · Kenny Rogers · Tokyo Tokyo · Pinyahan" },
   { name:"GMA Kamuning", coords:[[14.63610,121.04210],[14.63599,121.04223]], landmarks:"Victoria Sports Tower · VS Hotel · South Triangle" },
-  { name:"Nepa Qmart", coords:[[14.62801,121.04712],[14.62837,121.04689],[14.62799,121.04713]], landmarks:"Nepa Q-Mart" },
-  { name:"Main Avenue", coords:[[14.61437,121.05326],[14.61419,121.05355],[14.61435,121.05334]], landmarks:"Cubao · SM Hypermarket · INGCO / Palawan Pawnshop / Diamond / Dynamic / CCTV/E-FENCE" },
-  { name:"Santolan-Annapolis", coords:[[14.60880,121.05593]], landmarks:"PNP" },
-  { name:"Ortigas / SM Megamall", coords:[[14.58651,121.05617],[14.58635,121.05621]], landmarks:"SM Megamall" }
+  { name:"Nepa Qmart", coords:[[14.62801,121.04712],[14.62837,121.04689],[14.62799,121.04713]], landmarks:"Nepa Q-Mart · Pinagkaisahan" },
+  { name:"Main Avenue", coords:[[14.61437,121.05326],[14.61419,121.05355],[14.61435,121.05334]], landmarks:"Cubao · SM Hypermarket · INGCO · EDSA-Bonny Serrano Footbridge" },
+  { name:"Santolan-Annapolis", coords:[[14.60880,121.05593]], landmarks:"PNP · Bagong Lipunan ng Crame" },
+  { name:"Ortigas / SM Megamall", coords:[[14.58651,121.05617],[14.58635,121.05621]], landmarks:"SM Megamall · SM Busway Station" }
 ];
 
 const T = {
@@ -565,6 +633,12 @@ const T = {
     eta_prefix:"~", eta_min:"min",
     arr_headline:"You're here! 🎉", arr_sub:"You've reached your destination.",
     arr_lm_label:"Landmarks nearby", arr_close:"Done 👋",
+    rm_title:"Before you go", rm_sub:"Quick reminders before boarding.",
+    rm1:"Close your bag or backpack zipper.", rm2:"Check your wallet or coin purse.",
+    rm3:"Hold on to your phone and earphones.", rm4:"Have your ticket ready for inspection.",
+    rm5:"Keep your valuables in front of you.", rm6:"Hold the handrail while standing.",
+    rm7:"Be aware of your surroundings.", rm8:"Take all belongings before getting off.",
+    rm_go:"Let's go! 🚀",
   },
   tl: {
     ob_title:"Saan ka pupunta?", ob_sub:"Piliin ang iyong destinasyon para ma-alert ka kapag malapit ka na.",
@@ -600,6 +674,11 @@ const T = {
     eta_prefix:"~", eta_min:"min",
     arr_headline:"Nandito ka na! 🎉", arr_sub:"Nakarating ka na sa iyong destinasyon.",
     arr_lm_label:"Mga landmark sa paligid", arr_close:"Tapos na 👋",
+    rm_title:"Bago ka sumakay", rm_sub:"Mabilis na paalala bago mag-byahe.",
+    rm1:"Isara ang zipper ng bag o backpack mo.", rm2:"I-check ang wallet o coin purse mo.",
+    rm5:"Ilagay sa harap ang mga importanteng gamit mo.", rm6:"Kumapit sa handrail kung nakatayo.",
+    rm7:"Maging alerto sa paligid mo.", rm8:"Siguraduhing dala mo lahat bago bumaba.",
+    rm_go:"Tara na! 🚀",
   }
 };
 
@@ -667,7 +746,9 @@ function applyTranslations(){
    ['sh-report-label','sh_report'],['sh-report-sub','sh_report_sub'],['sh-done','sh_done'],
    ['rep-title','rep_title'],['rep-sub','rep_sub'],['rep-submit','rep_submit'],['rep-cancel','rep_cancel'],
    ['notes-title','notes_title'],['notes-sub','notes_sub'],['notes-save','notes_save'],['notes-cancel','notes_cancel'],
-   ['arr-headline','arr_headline'],['arr-sub','arr_sub'],['arr-lm-label','arr_lm_label'],['arr-close-btn','arr_close']
+   ['arr-headline','arr_headline'],['arr-sub','arr_sub'],['arr-lm-label','arr_lm_label'],['arr-close-btn','arr_close'],
+   ['rm-title','rm_title'],['rm-sub','rm_sub'],['rm1','rm1'],['rm2','rm2'],['rm3','rm3'],['rm4','rm4'],
+   ['rm5','rm5'],['rm6','rm6'],['rm7','rm7'],['rm8','rm8'],['rm-go-btn','rm_go'],
   ].forEach(([id,k])=>s(id,k));
   document.getElementById('ob-btn-start').textContent=selectedDest===null||selectedDest===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[selectedDest].name);
   setChipLabel(); updateScrollLockBtn();
@@ -708,6 +789,17 @@ function selectDest(idx){ selectedDest=idx; document.querySelectorAll('.dest-ite
 
 function startApp(){
   if(selectedDest===null) return;
+  // Show reminders modal first, then launch tracker on close
+  applyTranslations();
+  document.getElementById('remindersModal').classList.add('open');
+}
+
+function closeRemindersModal(){
+  document.getElementById('remindersModal').classList.remove('open');
+  launchTracker();
+}
+
+function launchTracker(){
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
   document.getElementById('navRouteName').textContent=selectedDest>=0?`Monumento → ${STOPS[selectedDest].name}`:'Monumento → Ortigas';
@@ -719,6 +811,7 @@ function startApp(){
 }
 function goBack(){
   stopGps(); releaseWakeLock(); closeSettings(); closeArrival();
+  document.getElementById('remindersModal').classList.remove('open');
   document.getElementById('screenTracker').classList.add('hidden');
   document.getElementById('screenOnboard').classList.remove('hidden');
   document.getElementById('noGps').classList.add('show');
