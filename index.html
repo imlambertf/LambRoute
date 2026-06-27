@@ -463,7 +463,7 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 
   <div class="bottom-bar">
     <button class="btn-primary" id="mainBtn" onclick="toggleGps()">📍 <span id="btn-locate-text">Locate Me</span></button>
-    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change</button>
+    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change Destination</button>
   </div>
 </div>
 
@@ -614,7 +614,7 @@ const T = {
     rem5:"Keep your valuables in front of you.", rem7:"Hold the handrail while standing.",
     rem10:"Be aware of your surroundings.", rem11:"Take all belongings before getting off.",
     list_label:"Bus Stops", btn_locate:"Locate Me", btn_stop:"Stop", btn_locating:"Locating…",
-    btn_back:"↩ Change", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
+    btn_back:"↩ Change Destination", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
     dest_alert_arrive:n=>`<b>Get off now! ${n}</b> — this is your stop.`,
     dest_alert_near:(n,d)=>`Almost at <b>${n}</b> — only ${d} away!`,
     missed_alert:n=>`Did you miss <b>${n}</b>?`,
