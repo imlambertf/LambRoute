@@ -1105,10 +1105,15 @@ function renderList(currentIdx=-1,closestIdx=-1,fills=null){
 function vibrate(pattern){ if(navigator.vibrate) navigator.vibrate(pattern); }
 
 // Report & Notes
-function openReport(){ closeSettings();selectedReportType=null;document.querySelectorAll('.report-opt').forEach(el=>el.classList.remove('selected'));document.getElementById('reportNote').value='';document.getElementById('reportModal').classList.add('open'); }
+function openReport(){
+  closeSettings();
+  // Build Google Form URL — optionally pre-fill GPS location if available
+  let url = 'https://forms.gle/cLA1as7fntzBnJV37';
+  window.open(url, '_blank');
+}
 function closeReport(){ document.getElementById('reportModal').classList.remove('open'); }
-function selectReport(el,type){ selectedReportType=type;document.querySelectorAll('.report-opt').forEach(e=>e.classList.remove('selected'));el.classList.add('selected'); }
-function submitReport(){ if(!selectedReportType){alert('Please select an issue type.');return;} const note=document.getElementById('reportNote').value.trim(),report={type:selectedReportType,note,date:new Date().toLocaleString(),location:userLat?`${userLat.toFixed(5)},${userLng.toFixed(5)}`:'unknown'},reports=JSON.parse(localStorage.getItem('lambReports')||'[]');reports.unshift(report);localStorage.setItem('lambReports',JSON.stringify(reports.slice(0,50)));closeReport();alert(lang==='tl'?'Salamat! Na-save ang iyong report.':'Thanks! Your report has been saved.'); }
+function selectReport(el,type){}
+function submitReport(){}
 function openNotes(){ closeSettings();document.getElementById('tripNoteInput').value='';renderNoteHistory();document.getElementById('notesModal').classList.add('open'); }
 function closeNotes(){ document.getElementById('notesModal').classList.remove('open'); }
 function saveNote(){ const txt=document.getElementById('tripNoteInput').value.trim();if(!txt)return;tripNotes.unshift({text:txt,date:new Date().toLocaleString()});localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30)));document.getElementById('tripNoteInput').value='';renderNoteHistory(); }
