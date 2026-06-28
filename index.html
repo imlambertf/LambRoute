@@ -17,6 +17,7 @@
   --text: #ffffff; --text2: rgba(255,255,255,0.6); --text3: rgba(255,255,255,0.3);
   --yellow: #ffd60a; --blue: #0a84ff; --red: #ff453a;
   --radius: 13px; --radius-lg: 20px; --font-scale: 1;
+  --sat: env(safe-area-inset-top, 44px);
 }
 .light-mode {
   --bg: #f2f2f7; --card: #ffffff; --card2: #e5e5ea; --border: #c6c6c8;
@@ -35,9 +36,19 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 
 .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--bg); transition: opacity 0.3s ease, transform 0.3s ease; z-index: 1; }
 .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(20px); z-index: 0; }
+.safe-top { padding-top: var(--sat); }
 
-/* ── SAFE AREA TOP PADDING ── */
-.safe-top { padding-top: env(safe-area-inset-top, 44px); }
+/* ── LOCK OVERLAY ── */
+#lockOverlay {
+  position: fixed; inset: 0; z-index: 999;
+  display: none; pointer-events: none;
+}
+#lockOverlay.active { display: block; pointer-events: all; }
+/* punch-through: only the unlock button is clickable */
+#lockOverlay::before {
+  content: ''; position: absolute; inset: 0;
+  background: transparent;
+}
 
 /* ── ONBOARDING ── */
 #screenOnboard { padding-bottom: env(safe-area-inset-bottom,34px); overflow-y: auto; }
@@ -76,7 +87,7 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .btn-start.ready { opacity: 1; pointer-events: all; }
 .btn-start:active { transform: scale(0.98); opacity: 0.85; }
 
-/* ── REMINDERS MODAL ── */
+/* ── REMINDERS MODAL (bottom sheet, slides from bottom) ── */
 #remindersModal {
   position: fixed; inset: 0; z-index: 400;
   display: none; align-items: flex-end; justify-content: center;
@@ -87,43 +98,26 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
   background: var(--card); border-radius: 24px 24px 0 0;
   width: 100%; max-width: 430px;
   padding: 0 0 calc(env(safe-area-inset-bottom,24px) + 8px);
-  animation: slideUp 0.32s cubic-bezier(0.34,1.1,0.64,1);
+  animation: slideUpSheet 0.35s cubic-bezier(0.34,1.1,0.64,1);
   max-height: 85vh; overflow-y: auto;
 }
 .rem-modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
-.rem-modal-top {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px 0;
-}
+.rem-modal-top { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px 0; }
 .rem-modal-title { font-size: calc(18px * var(--font-scale)); font-weight: 700; }
-.rem-modal-x {
-  background: var(--card2); border: none; border-radius: 50%;
-  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: var(--text2); cursor: pointer; font-family: inherit;
-  transition: background 0.15s;
-}
+.rem-modal-x { background: var(--card2); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text2); cursor: pointer; font-family: inherit; }
 .rem-modal-x:active { background: var(--border); }
 .rem-modal-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); padding: 4px 20px 14px; line-height: 1.5; }
 .rem-modal-list { padding: 0 16px; display: flex; flex-direction: column; gap: 2px; }
-.rem-modal-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px; background: var(--card2); border-radius: var(--radius);
-  font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.4;
-}
+.rem-modal-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--card2); border-radius: var(--radius); font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.4; }
 .rem-modal-item .rmi { font-size: 18px; flex-shrink: 0; }
 .rem-modal-footer { padding: 16px 16px 0; }
-.btn-rem-go {
-  width: 100%; padding: 15px; background: var(--green); color: #000;
-  border: none; border-radius: var(--radius-lg);
-  font-size: calc(16px * var(--font-scale)); font-weight: 700;
-  font-family: inherit; cursor: pointer; transition: all 0.2s;
-}
+.btn-rem-go { width: 100%; padding: 15px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(16px * var(--font-scale)); font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.2s; }
 .btn-rem-go:active { transform: scale(0.98); opacity: 0.85; }
 
 /* ── TRACKER ── */
 #screenTracker { overflow: hidden; }
 
-/* Ticket banner — sits below safe area, no overlap */
+/* Ticket banner — uses safe area properly */
 #ticketBanner {
   background: rgba(255,214,10,0.08); border-bottom: 1px solid rgba(255,214,10,0.18);
   padding: 9px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
@@ -136,7 +130,7 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .light-mode .ticket-text span { color: #3d2b00; }
 .ticket-x { background: none; border: none; color: rgba(107,79,0,0.5); font-size: 17px; cursor: pointer; padding: 3px 5px; line-height: 1; flex-shrink: 0; font-family: inherit; }
 
-/* Nav bar */
+/* Nav bar — no GPS chip, just gear + scroll lock + ETA */
 .nav-bar { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-bottom: 1px solid var(--border); gap: 8px; background: var(--bg); position: relative; z-index: 10; }
 .nav-left { flex: 1; min-width: 0; }
 .nav-route-label { font-size: calc(10px * var(--font-scale)); color: var(--text3); font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 1px; }
@@ -146,16 +140,10 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 #etaChip { font-size: calc(11px * var(--font-scale)); color: var(--text3); background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 4px 8px; display: none; flex-shrink: 0; font-weight: 600; }
 #etaChip.show { display: block; }
 
-#scrollLockBtn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 8px; font-size: 13px; cursor: pointer; font-family: inherit; color: var(--text3); transition: all 0.2s; flex-shrink: 0; display: none; }
+/* Scroll lock btn */
+#scrollLockBtn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 8px; font-size: 13px; cursor: pointer; font-family: inherit; color: var(--text3); transition: all 0.2s; flex-shrink: 0; display: none; position: relative; z-index: 1000; }
 #scrollLockBtn.show { display: block; }
 #scrollLockBtn.locked { color: var(--green); border-color: var(--green); background: var(--green-soft); }
-
-.gps-chip { display: flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 6px 10px; font-size: calc(11px * var(--font-scale)); font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; }
-.gps-chip.on { border-color: var(--green); color: var(--green); background: var(--green-soft); }
-.gps-chip:active { transform: scale(0.95); }
-.gps-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); transition: all 0.3s; flex-shrink: 0; }
-.gps-pip.on { background: var(--green); box-shadow: 0 0 5px var(--green); }
-.gps-pip.searching { background: var(--yellow); animation: blink 0.7s infinite; }
 
 /* Current stop card */
 #curCard { margin: 10px 13px 0; background: var(--green-soft); border: 1.5px solid var(--green); border-radius: var(--radius-lg); padding: 13px 15px; display: none; flex-shrink: 0; animation: fadeUp 0.3s ease; }
@@ -186,41 +174,72 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .stop-list.scroll-locked { overflow-y: hidden; }
 .stop-row { display: flex; align-items: flex-start; min-height: 64px; }
 
-/* Timeline — dot is BELOW segment, segment is on top */
-.tl-col { width: 42px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; align-self: stretch; }
+.tl-col { width: 44px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; align-self: stretch; }
 
-/* Segment (the line) — comes first in DOM/visually */
+/* Segment — line on top, fills from top to bottom */
 .tl-seg {
-  width: 7px; flex: 1; background: var(--border); border-radius: 4px 4px 0 0;
+  width: 9px; flex: 1; background: var(--border); border-radius: 5px 5px 0 0;
   position: relative; overflow: hidden; min-height: 20px; margin-top: 8px;
 }
+/* Green fill progress */
 .tl-seg::after {
   content: ''; position: absolute; left: 0; right: 0; top: 0;
   height: calc(var(--fill,0) * 100%);
-  background: var(--green); border-radius: 4px;
+  background: var(--green); border-radius: 5px;
   transition: height 1.8s cubic-bezier(0.25,0.46,0.45,0.94);
 }
-/* Dot — comes after segment (below it visually) */
-.tl-dot {
-  width: 14px; height: 14px; border-radius: 50%;
-  border: 2.5px solid var(--border); background: var(--bg);
-  flex-shrink: 0; z-index: 3; margin-bottom: 0;
-  transition: border-color 0.4s, background 0.4s, box-shadow 0.4s;
+/* Animated chevron flow inside the green fill */
+.tl-seg::before {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 0;
+  height: calc(var(--fill,0) * 100%);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 6px,
+    rgba(0,0,0,0.18) 6px,
+    rgba(0,0,0,0.18) 8px
+  );
+  border-radius: 5px;
+  animation: stripFlow 0.8s linear infinite;
+  z-index: 1;
 }
-.tl-dot.passed { background: var(--green); border-color: var(--green); }
-.tl-dot.current {
-  width: 20px; height: 20px;
-  background: var(--green); border-color: var(--green);
-  box-shadow: 0 0 0 5px rgba(48,209,88,0.22), 0 0 20px rgba(48,209,88,0.55);
+@keyframes stripFlow {
+  from { background-position: 0 0; }
+  to { background-position: 0 16px; }
 }
-.tl-dot.dest { border-color: var(--blue); }
-.tl-dot.dest.current { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 0 5px rgba(10,132,255,0.22), 0 0 20px rgba(10,132,255,0.5); }
 
-/* First row: no segment above first stop */
+/* Dot — below segment */
+.tl-dot {
+  width: 0; height: 0; /* no dot by default — replaced with nothing */
+  flex-shrink: 0; z-index: 3;
+}
+/* Current stop: big glowing circle, no dot for others */
+.tl-dot.current {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--green); border: none;
+  box-shadow: 0 0 0 5px rgba(48,209,88,0.22), 0 0 20px rgba(48,209,88,0.55);
+  animation: pulseGreen 1.4s ease-in-out infinite;
+}
+.tl-dot.dest.current {
+  background: var(--blue);
+  box-shadow: 0 0 0 5px rgba(10,132,255,0.22), 0 0 20px rgba(10,132,255,0.5);
+  animation: pulseBlue 1.4s ease-in-out infinite;
+}
+@keyframes pulseGreen {
+  0%,100% { box-shadow: 0 0 0 5px rgba(48,209,88,0.22), 0 0 20px rgba(48,209,88,0.55); }
+  50%      { box-shadow: 0 0 0 9px rgba(48,209,88,0.1),  0 0 30px rgba(48,209,88,0.8); }
+}
+@keyframes pulseBlue {
+  0%,100% { box-shadow: 0 0 0 5px rgba(10,132,255,0.22), 0 0 20px rgba(10,132,255,0.5); }
+  50%      { box-shadow: 0 0 0 9px rgba(10,132,255,0.1),  0 0 30px rgba(10,132,255,0.8); }
+}
+
+/* First row: no segment above */
 .stop-first .tl-seg { display: none; }
 
 /* Stop card */
-.stop-card { flex: 1; padding: 10px 8px 14px 4px; border-radius: var(--radius); transition: background 0.2s; }
+.stop-card { flex: 1; padding: 10px 8px 14px 2px; border-radius: var(--radius); transition: background 0.2s; }
 .stop-card.current { background: rgba(48,209,88,0.07); }
 .stop-card.passed { opacity: 0.36; }
 .stop-card.dest-card { background: rgba(10,132,255,0.07); }
@@ -256,47 +275,54 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
   padding: 24px;
 }
 #arrivalModal.open { display: flex; animation: fadeIn 0.3s ease; }
-.arrival-panel {
-  background: var(--card); border-radius: 24px; width: 100%;
-  max-width: 380px; overflow: hidden;
-  animation: scaleIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
-  position: relative;
-}
-.arrival-green-top {
-  background: var(--green); padding: 28px 24px 24px;
-  text-align: center; position: relative;
-}
+.arrival-panel { background: var(--card); border-radius: 24px; width: 100%; max-width: 380px; overflow: hidden; animation: scaleIn 0.35s cubic-bezier(0.34,1.56,0.64,1); position: relative; }
+.arrival-green-top { background: var(--green); padding: 28px 24px 24px; text-align: center; position: relative; }
 .arrival-emoji { font-size: 52px; margin-bottom: 10px; }
-.arrival-headline {
-  font-size: calc(26px * var(--font-scale)); font-weight: 800;
-  color: #000; letter-spacing: -0.5px; line-height: 1.1;
-}
+.arrival-headline { font-size: calc(26px * var(--font-scale)); font-weight: 800; color: #000; letter-spacing: -0.5px; line-height: 1.1; }
 .arrival-sub { font-size: calc(14px * var(--font-scale)); color: rgba(0,0,0,0.65); margin-top: 4px; font-weight: 500; }
 .arrival-body { padding: 20px 24px 24px; }
 .arrival-stop-name { font-size: calc(22px * var(--font-scale)); font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
 .arrival-landmarks-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 6px; }
 .arrival-landmarks { font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.6; }
-.arrival-close {
-  width: calc(100% - 0px); margin: 0; padding: 15px;
-  background: var(--green); color: #000; border: none;
-  font-size: calc(16px * var(--font-scale)); font-weight: 700;
-  cursor: pointer; font-family: inherit; transition: opacity 0.2s;
-  border-radius: 0 0 24px 24px;
-}
+.arrival-close { width: 100%; padding: 15px; background: var(--green); color: #000; border: none; font-size: calc(16px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.2s; border-radius: 0 0 24px 24px; }
 .arrival-close:active { opacity: 0.8; }
-.arrival-x {
-  position: absolute; top: 12px; right: 12px;
-  background: rgba(0,0,0,0.15); border: none; border-radius: 50%;
-  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: rgba(0,0,0,0.6); cursor: pointer; font-family: inherit;
+.arrival-x { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.15); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: rgba(0,0,0,0.6); cursor: pointer; font-family: inherit; }
+
+/* ── STOP CONFIRM MODAL ── */
+#stopConfirmModal {
+  position: fixed; inset: 0; z-index: 600;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding: 28px;
 }
+#stopConfirmModal.open { display: flex; animation: fadeIn 0.2s ease; }
+.confirm-panel {
+  background: var(--card); border-radius: 20px; width: 100%; max-width: 320px;
+  padding: 24px 20px 20px; text-align: center;
+  animation: scaleIn 0.25s cubic-bezier(0.34,1.4,0.64,1);
+}
+.confirm-icon { font-size: 36px; margin-bottom: 12px; }
+.confirm-title { font-size: calc(18px * var(--font-scale)); font-weight: 700; margin-bottom: 6px; }
+.confirm-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
+.confirm-btns { display: flex; gap: 10px; }
+.confirm-btn-yes { flex: 1; padding: 13px; background: var(--red); color: #fff; border: none; border-radius: var(--radius-lg); font-size: calc(14px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; }
+.confirm-btn-yes:active { opacity: 0.8; }
+.confirm-btn-no { flex: 1; padding: 13px; background: var(--card2); color: var(--text); border: none; border-radius: var(--radius-lg); font-size: calc(14px * var(--font-scale)); font-weight: 600; cursor: pointer; font-family: inherit; }
+.confirm-btn-no:active { opacity: 0.8; }
 
 /* ── SETTINGS SHEET ── */
 #settingsSheet { position: fixed; inset: 0; z-index: 200; display: none; }
 #settingsSheet.open { display: block; }
 .sheet-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-.sheet-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--card); border-radius: 20px 20px 0 0; padding-bottom: calc(env(safe-area-inset-bottom,20px) + 16px); max-height: 88vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1); }
-@keyframes slideUp { from{transform:translateX(-50%) translateY(100%)} to{transform:translateX(-50%) translateY(0)} }
+.sheet-panel {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px; background: var(--card);
+  border-radius: 20px 20px 0 0;
+  padding-bottom: calc(env(safe-area-inset-bottom,20px) + 16px);
+  max-height: 88vh; overflow-y: auto;
+  animation: slideUpSheet 0.3s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slideUpSheet { from{transform:translateX(-50%) translateY(100%)} to{transform:translateX(-50%) translateY(0)} }
 .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 0; }
 .sheet-title { font-size: calc(17px * var(--font-scale)); font-weight: 700; text-align: center; padding: 14px 20px 14px; border-bottom: 1px solid var(--border); }
 .sheet-section { padding: 14px 20px 0; }
@@ -311,10 +337,41 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .font-opt.active { background: var(--text); color: #000; }
 .light-mode .font-opt.active { background: #1c1c1e; color: #fff; }
 
-/* Reminders in settings */
-.rem-in-settings { margin-top: 0; }
-.rem-in-settings .rem-item { display: flex; align-items: center; gap: 9px; font-size: calc(12px * var(--font-scale)); color: var(--text2); padding: 4px 0; line-height: 1.4; }
-.rem-in-settings .rem-item span:first-child { font-size: 14px; flex-shrink: 0; }
+/* GPS toggle in settings */
+.gps-setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; background: var(--card2); border-radius: var(--radius);
+}
+.gps-setting-label { display: flex; align-items: center; gap: 10px; }
+.gps-setting-label span { font-size: calc(14px * var(--font-scale)); font-weight: 500; }
+.gps-pip-big { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); transition: all 0.3s; flex-shrink: 0; }
+.gps-pip-big.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.gps-pip-big.searching { background: var(--yellow); animation: blink 0.7s infinite; }
+.gps-toggle-btn {
+  padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text2);
+  font-size: calc(12px * var(--font-scale)); font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all 0.2s;
+  white-space: nowrap;
+}
+.gps-toggle-btn.on { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+.gps-toggle-btn:active { transform: scale(0.95); }
+
+/* Reminders accordion */
+.rem-accordion-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--card2); border-radius: var(--radius);
+  cursor: pointer; transition: background 0.15s;
+}
+.rem-accordion-header:active { background: var(--border); }
+.rem-accordion-title { font-size: calc(14px * var(--font-scale)); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.rem-accordion-arrow { font-size: 11px; color: var(--text3); transition: transform 0.25s; }
+.rem-accordion-arrow.open { transform: rotate(180deg); }
+.rem-accordion-body { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+.rem-accordion-body.open { max-height: 400px; }
+.rem-accordion-list { padding: 6px 0 0; display: flex; flex-direction: column; gap: 2px; }
+.rem-acc-item { display: flex; align-items: center; gap: 9px; font-size: calc(12px * var(--font-scale)); color: var(--text2); padding: 7px 14px; line-height: 1.4; background: var(--card2); border-radius: 8px; }
+.rem-acc-item span:first-child { font-size: 14px; flex-shrink: 0; }
 
 .sheet-action-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: var(--card2); border: none; border-radius: var(--radius); font-family: inherit; font-size: calc(14px * var(--font-scale)); font-weight: 500; color: var(--text); cursor: pointer; transition: all 0.15s; margin-bottom: 8px; text-align: left; }
 .sheet-action-btn:active { opacity: 0.7; transform: scale(0.98); }
@@ -323,11 +380,11 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .sheet-done { margin: 14px 20px 0; width: calc(100% - 40px); padding: 13px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; }
 .sheet-done:active { opacity: 0.8; }
 
-/* ── MODALS (report/notes) ── */
+/* ── MODALS ── */
 #reportModal, #notesModal { position: fixed; inset: 0; z-index: 300; display: none; }
 #reportModal.open, #notesModal.open { display: block; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-.modal-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--card); border-radius: 20px 20px 0 0; padding: 0 20px calc(env(safe-area-inset-bottom,20px) + 16px); animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1); }
+.modal-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--card); border-radius: 20px 20px 0 0; padding: 0 20px calc(env(safe-area-inset-bottom,20px) + 16px); animation: slideUpSheet 0.3s cubic-bezier(0.34,1.2,0.64,1); }
 .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 14px; }
 .modal-title { font-size: calc(17px * var(--font-scale)); font-weight: 700; margin-bottom: 10px; }
 .modal-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); margin-bottom: 12px; line-height: 1.5; }
@@ -345,16 +402,7 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .modal-btn-cancel { background: var(--card2); color: var(--text2); margin-top: 6px; }
 
 /* ── SCROLL LOCK TOAST ── */
-#scrollToast {
-  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-  background: rgba(30,30,32,0.92); color: var(--text);
-  padding: 9px 18px; border-radius: 20px;
-  font-size: calc(13px * var(--font-scale)); font-weight: 600;
-  z-index: 400; pointer-events: none;
-  opacity: 0; transition: opacity 0.25s ease;
-  white-space: nowrap; backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
-}
+#scrollToast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(30,30,32,0.92); color: var(--text); padding: 9px 18px; border-radius: 20px; font-size: calc(13px * var(--font-scale)); font-weight: 600; z-index: 1001; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; white-space: nowrap; backdrop-filter: blur(8px); border: 1px solid var(--border); }
 #scrollToast.show { opacity: 1; }
 
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
@@ -364,6 +412,9 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 </style>
 </head>
 <body>
+
+<!-- ══ LOCK OVERLAY ══ -->
+<div id="lockOverlay"></div>
 
 <!-- ══ ONBOARDING ══ -->
 <div class="screen safe-top" id="screenOnboard">
@@ -434,10 +485,6 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
       <div id="etaChip">—</div>
       <button id="scrollLockBtn" onclick="toggleScrollLock()">🔓</button>
       <button class="gear-btn" onclick="openSettings()">⚙️</button>
-      <button class="gps-chip" id="gpsChip" onclick="toggleGps()">
-        <div class="gps-pip" id="gpsPip"></div>
-        <span id="gpsChipLabel">Locate</span>
-      </button>
     </div>
   </div>
 
@@ -454,15 +501,15 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
   <div id="noGps" class="show">
     <div class="no-gps-icon">📡</div>
     <div class="no-gps-title" id="nogps-title">Enable GPS</div>
-    <div class="no-gps-sub" id="nogps-sub">Tap Locate to find out which stop you're at.</div>
+    <div class="no-gps-sub" id="nogps-sub">Enable GPS in Settings to start tracking.</div>
   </div>
 
   <div class="list-label" id="listLabel">Bus Stops</div>
   <div class="stop-list" id="stopList"></div>
 
   <div class="bottom-bar">
-    <button class="btn-primary" id="mainBtn" onclick="toggleGps()">📍 <span id="btn-locate-text">Locate Me</span></button>
-    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change Destination</button>
+    <button class="btn-primary" id="mainBtn" onclick="requestStop()">🛑 <span id="btn-stop-text">Stop Tracking</span></button>
+    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change</button>
   </div>
 </div>
 
@@ -484,19 +531,48 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
   </div>
 </div>
 
+<!-- ══ STOP CONFIRM MODAL ══ -->
+<div id="stopConfirmModal">
+  <div class="confirm-panel">
+    <div class="confirm-icon">🛑</div>
+    <div class="confirm-title" id="conf-title">Stop Tracking?</div>
+    <div class="confirm-sub" id="conf-sub">This will reset your trip and return to the main screen.</div>
+    <div class="confirm-btns">
+      <button class="confirm-btn-yes" id="conf-yes" onclick="confirmStop()">Yes, Stop</button>
+      <button class="confirm-btn-no" id="conf-no" onclick="closeStopConfirm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ SETTINGS SHEET ══ -->
 <div id="settingsSheet">
   <div class="sheet-backdrop" onclick="closeSettings()"></div>
   <div class="sheet-panel">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="sh-title">Settings</div>
+
+    <!-- GPS -->
     <div class="sheet-section">
+      <div class="sheet-section-label" id="sh-gps-label">GPS Tracking</div>
+      <div class="gps-setting-row">
+        <div class="gps-setting-label">
+          <div class="gps-pip-big" id="gpsPipBig"></div>
+          <span id="gpsStatusLabel">GPS Off</span>
+        </div>
+        <button class="gps-toggle-btn" id="gpsToggleBtn" onclick="toggleGps()">Enable GPS</button>
+      </div>
+    </div>
+
+    <!-- Language -->
+    <div class="sheet-section" style="margin-top:12px">
       <div class="sheet-section-label" id="sh-lang-label">Language</div>
       <div class="pill-toggle">
         <button class="pill-opt active" id="sh-en" onclick="setLang('en')">English</button>
         <button class="pill-opt" id="sh-tl" onclick="setLang('tl')">Tagalog</button>
       </div>
     </div>
+
+    <!-- Appearance -->
     <div class="sheet-section" style="margin-top:12px">
       <div class="sheet-section-label" id="sh-theme-label">Appearance</div>
       <div class="pill-toggle">
@@ -505,6 +581,8 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
         <button class="pill-opt" id="sh-light" onclick="setTheme('light')">☀️ Light</button>
       </div>
     </div>
+
+    <!-- Text Size -->
     <div class="sheet-section" style="margin-top:12px">
       <div class="sheet-section-label" id="sh-font-label">Text Size</div>
       <div class="font-toggle">
@@ -513,19 +591,29 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
         <button class="font-opt" id="fs-large" onclick="setFontSize('large')">A</button>
       </div>
     </div>
+
+    <!-- Reminders accordion -->
     <div class="sheet-section" style="margin-top:12px">
       <div class="sheet-section-label" id="sh-rem-label">Reminders</div>
-      <div class="rem-in-settings">
-        <div class="rem-item"><span>🎒</span><span id="rem1">Close your bag or backpack zipper.</span></div>
-        <div class="rem-item"><span>👛</span><span id="rem2">Check your wallet or coin purse.</span></div>
-        <div class="rem-item"><span>📦</span><span id="rem3">Don't leave your stuff on the seat.</span></div>
-        <div class="rem-item"><span>📱</span><span id="rem4">Hold on to your phone.</span></div>
-        <div class="rem-item"><span>💼</span><span id="rem5">Keep your valuables in front of you.</span></div>
-        <div class="rem-item"><span>🤚</span><span id="rem7">Hold the handrail while standing.</span></div>
-        <div class="rem-item"><span>👀</span><span id="rem10">Be aware of your surroundings.</span></div>
-        <div class="rem-item"><span>🧳</span><span id="rem11">Take all belongings before getting off.</span></div>
+      <div class="rem-accordion-header" onclick="toggleRemAcc()">
+        <div class="rem-accordion-title">🎒 <span id="sh-rem-acc-label">View reminders</span></div>
+        <div class="rem-accordion-arrow" id="remAccArrow">▼</div>
+      </div>
+      <div class="rem-accordion-body" id="remAccBody">
+        <div class="rem-accordion-list">
+          <div class="rem-acc-item"><span>🎒</span><span id="rem1">Close your bag or backpack zipper.</span></div>
+          <div class="rem-acc-item"><span>👛</span><span id="rem2">Check your wallet or coin purse.</span></div>
+          <div class="rem-acc-item"><span>📦</span><span id="rem3">Don't leave your stuff on the seat.</span></div>
+          <div class="rem-acc-item"><span>📱</span><span id="rem4">Hold on to your phone.</span></div>
+          <div class="rem-acc-item"><span>💼</span><span id="rem5">Keep your valuables in front of you.</span></div>
+          <div class="rem-acc-item"><span>🤚</span><span id="rem7">Hold the handrail while standing.</span></div>
+          <div class="rem-acc-item"><span>👀</span><span id="rem10">Be aware of your surroundings.</span></div>
+          <div class="rem-acc-item"><span>🧳</span><span id="rem11">Take all belongings before getting off.</span></div>
+        </div>
       </div>
     </div>
+
+    <!-- Tools -->
     <div class="sheet-section" style="margin-top:14px">
       <div class="sheet-section-label" id="sh-tools-label">Tools</div>
       <button class="sheet-action-btn" onclick="openNotes()">
@@ -537,6 +625,7 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
         <div><span id="sh-report-label">Report an Issue</span><span class="sab-sub" id="sh-report-sub">Wrong stop info, broken coords, etc.</span></div>
       </button>
     </div>
+
     <button class="sheet-done" id="sh-done" onclick="closeSettings()">Done</button>
   </div>
 </div>
@@ -575,11 +664,9 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
   </div>
 </div>
 
-<!-- Toast -->
 <div id="scrollToast"></div>
 
 <script>
-// ══ STOPS — Monumento first, Ortigas last ══
 const STOPS = [
   { name:"Monumento", coords:[[14.65730,120.98838],[14.65724,120.98836],[14.65722,120.98835],[14.65732,120.98832],[14.65710,120.99674],[14.65727,120.99671],[14.65708,120.99682],[14.65742,120.98791],[14.65737,120.98795],[14.65732,120.98635]], landmarks:"Motortrade · Jollibee · KFC · Goldilocks · Greenwich · Tapa King · Shakey's · MCU · Honda · PNB" },
   { name:"Bagong Barrio", coords:[[14.65729,120.99717]], landmarks:"Uncle John's · Pag-Ibig Fund Caloocan-EDSA" },
@@ -606,38 +693,40 @@ const T = {
     tk_main:"Have your ticket ready for inspection.", tk_sub:"Keep it — conductor may check anytime.",
     nav_label:"ROUTE", cur_pill:"📍 You are here", cur_next_prefix:"Next stop:",
     cur_last:"🎉 Last stop — Ortigas!", nogps_title:"Enable GPS",
-    nogps_sub:"Tap Locate to find out which stop you're at.",
-    rem_label:"Reminders",
+    nogps_sub:"Enable GPS in Settings (⚙️) to start tracking.",
     rem1:"Close your bag or backpack zipper.", rem2:"Check your wallet or coin purse.",
-    rem3:"Don't leave your stuff on the seat.", rem4:"Hold on to your phone and earphones.",
+    rem3:"Don't leave your stuff on the seat.", rem4:"Hold on to your phone.",
     rem5:"Keep your valuables in front of you.", rem7:"Hold the handrail while standing.",
     rem10:"Be aware of your surroundings.", rem11:"Take all belongings before getting off.",
-    list_label:"Bus Stops", btn_locate:"Locate Me", btn_stop:"Stop", btn_locating:"Locating…",
-    btn_back:"↩ Change Destination", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
+    list_label:"Bus Stops", btn_stop:"Stop Tracking",
+    btn_back:"↩ Change", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
     dest_alert_arrive:n=>`<b>Get off now! ${n}</b> — this is your stop.`,
     dest_alert_near:(n,d)=>`Almost at <b>${n}</b> — only ${d} away!`,
     missed_alert:n=>`Did you miss <b>${n}</b>?`,
     stop_of:(i,t)=>`Stop ${i} of ${t}`,
-    gps_on:"GPS On", gps_searching:"Locating…", gps_off:"Locate",
+    gps_on:"GPS On", gps_searching:"Locating…", gps_off:"GPS Off",
+    gps_label_on:"GPS is active", gps_label_searching:"Locating…", gps_label_off:"GPS is off",
+    gps_btn_on:"Stop GPS", gps_btn_off:"Enable GPS",
     err_denied:"Location permission denied. Check your browser settings.",
     err_unavail:"Can't detect location. Try going outside.", err_title:"Location Error",
-    sh_title:"Settings", sh_lang:"Language", sh_theme:"Appearance", sh_font:"Text Size",
-    sh_rem:"Reminders", sh_tools:"Tools",
-    sh_notes:"Trip Notes", sh_notes_sub:"Write notes about your commute",
+    sh_title:"Settings", sh_gps:"GPS Tracking", sh_lang:"Language", sh_theme:"Appearance",
+    sh_font:"Text Size", sh_rem:"Reminders", sh_rem_acc:"View reminders",
+    sh_tools:"Tools", sh_notes:"Trip Notes", sh_notes_sub:"Write notes about your commute",
     sh_report:"Report an Issue", sh_report_sub:"Wrong stop info, broken coords, etc.", sh_done:"Done",
     rep_title:"Report an Issue", rep_sub:"What's the problem?", rep_submit:"Submit Report", rep_cancel:"Cancel",
     notes_title:"Trip Notes", notes_sub:"Jot down anything about your commute.", notes_save:"Save Note", notes_cancel:"Cancel",
     scroll_locked:"🔒", scroll_unlocked:"🔓",
-    toast_locked:"Auto-scroll off — scroll manually", toast_unlocked:"Auto-scroll on",
+    toast_locked:"Auto-scroll off", toast_unlocked:"Auto-scroll on",
     eta_prefix:"~", eta_min:"min",
     arr_headline:"You're here! 🎉", arr_sub:"You've reached your destination.",
     arr_lm_label:"Landmarks nearby", arr_close:"Done 👋",
     rm_title:"Before you go", rm_sub:"Quick reminders before boarding.",
     rm1:"Close your bag or backpack zipper.", rm2:"Check your wallet or coin purse.",
-    rm3:"Hold on to your phone and earphones.", rm4:"Have your ticket ready for inspection.",
     rm5:"Keep your valuables in front of you.", rm6:"Hold the handrail while standing.",
     rm7:"Be aware of your surroundings.", rm8:"Take all belongings before getting off.",
     rm_go:"Let's go! 🚀",
+    conf_title:"Stop Tracking?", conf_sub:"This will reset your trip and return to the main screen.",
+    conf_yes:"Yes, Stop", conf_no:"Cancel",
   },
   tl: {
     ob_title:"Saan ka pupunta?", ob_sub:"Piliin ang iyong destinasyon para ma-alert ka kapag malapit ka na.",
@@ -647,28 +736,30 @@ const T = {
     tk_main:"I-ready ang ticket para sa inspection.", tk_sub:"Huwag itapon — maaaring mag-check ang kondaktor.",
     nav_label:"RUTA", cur_pill:"📍 Nandito ka", cur_next_prefix:"Susunod:",
     cur_last:"🎉 Last stop na — Ortigas!", nogps_title:"I-enable ang GPS",
-    nogps_sub:"I-tap ang I-locate para malaman kung saang hintuan ka na.",
-    rem_label:"Huwag kalimutan",
+    nogps_sub:"I-enable ang GPS sa Settings (⚙️) para magsimulang mag-track.",
     rem1:"Isara ang zipper ng bag o backpack mo.", rem2:"I-check ang wallet o coin purse mo.",
+    rem3:"Huwag mag-iwan ng gamit sa upuan.", rem4:"Hawakan ang phone mo.",
     rem5:"Ilagay sa harap ang mga importanteng gamit mo.", rem7:"Kumapit sa handrail kung nakatayo.",
     rem10:"Maging alerto sa paligid mo.", rem11:"Siguraduhing dala mo lahat bago bumaba.",
-    list_label:"Mga Hintuan", btn_locate:"I-locate Ako", btn_stop:"I-stop", btn_locating:"Hinahanap…",
+    list_label:"Mga Hintuan", btn_stop:"I-stop ang Tracking",
     btn_back:"↩ Baguhin", tag_here:"📍 Nandito ka", tag_next:"Susunod →", tag_dest:"🏁 Bababa dito",
     dest_alert_arrive:n=>`<b>Bababa ka na! ${n}</b> — ito na ang stop mo.`,
     dest_alert_near:(n,d)=>`Malapit na ang <b>${n}</b> — ${d} na lang!`,
     missed_alert:n=>`Nalagpasan mo ba ang <b>${n}</b>?`,
     stop_of:(i,t)=>`Stop ${i} ng ${t}`,
-    gps_on:"GPS On", gps_searching:"Hinahanap…", gps_off:"I-locate",
+    gps_on:"GPS On", gps_searching:"Hinahanap…", gps_off:"GPS Off",
+    gps_label_on:"Aktibo ang GPS", gps_label_searching:"Hinahanap…", gps_label_off:"Naka-off ang GPS",
+    gps_btn_on:"I-stop ang GPS", gps_btn_off:"I-enable ang GPS",
     err_denied:"Hindi pinayagan ang location. I-check ang settings ng browser mo.",
     err_unavail:"Hindi ma-detect ang location. Subukan sa labas.", err_title:"Location Error",
-    sh_title:"Mga Setting", sh_lang:"Wika", sh_theme:"Hitsura", sh_font:"Laki ng Teksto",
-    sh_rem:"Huwag kalimutan", sh_tools:"Mga Kasangkapan",
-    sh_notes:"Trip Notes", sh_notes_sub:"Mag-sulat tungkol sa biyahe mo",
+    sh_title:"Mga Setting", sh_gps:"GPS Tracking", sh_lang:"Wika", sh_theme:"Hitsura",
+    sh_font:"Laki ng Teksto", sh_rem:"Huwag kalimutan", sh_rem_acc:"Tingnan ang mga paalala",
+    sh_tools:"Mga Kasangkapan", sh_notes:"Trip Notes", sh_notes_sub:"Mag-sulat tungkol sa biyahe mo",
     sh_report:"Mag-report ng Issue", sh_report_sub:"Maling impormasyon, coords, atbp.", sh_done:"Tapos na",
     rep_title:"Mag-report ng Issue", rep_sub:"Ano ang problema?", rep_submit:"I-submit", rep_cancel:"Kanselahin",
     notes_title:"Trip Notes", notes_sub:"Isulat ang tungkol sa iyong biyahe.", notes_save:"I-save", notes_cancel:"Kanselahin",
     scroll_locked:"🔒", scroll_unlocked:"🔓",
-    toast_locked:"Naka-off ang auto-scroll — manual na mag-scroll", toast_unlocked:"Naka-on ang auto-scroll",
+    toast_locked:"Naka-off ang auto-scroll", toast_unlocked:"Naka-on ang auto-scroll",
     eta_prefix:"~", eta_min:"min",
     arr_headline:"Nandito ka na! 🎉", arr_sub:"Nakarating ka na sa iyong destinasyon.",
     arr_lm_label:"Mga landmark sa paligid", arr_close:"Tapos na 👋",
@@ -677,6 +768,8 @@ const T = {
     rm5:"Ilagay sa harap ang mga importanteng gamit mo.", rm6:"Kumapit sa handrail kung nakatayo.",
     rm7:"Maging alerto sa paligid mo.", rm8:"Siguraduhing dala mo lahat bago bumaba.",
     rm_go:"Tara na! 🚀",
+    conf_title:"I-stop ang Tracking?", conf_sub:"Mire-reset ang trip mo at babalik sa main screen.",
+    conf_yes:"Oo, I-stop", conf_no:"Kanselahin",
   }
 };
 
@@ -687,16 +780,13 @@ let segFills=new Array(STOPS.length).fill(0);
 let scrollLocked=false, wakeLock=null;
 let lastSpeed=0, speedHistory=[];
 let countdownFired={};
-let arrivalShown=false;
-let toastTimer=null;
+let arrivalShown=false, toastTimer=null;
 let tripNotes=JSON.parse(localStorage.getItem('lambNotes')||'[]');
 let selectedReportType=null;
+let remAccOpen=false;
 
-function hav(la1,lo1,la2,lo2){
-  const R=6371000,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
-  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
+// ── HAVERSINE ──
+function hav(la1,lo1,la2,lo2){ const R=6371000,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180,a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
 function distToStop(i){ if(userLat===null) return Infinity; return Math.min(...STOPS[i].coords.map(([la,lo])=>hav(userLat,userLng,la,lo))); }
 function fmt(m){return m<1000?`${Math.round(m)}m`:`${(m/1000).toFixed(1)}km`;}
 
@@ -708,7 +798,7 @@ const TOTAL_DIST=CUM_DIST[CUM_DIST.length-1];
 function computeRouteProgress(ci){
   if(userLat===null||ci<0) return 0;
   const n=STOPS.length;
-  if(ci===0){ const d0=distToStop(0),d1=distToStop(1); return 0; }
+  if(ci===0) return 0;
   if(ci>=n-1) return 1;
   const dPrev=hav(userLat,userLng,...CENTROIDS[ci-1]),dCur=distToStop(ci),dNxt=ci+1<n?distToStop(ci+1):Infinity;
   const dNext=hav(userLat,userLng,...CENTROIDS[ci]);
@@ -719,62 +809,111 @@ function computeETA(destIdx){ if(userLat===null||destIdx<0||lastSpeed<0.5) retur
 
 const THRESHOLD=150;
 
-// Settings
-function openSettings(){ document.getElementById('settingsSheet').classList.add('open'); }
+// ── SETTINGS ──
+function openSettings(){ updateGpsSettingUI(); document.getElementById('settingsSheet').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsSheet').classList.remove('open'); }
-function setTheme(t){
-  theme=t; document.body.classList.toggle('light-mode',t==='light'); document.body.classList.toggle('oled-mode',t==='oled');
-  ['sh-dark','sh-oled','sh-light'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('active',(t==='dark'&&id==='sh-dark')||(t==='oled'&&id==='sh-oled')||(t==='light'&&id==='sh-light')); });
-}
+function setTheme(t){ theme=t; document.body.classList.toggle('light-mode',t==='light'); document.body.classList.toggle('oled-mode',t==='oled'); ['sh-dark','sh-oled','sh-light'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('active',(t==='dark'&&id==='sh-dark')||(t==='oled'&&id==='sh-oled')||(t==='light'&&id==='sh-light')); }); }
 function setFontSize(size){ fontSize=size; const sc={small:0.9,normal:1,large:1.15}; document.documentElement.style.setProperty('--font-scale',sc[size]); ['fs-small','fs-normal','fs-large'].forEach(id=>document.getElementById(id).classList.toggle('active',id===`fs-${size}`)); }
 function setLang(l){ lang=l; document.getElementById('sh-en').classList.toggle('active',l==='en'); document.getElementById('sh-tl').classList.toggle('active',l==='tl'); applyTranslations(); buildDestList(); if(tracking||userLat!==null) render(); else renderList(); }
 
+// Reminders accordion
+function toggleRemAcc(){
+  remAccOpen=!remAccOpen;
+  document.getElementById('remAccBody').classList.toggle('open',remAccOpen);
+  document.getElementById('remAccArrow').classList.toggle('open',remAccOpen);
+}
+
 function applyTranslations(){
-  const s=(id,k)=>{const el=document.getElementById(id);if(el)el.textContent=T[lang][k];};
+  const s=(id,k)=>{const el=document.getElementById(id);if(el&&T[lang][k]!==undefined)el.textContent=T[lang][k];};
   [['ob-title','ob_title'],['ob-sub','ob_sub'],['ob-sec-label','ob_sec_label'],
    ['ob-skip-title','ob_skip_title'],['ob-skip-sub','ob_skip_sub'],
    ['tk-main','tk_main'],['tk-sub','tk_sub'],['nav-label','nav_label'],
    ['cur-pill-label','cur_pill'],['nogps-title','nogps_title'],['nogps-sub','nogps_sub'],
-   ['sh-rem-label','sh_rem'],['rem1','rem1'],['rem2','rem2'],['rem3','rem3'],['rem4','rem4'],
+   ['rem1','rem1'],['rem2','rem2'],['rem3','rem3'],['rem4','rem4'],
    ['rem5','rem5'],['rem7','rem7'],['rem10','rem10'],['rem11','rem11'],
-   ['listLabel','list_label'],['btn-back','btn_back'],
-   ['sh-title','sh_title'],['sh-lang-label','sh_lang'],['sh-theme-label','sh_theme'],
-   ['sh-font-label','sh_font'],['sh-tools-label','sh_tools'],
-   ['sh-notes-label','sh_notes'],['sh-notes-sub','sh_notes_sub'],
+   ['listLabel','list_label'],['btn-back','btn_back'],['btn-stop-text','btn_stop'],
+   ['sh-title','sh_title'],['sh-gps-label','sh_gps'],['sh-lang-label','sh_lang'],
+   ['sh-theme-label','sh_theme'],['sh-font-label','sh_font'],
+   ['sh-rem-label','sh_rem'],['sh-rem-acc-label','sh_rem_acc'],
+   ['sh-tools-label','sh_tools'],['sh-notes-label','sh_notes'],['sh-notes-sub','sh_notes_sub'],
    ['sh-report-label','sh_report'],['sh-report-sub','sh_report_sub'],['sh-done','sh_done'],
    ['rep-title','rep_title'],['rep-sub','rep_sub'],['rep-submit','rep_submit'],['rep-cancel','rep_cancel'],
    ['notes-title','notes_title'],['notes-sub','notes_sub'],['notes-save','notes_save'],['notes-cancel','notes_cancel'],
    ['arr-headline','arr_headline'],['arr-sub','arr_sub'],['arr-lm-label','arr_lm_label'],['arr-close-btn','arr_close'],
-   ['rm-title','rm_title'],['rm-sub','rm_sub'],['rm1','rm1'],['rm2','rm2'],['rm3','rm3'],['rm4','rm4'],
+   ['rm-title','rm_title'],['rm-sub','rm_sub'],['rm1','rm1'],['rm2','rm2'],
    ['rm5','rm5'],['rm6','rm6'],['rm7','rm7'],['rm8','rm8'],['rm-go-btn','rm_go'],
+   ['conf-title','conf_title'],['conf-sub','conf_sub'],['conf-yes','conf_yes'],['conf-no','conf_no'],
   ].forEach(([id,k])=>s(id,k));
   document.getElementById('ob-btn-start').textContent=selectedDest===null||selectedDest===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[selectedDest].name);
-  setChipLabel(); updateScrollLockBtn();
+  updateScrollLockBtn(); updateGpsSettingUI();
 }
-function setChipLabel(){ const lbl=document.getElementById('gpsChipLabel'),btn=document.getElementById('btn-locate-text'); const map={on:['gps_on','btn_stop'],searching:['gps_searching','btn_locating'],off:['gps_off','btn_locate']}; const[lk,bk]=map[gpsState]||map.off; if(lbl)lbl.textContent=T[lang][lk]; if(btn)btn.textContent=T[lang][bk]; }
 
-// Scroll lock
+// ── GPS SETTING UI ──
+function updateGpsSettingUI(){
+  const pip=document.getElementById('gpsPipBig');
+  const lbl=document.getElementById('gpsStatusLabel');
+  const btn=document.getElementById('gpsToggleBtn');
+  if(!pip) return;
+  if(gpsState==='on'){ pip.className='gps-pip-big on'; lbl.textContent=T[lang].gps_label_on; btn.textContent=T[lang].gps_btn_on; btn.classList.add('on'); }
+  else if(gpsState==='searching'){ pip.className='gps-pip-big searching'; lbl.textContent=T[lang].gps_label_searching; btn.textContent=T[lang].gps_btn_on; btn.classList.remove('on'); }
+  else { pip.className='gps-pip-big'; lbl.textContent=T[lang].gps_label_off; btn.textContent=T[lang].gps_btn_off; btn.classList.remove('on'); }
+}
+
+// ── SCROLL LOCK ──
 function toggleScrollLock(){
   scrollLocked=!scrollLocked;
-  document.getElementById('stopList').classList.toggle('scroll-locked',scrollLocked);
+  const list=document.getElementById('stopList');
+  list.classList.toggle('scroll-locked',scrollLocked);
+  // Lock overlay — blocks all touches except the scroll lock button itself
+  document.getElementById('lockOverlay').classList.toggle('active',scrollLocked);
   updateScrollLockBtn();
   showToast(scrollLocked?T[lang].toast_locked:T[lang].toast_unlocked);
 }
 function updateScrollLockBtn(){ const btn=document.getElementById('scrollLockBtn'); if(!btn) return; btn.textContent=scrollLocked?T[lang].scroll_locked:T[lang].scroll_unlocked; btn.classList.toggle('locked',scrollLocked); }
 function showToast(msg){ const t=document.getElementById('scrollToast'); t.textContent=msg; t.classList.add('show'); if(toastTimer) clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
 
-// Wake lock
+// ── WAKE LOCK ──
 async function requestWakeLock(){ try{ if('wakeLock' in navigator){ wakeLock=await navigator.wakeLock.request('screen'); } }catch(e){} }
 function releaseWakeLock(){ try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){} }
 
-// Audio
+// ── AUDIO ──
 function playAudio(type){ try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); if(type==='arrive'){osc.frequency.value=880;gain.gain.setValueAtTime(0.3,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);osc.start();osc.stop(ctx.currentTime+0.6);}else if(type==='near'){osc.frequency.value=660;gain.gain.setValueAtTime(0.2,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);osc.start();osc.stop(ctx.currentTime+0.4);}else{osc.frequency.value=440;gain.gain.setValueAtTime(0.15,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);osc.start();osc.stop(ctx.currentTime+0.3);} }catch(e){} }
 
-// Arrival modal
+// ── ARRIVAL ──
 function showArrival(stop){ document.getElementById('arr-stop-name').textContent=stop.name; document.getElementById('arr-landmarks').textContent=stop.landmarks; document.getElementById('arrivalModal').classList.add('open'); }
 function closeArrival(){ document.getElementById('arrivalModal').classList.remove('open'); }
 
-// Onboarding
+// ── STOP CONFIRM ──
+function requestStop(){ document.getElementById('stopConfirmModal').classList.add('open'); }
+function closeStopConfirm(){ document.getElementById('stopConfirmModal').classList.remove('open'); }
+function confirmStop(){
+  closeStopConfirm();
+  stopGps(); releaseWakeLock(); closeSettings(); closeArrival();
+  // Unlock scroll if locked
+  if(scrollLocked){ scrollLocked=false; document.getElementById('lockOverlay').classList.remove('active'); document.getElementById('stopList').classList.remove('scroll-locked'); }
+  document.getElementById('remindersModal').classList.remove('open');
+  document.getElementById('screenTracker').classList.add('hidden');
+  document.getElementById('screenOnboard').classList.remove('hidden');
+  // Full reset
+  document.getElementById('noGps').classList.add('show');
+  document.getElementById('curCard').classList.remove('show');
+  document.getElementById('destAlert').classList.remove('show');
+  document.getElementById('missedAlert').classList.remove('show');
+  document.getElementById('etaChip').classList.remove('show');
+  document.getElementById('scrollLockBtn').classList.remove('show');
+  document.getElementById('ticketBanner').classList.remove('gone');
+  arrivalShown=false; countdownFired={}; segFills=new Array(STOPS.length).fill(0);
+  selectedDest=null;
+  document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('skipBtn').classList.remove('selected');
+  document.getElementById('btnStart').classList.remove('ready');
+  document.getElementById('ob-btn-start').textContent=T[lang].ob_btn_start;
+  updateScrollLockBtn();
+  // Reload page to fully reset
+  setTimeout(()=>location.reload(), 100);
+}
+
+// ── ONBOARDING ──
 function buildDestList(){
   document.getElementById('destList').innerHTML=STOPS.map((s,i)=>`
     <div class="dest-item${selectedDest===i?' selected':''}" id="di${i}" onclick="selectDest(${i})">
@@ -787,16 +926,13 @@ function selectDest(idx){ selectedDest=idx; document.querySelectorAll('.dest-ite
 
 function startApp(){
   if(selectedDest===null) return;
-  // Show reminders modal first, then launch tracker on close
   applyTranslations();
   document.getElementById('remindersModal').classList.add('open');
 }
-
 function closeRemindersModal(){
   document.getElementById('remindersModal').classList.remove('open');
   launchTracker();
 }
-
 function launchTracker(){
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
@@ -805,10 +941,11 @@ function launchTracker(){
   document.getElementById('scrollLockBtn').classList.add('show');
   arrivalShown=false; countdownFired={};
   segFills=new Array(STOPS.length).fill(0);
-  applyTranslations(); renderList(); startGps();
+  applyTranslations(); renderList();
 }
 function goBack(){
   stopGps(); releaseWakeLock(); closeSettings(); closeArrival();
+  if(scrollLocked){ scrollLocked=false; document.getElementById('lockOverlay').classList.remove('active'); document.getElementById('stopList').classList.remove('scroll-locked'); }
   document.getElementById('remindersModal').classList.remove('open');
   document.getElementById('screenTracker').classList.add('hidden');
   document.getElementById('screenOnboard').classList.remove('hidden');
@@ -818,61 +955,68 @@ function goBack(){
   document.getElementById('missedAlert').classList.remove('show');
   document.getElementById('etaChip').classList.remove('show');
   document.getElementById('scrollLockBtn').classList.remove('show');
-  scrollLocked=false; document.getElementById('stopList').classList.remove('scroll-locked');
-  arrivalShown=false; countdownFired={}; segFills=new Array(STOPS.length).fill(0);
+  scrollLocked=false; arrivalShown=false; countdownFired={};
+  segFills=new Array(STOPS.length).fill(0); updateScrollLockBtn();
 }
 function dismissTicket(){ document.getElementById('ticketBanner').classList.add('gone'); }
 
-// GPS
-function toggleGps(){ tracking?stopGps():startGps(); }
-function startGps(){ if(!navigator.geolocation){alert("GPS not supported.");return;} gpsState='searching'; setChipState(); requestWakeLock(); watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:3000,timeout:15000}); }
-function stopGps(){ if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;} tracking=false;userLat=null;userLng=null;gpsState='off';lastSpeed=0;speedHistory=[];setChipState();releaseWakeLock();document.getElementById('noGps').classList.add('show');document.getElementById('curCard').classList.remove('show');document.getElementById('destAlert').classList.remove('show');document.getElementById('missedAlert').classList.remove('show');document.getElementById('etaChip').classList.remove('show');segFills=new Array(STOPS.length).fill(0);renderList(); }
-function onPos(pos){ if(pos.coords.speed!==null&&pos.coords.speed>=0){speedHistory.push(pos.coords.speed);if(speedHistory.length>5)speedHistory.shift();lastSpeed=speedHistory.reduce((a,b)=>a+b,0)/speedHistory.length;} userLat=pos.coords.latitude;userLng=pos.coords.longitude;if(!tracking){tracking=true;gpsState='on';setChipState();document.getElementById('noGps').classList.remove('show');} render(); }
-function onErr(e){ gpsState='off';setChipState();const msg=e.code===1?T[lang].err_denied:T[lang].err_unavail;document.getElementById('noGps').innerHTML=`<div class="no-gps-icon">❌</div><div class="no-gps-title">${T[lang].err_title}</div><div class="no-gps-sub">${msg}</div>`;document.getElementById('noGps').classList.add('show'); }
-function setChipState(){ const pip=document.getElementById('gpsPip'),chip=document.getElementById('gpsChip'),btn=document.getElementById('mainBtn');pip.className='gps-pip'+(gpsState==='on'?' on':gpsState==='searching'?' searching':'');chip.classList.toggle('on',gpsState==='on');btn.className='btn-primary'+(gpsState==='on'?' stop-mode':'');setChipLabel(); }
+// ── GPS ──
+function toggleGps(){ tracking?stopGps():startGps(); updateGpsSettingUI(); }
+function startGps(){
+  if(!navigator.geolocation){alert("GPS not supported.");return;}
+  gpsState='searching'; updateGpsSettingUI(); requestWakeLock();
+  watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:3000,timeout:15000});
+}
+function stopGps(){
+  if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
+  tracking=false;userLat=null;userLng=null;gpsState='off';lastSpeed=0;speedHistory=[];
+  updateGpsSettingUI(); releaseWakeLock();
+  document.getElementById('noGps').classList.add('show');
+  document.getElementById('curCard').classList.remove('show');
+  document.getElementById('destAlert').classList.remove('show');
+  document.getElementById('missedAlert').classList.remove('show');
+  document.getElementById('etaChip').classList.remove('show');
+  segFills=new Array(STOPS.length).fill(0); renderList();
+}
+function onPos(pos){
+  if(pos.coords.speed!==null&&pos.coords.speed>=0){speedHistory.push(pos.coords.speed);if(speedHistory.length>5)speedHistory.shift();lastSpeed=speedHistory.reduce((a,b)=>a+b,0)/speedHistory.length;}
+  userLat=pos.coords.latitude;userLng=pos.coords.longitude;
+  if(!tracking){tracking=true;gpsState='on';updateGpsSettingUI();document.getElementById('noGps').classList.remove('show');}
+  render();
+}
+function onErr(e){
+  gpsState='off'; updateGpsSettingUI();
+  const msg=e.code===1?T[lang].err_denied:T[lang].err_unavail;
+  document.getElementById('noGps').innerHTML=`<div class="no-gps-icon">❌</div><div class="no-gps-title">${T[lang].err_title}</div><div class="no-gps-sub">${msg}</div>`;
+  document.getElementById('noGps').classList.add('show');
+}
 
-// Render
+// ── RENDER ──
 function render(){
   if(userLat===null) return;
   let ci=0,cd=Infinity;
   STOPS.forEach((_,i)=>{const d=distToStop(i);if(d<cd){cd=d;ci=i;}});
   const atStop=cd<=THRESHOLD,currentIdx=atStop?ci:-1;
 
-  // Current card
   document.getElementById('cur-pill-label').textContent=T[lang].cur_pill;
   const card=document.getElementById('curCard');
   if(atStop){ card.classList.add('show'); document.getElementById('curName').textContent=STOPS[ci].name; document.getElementById('curLandmark').textContent=STOPS[ci].landmarks; const nxt=STOPS[ci+1]; document.getElementById('curNext').innerHTML=nxt?`${T[lang].cur_next_prefix} <b>${nxt.name}</b>`:`<b>${T[lang].cur_last}</b>`; } else card.classList.remove('show');
 
-  // ETA chip
   const etaChip=document.getElementById('etaChip');
   if(selectedDest>=0){ const mins=computeETA(selectedDest); if(mins!==null){etaChip.textContent=`${T[lang].eta_prefix}${mins} ${T[lang].eta_min}`;etaChip.classList.add('show');}else etaChip.classList.remove('show'); } else etaChip.classList.remove('show');
 
-  // Arrival modal — only on destination, only once
   const da=document.getElementById('destAlert');
   if(selectedDest>=0){
-    if(atStop&&currentIdx===selectedDest&&!arrivalShown){
-      arrivalShown=true;
-      showArrival(STOPS[selectedDest]);
-      da.classList.remove('show');
-      playAudio('arrive'); vibrate([200,100,200,100,400]);
-    } else if(atStop&&currentIdx===selectedDest){
-      da.classList.add('show');
-      document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_arrive(STOPS[selectedDest].name);
-    } else {
-      const d=distToStop(selectedDest);
-      if(d<1500&&d>THRESHOLD){da.classList.add('show');document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_near(STOPS[selectedDest].name,fmt(d));playAudio('near');}
-      else if(!(atStop&&currentIdx===selectedDest)) da.classList.remove('show');
-    }
+    if(atStop&&currentIdx===selectedDest&&!arrivalShown){ arrivalShown=true; showArrival(STOPS[selectedDest]); da.classList.remove('show'); playAudio('arrive'); vibrate([200,100,200,100,400]); }
+    else if(atStop&&currentIdx===selectedDest){ da.classList.add('show'); document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_arrive(STOPS[selectedDest].name); }
+    else { const d=distToStop(selectedDest); if(d<1500&&d>THRESHOLD){da.classList.add('show');document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_near(STOPS[selectedDest].name,fmt(d));playAudio('near');} else if(!(atStop&&currentIdx===selectedDest)) da.classList.remove('show'); }
   }
 
-  // Missed stop
   const ma=document.getElementById('missedAlert');
   if(selectedDest>=0&&currentIdx>selectedDest){ document.getElementById('missedAlertText').innerHTML=T[lang].missed_alert(STOPS[selectedDest].name); ma.classList.add('show'); } else ma.classList.remove('show');
 
-  // Countdown
   if(selectedDest>=0&&currentIdx>=0){ const stopsAway=selectedDest-currentIdx; if(stopsAway>=1&&stopsAway<=3&&!countdownFired[stopsAway]){ countdownFired[stopsAway]=true; vibrate(stopsAway===1?[300,100,300]:stopsAway===2?[200,100,200]:[150]); playAudio('countdown'); } }
 
-  // Progress fill
   const progress=computeRouteProgress(ci);
   const newFills=STOPS.map((_,i)=>{
     if(i>=STOPS.length-1) return 0;
@@ -883,7 +1027,7 @@ function render(){
   const list=document.getElementById('stopList');
   const segs=list.querySelectorAll('.tl-seg');
   if(segs.length===0){ renderList(currentIdx,ci,newFills); }
-  else { segs.forEach((seg,i)=>{const f=(newFills[i]||0).toFixed(3);if(seg.style.getPropertyValue('--fill')!==f)seg.style.setProperty('--fill',f);});updateDotsAndCards(currentIdx,ci); }
+  else { segs.forEach((seg,i)=>{const f=(newFills[i]||0).toFixed(3);if(seg.style.getPropertyValue('--fill')!==f)seg.style.setProperty('--fill',f);}); updateDotsAndCards(currentIdx,ci); }
   segFills=newFills;
 
   if(!scrollLocked&&currentIdx>=0){ setTimeout(()=>{const rows=list.querySelectorAll('.stop-row:not(.peek-row)');if(rows[currentIdx])rows[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});},200); }
@@ -898,8 +1042,10 @@ function updateDotsAndCards(currentIdx,closestIdx){
     if(i>=visCount) return;
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
     const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===selectedDest;
-    const dot=row.querySelector('.tl-dot'); if(dot) dot.className='tl-dot'+(isCurrent?(isDest?' dest current':' current'):isPassed?' passed':isDest?' dest':'');
-    const card=row.querySelector('.stop-card'); if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':'');
+    const dot=row.querySelector('.tl-dot');
+    if(dot) dot.className='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
+    const card=row.querySelector('.stop-card');
+    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':'');
     const tagsEl=row.querySelector('.stop-tags');
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
@@ -919,13 +1065,11 @@ function renderList(currentIdx=-1,closestIdx=-1,fills=null){
   let html=STOPS.slice(0,visCount).map((stop,i)=>{
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
     const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===selectedDest;
-    const isFirst=i===0;
-    const isLast=i===visCount-1&&peekStops.length===0;
+    const isFirst=i===0, isLast=i===visCount-1&&peekStops.length===0;
     const fill=fills?(fills[i]||0):0;
-
-    const dotCls='tl-dot'+(isCurrent?(isDest?' dest current':' current'):isPassed?' passed':isDest?' dest':'');
+    // No dot except current (blinking)
+    const dotCls='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
     const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':'');
-
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
     if(isNext)tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
@@ -933,8 +1077,6 @@ function renderList(currentIdx=-1,closestIdx=-1,fills=null){
     if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
     const etaMins=computeETA(i);
     const etaHtml=etaMins!==null&&!isCurrent&&!isPassed?`<div class="stop-eta">~${etaMins} min</div>`:'';
-
-    // Structure: segment (line) on top, dot at bottom
     return `<div class="stop-row${isFirst?' stop-first':''}${isLast?' stop-last':''}">
       <div class="tl-col">
         <div class="tl-seg" style="--fill:${fill.toFixed(3)}"></div>
