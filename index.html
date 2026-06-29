@@ -38,21 +38,28 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(20px); z-index: 0; }
 .safe-top { padding-top: var(--sat); }
 
-/* ── LOCK OVERLAY ── */
-#lockOverlay {
-  position: fixed; inset: 0; z-index: 998;
-  display: none; pointer-events: none;
+/* ── LOCK STATE ── */
+body.scroll-locked-mode .stop-list { overflow-y: hidden; }
+body.scroll-locked-mode .bottom-bar,
+body.scroll-locked-mode #curCard,
+body.scroll-locked-mode #destAlert,
+body.scroll-locked-mode #missedAlert,
+body.scroll-locked-mode #ticketBanner,
+body.scroll-locked-mode #noGps,
+body.scroll-locked-mode .list-label,
+body.scroll-locked-mode .nav-bar .gear-btn,
+body.scroll-locked-mode #etaChip {
+  pointer-events: none;
+  opacity: 0.4;
 }
-#lockOverlay.active {
-  display: block; pointer-events: all;
-}
-/* Punch hole for scroll lock button - handled via JS */
+/* Scroll lock button always interactive */
 #scrollLockBtn {
   background: var(--card); border: 1px solid var(--border); border-radius: 8px;
   padding: 5px 8px; font-size: 13px; cursor: pointer; font-family: inherit;
   color: var(--text3); transition: all 0.2s; flex-shrink: 0; display: none;
-  position: relative; z-index: 1001;
+  position: relative; z-index: 100;
   pointer-events: all !important;
+  opacity: 1 !important;
 }
 #scrollLockBtn.show { display: block; }
 #scrollLockBtn.locked { color: var(--green); border-color: var(--green); background: var(--green-soft); }
@@ -417,8 +424,8 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 </head>
 <body>
 
-<!-- ══ LOCK OVERLAY ══ -->
-<div id="lockOverlay"></div>
+
+
 
 <!-- ══ ONBOARDING ══ -->
 <div class="screen safe-top" id="screenOnboard">
@@ -866,10 +873,8 @@ function updateGpsSettingUI(){
 // ── SCROLL LOCK ──
 function toggleScrollLock(){
   scrollLocked=!scrollLocked;
-  const list=document.getElementById('stopList');
-  list.classList.toggle('scroll-locked',scrollLocked);
-  // Lock overlay — blocks all touches except the scroll lock button itself
-  document.getElementById('lockOverlay').classList.toggle('active',scrollLocked);
+  document.body.classList.toggle('scroll-locked-mode', scrollLocked);
+  document.getElementById('stopList').classList.toggle('scroll-locked', scrollLocked);
   updateScrollLockBtn();
   showToast(scrollLocked?T[lang].toast_locked:T[lang].toast_unlocked);
 }
@@ -894,7 +899,7 @@ function confirmStop(){
   closeStopConfirm();
   stopGps(); releaseWakeLock(); closeSettings(); closeArrival();
   // Unlock scroll if locked
-  if(scrollLocked){ scrollLocked=false; document.getElementById('lockOverlay').classList.remove('active'); document.getElementById('stopList').classList.remove('scroll-locked'); }
+  if(scrollLocked){ scrollLocked=false; document.body.classList.remove('scroll-locked-mode'); document.getElementById('stopList').classList.remove('scroll-locked'); }
   document.getElementById('remindersModal').classList.remove('open');
   document.getElementById('screenTracker').classList.add('hidden');
   document.getElementById('screenOnboard').classList.remove('hidden');
@@ -956,7 +961,7 @@ function launchTracker(){
 }
 function goBack(){
   stopGps(); releaseWakeLock(); closeSettings(); closeArrival();
-  if(scrollLocked){ scrollLocked=false; document.getElementById('lockOverlay').classList.remove('active'); document.getElementById('stopList').classList.remove('scroll-locked'); }
+  if(scrollLocked){ scrollLocked=false; document.body.classList.remove('scroll-locked-mode'); document.getElementById('stopList').classList.remove('scroll-locked'); }
   document.getElementById('remindersModal').classList.remove('open');
   document.getElementById('screenTracker').classList.add('hidden');
   document.getElementById('screenOnboard').classList.remove('hidden');
