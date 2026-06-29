@@ -40,17 +40,22 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 
 /* ── LOCK OVERLAY ── */
 #lockOverlay {
-  position: fixed; inset: 0; z-index: 999;
+  position: fixed; inset: 0; z-index: 998;
   display: none; pointer-events: none;
 }
-#lockOverlay.active { display: block; pointer-events: all; }
-/* punch-through: only the unlock button is clickable */
-#lockOverlay::before {
-  content: ''; position: absolute; inset: 0;
-  background: transparent;
+#lockOverlay.active {
+  display: block; pointer-events: all;
 }
-
-/* ── ONBOARDING ── */
+/* Punch hole for scroll lock button - handled via JS */
+#scrollLockBtn {
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 5px 8px; font-size: 13px; cursor: pointer; font-family: inherit;
+  color: var(--text3); transition: all 0.2s; flex-shrink: 0; display: none;
+  position: relative; z-index: 1001;
+  pointer-events: all !important;
+}
+#scrollLockBtn.show { display: block; }
+#scrollLockBtn.locked { color: var(--green); border-color: var(--green); background: var(--green-soft); }
 #screenOnboard { padding-bottom: env(safe-area-inset-bottom,34px); overflow-y: auto; }
 .onboard-top-bar { display: flex; justify-content: flex-end; padding: 12px 16px 0; }
 .gear-btn {
@@ -144,12 +149,7 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 #etaChip { font-size: calc(11px * var(--font-scale)); color: var(--text3); background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 4px 8px; display: none; flex-shrink: 0; font-weight: 600; }
 #etaChip.show { display: block; }
 
-/* Scroll lock btn */
-#scrollLockBtn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 8px; font-size: 13px; cursor: pointer; font-family: inherit; color: var(--text3); transition: all 0.2s; flex-shrink: 0; display: none; position: relative; z-index: 1000; }
-#scrollLockBtn.show { display: block; }
-#scrollLockBtn.locked { color: var(--green); border-color: var(--green); background: var(--green-soft); }
-
-/* Current stop card */
+/* ── ONBOARDING ── */
 #curCard { margin: 10px 13px 0; background: var(--green-soft); border: 1.5px solid var(--green); border-radius: var(--radius-lg); padding: 13px 15px; display: none; flex-shrink: 0; animation: fadeUp 0.3s ease; }
 #curCard.show { display: block; }
 .cur-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--green); color: #000; font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 5px; padding: 3px 7px; margin-bottom: 7px; }
@@ -940,7 +940,14 @@ function closeRemindersModal(){
 function launchTracker(){
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
-  document.getElementById('navRouteName').textContent=selectedDest>=0?`Monumento → ${STOPS[selectedDest].name}`:'Monumento → Ortigas';
+  // Monumento=index 0, Ortigas=index 13
+  // If dest is Monumento (0), user is going Ortigas→Monumento
+  // Otherwise show Monumento→[dest]
+  let routeText;
+  if(selectedDest===0) routeText='Ortigas → Monumento';
+  else if(selectedDest>0) routeText=`Monumento → ${STOPS[selectedDest].name}`;
+  else routeText='Monumento → Ortigas';
+  document.getElementById('navRouteName').textContent=routeText;
   document.getElementById('listLabel').classList.add('show');
   document.getElementById('scrollLockBtn').classList.add('show');
   arrivalShown=false; countdownFired={};
@@ -1040,8 +1047,7 @@ function render(){
 function updateDotsAndCards(currentIdx,closestIdx){
   const list=document.getElementById('stopList');
   const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
-  const hasFilter=selectedDest>=0&&selectedDest<STOPS.length-1;
-  const visCount=hasFilter?selectedDest+1:STOPS.length;
+  const visCount=STOPS.length;
   rows.forEach((row,i)=>{
     if(i>=visCount) return;
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
@@ -1062,9 +1068,10 @@ function updateDotsAndCards(currentIdx,closestIdx){
 
 function renderList(currentIdx=-1,closestIdx=-1,fills=null){
   const list=document.getElementById('stopList');
-  const hasFilter=selectedDest>=0&&selectedDest<STOPS.length-1;
-  const visCount=hasFilter?selectedDest+1:STOPS.length;
-  const peekStops=hasFilter?STOPS.slice(selectedDest+1):[];
+  // Show all stops regardless — destination is just highlighted
+  const visCount=STOPS.length;
+  const hasFilter=false;
+  const peekStops=[];
 
   let html=STOPS.slice(0,visCount).map((stop,i)=>{
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
