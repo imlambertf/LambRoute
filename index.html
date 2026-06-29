@@ -254,6 +254,9 @@ body.scroll-locked-mode #etaChip {
 .stop-card.current { background: rgba(48,209,88,0.07); }
 .stop-card.passed { opacity: 0.36; }
 .stop-card.dest-card { background: rgba(10,132,255,0.07); }
+.stop-card.beyond { opacity: 0.2; pointer-events: none; }
+.stop-row.beyond-row .tl-seg { opacity: 0.15; }
+.stop-row.beyond-row .tl-dot { opacity: 0.15; }
 .stop-seq-num { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 2px; font-weight: 500; }
 .stop-name-main { font-size: calc(15px * var(--font-scale)); font-weight: 600; line-height: 1.2; }
 .stop-lm { font-size: calc(11px * var(--font-scale)); color: var(--text3); margin-top: 3px; line-height: 1.4; }
@@ -1052,48 +1055,47 @@ function render(){
 function updateDotsAndCards(currentIdx,closestIdx){
   const list=document.getElementById('stopList');
   const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
-  const visCount=STOPS.length;
   rows.forEach((row,i)=>{
-    if(i>=visCount) return;
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
     const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===selectedDest;
+    const isBeyond=selectedDest>=0&&i>selectedDest;
     const dot=row.querySelector('.tl-dot');
     if(dot) dot.className='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
     const card=row.querySelector('.stop-card');
-    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':'');
+    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isBeyond?' beyond':'');
     const tagsEl=row.querySelector('.stop-tags');
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
-    if(isNext)tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
+    if(isNext&&!isBeyond)tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
     if(isDest&&!isCurrent)tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
-    if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
+    if(isBeyond)tags+=`<span class="tag tag-peek">${lang==='tl'?'lampas sa stop mo':'beyond your stop'}</span>`;
+    if(userLat!==null&&!isCurrent&&!isPassed&&!isBeyond){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
     if(tagsEl)tagsEl.innerHTML=tags;
   });
 }
 
 function renderList(currentIdx=-1,closestIdx=-1,fills=null){
   const list=document.getElementById('stopList');
-  // Show all stops regardless — destination is just highlighted
   const visCount=STOPS.length;
-  const hasFilter=false;
-  const peekStops=[];
 
-  let html=STOPS.slice(0,visCount).map((stop,i)=>{
+  let html=STOPS.map((stop,i)=>{
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
     const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===selectedDest;
-    const isFirst=i===0, isLast=i===visCount-1&&peekStops.length===0;
+    const isBeyond=selectedDest>=0&&i>selectedDest;
+    const isFirst=i===0, isLast=i===visCount-1;
     const fill=fills?(fills[i]||0):0;
-    // No dot except current (blinking)
     const dotCls='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
-    const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':'');
+    // beyond = very faded, passed = faded, current = highlighted, dest = blue highlight
+    const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isBeyond?' beyond':'');
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
-    if(isNext)tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
+    if(isNext&&!isBeyond)tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
     if(isDest&&!isCurrent)tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
-    if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
+    if(isBeyond)tags+=`<span class="tag tag-peek">${lang==='tl'?'lampas sa stop mo':'beyond your stop'}</span>`;
+    if(userLat!==null&&!isCurrent&&!isPassed&&!isBeyond){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
     const etaMins=computeETA(i);
-    const etaHtml=etaMins!==null&&!isCurrent&&!isPassed?`<div class="stop-eta">~${etaMins} min</div>`:'';
-    return `<div class="stop-row${isFirst?' stop-first':''}${isLast?' stop-last':''}">
+    const etaHtml=etaMins!==null&&!isCurrent&&!isPassed&&!isBeyond?`<div class="stop-eta">~${etaMins} min</div>`:'';
+    return `<div class="stop-row${isFirst?' stop-first':''}${isLast?' stop-last':''}${isBeyond?' beyond-row':''}">
       <div class="tl-col">
         <div class="tl-seg" style="--fill:${fill.toFixed(3)}"></div>
         <div class="${dotCls}"></div>
@@ -1107,14 +1109,6 @@ function renderList(currentIdx=-1,closestIdx=-1,fills=null){
     </div>`;
   }).join('');
 
-  if(peekStops.length>0){
-    const peekLabel=lang==='tl'?'Mga susunod na hintuan':'Stops after your destination';
-    const showPeek=peekStops.slice(0,2),remaining=peekStops.length-showPeek.length;
-    html+=`<div class="peek-section"><div class="peek-label">${peekLabel}</div>`;
-    html+=showPeek.map((stop,pi)=>{ const isLast=pi===showPeek.length-1&&remaining===0; return `<div class="stop-row peek-row${isLast?' stop-last':''}"><div class="tl-col"><div class="tl-seg"></div><div class="tl-dot"></div></div><div class="stop-card"><div class="stop-name-main">${stop.name}</div><div class="stop-lm">${stop.landmarks}</div><div class="stop-tags"><span class="tag tag-peek">${lang==='tl'?'lampas sa stop mo':'beyond your stop'}</span></div></div></div>`; }).join('');
-    if(remaining>0)html+=`<div class="peek-more">+ ${remaining} ${lang==='tl'?'pang hintuan':'more stop'}${remaining>1&&lang==='en'?'s':''}</div>`;
-    html+=`</div>`;
-  }
   list.innerHTML=html;
 }
 
