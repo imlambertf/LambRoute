@@ -187,16 +187,16 @@ body.scroll-locked-mode #etaChip {
 
 .tl-col { width: 44px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; align-self: stretch; }
 
-/* Segment — line on top, fills from top to bottom */
+/* Segment — rounded blue capsule rail, fills from top to bottom */
 .tl-seg {
-  width: 9px; flex: 1; background: var(--border); border-radius: 5px 5px 0 0;
+  width: 10px; flex: 1; background: rgba(10,132,255,0.18); border-radius: 999px;
   position: relative; overflow: hidden; min-height: 20px; margin-top: 8px;
 }
-/* Green fill progress */
+/* Blue fill progress */
 .tl-seg::after {
   content: ''; position: absolute; left: 0; right: 0; top: 0;
   height: calc(var(--fill,0) * 100%);
-  background: var(--green); border-radius: 5px;
+  background: var(--blue); border-radius: 999px;
   transition: height 1.8s cubic-bezier(0.25,0.46,0.45,0.94);
 }
 /* Animated chevron flow inside the green fill */
@@ -220,41 +220,46 @@ body.scroll-locked-mode #etaChip {
   to { background-position: 0 16px; }
 }
 
-/* Dot — below segment */
+/* Dot — below segment, always a visible node like the reference rail */
 .tl-dot {
-  width: 0; height: 0; /* no dot by default — replaced with nothing */
-  flex-shrink: 0; z-index: 3;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--bg); border: 3px solid var(--blue);
+  flex-shrink: 0; z-index: 3; margin-top: -4px;
+  transition: background 0.3s, border-color 0.3s, transform 0.3s;
 }
-/* Current stop: big glowing circle, no dot for others */
+/* Current stop: solid blue node, gentle pulse ring */
 .tl-dot.current {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--green); border: none;
-  box-shadow: 0 0 0 5px rgba(48,209,88,0.22), 0 0 20px rgba(48,209,88,0.55);
-  animation: pulseGreen 1.4s ease-in-out infinite;
-}
-.tl-dot.dest.current {
-  background: var(--blue);
-  box-shadow: 0 0 0 5px rgba(10,132,255,0.22), 0 0 20px rgba(10,132,255,0.5);
-  animation: pulseBlue 1.4s ease-in-out infinite;
-}
-@keyframes pulseGreen {
-  0%,100% { box-shadow: 0 0 0 5px rgba(48,209,88,0.22), 0 0 20px rgba(48,209,88,0.55); }
-  50%      { box-shadow: 0 0 0 9px rgba(48,209,88,0.1),  0 0 30px rgba(48,209,88,0.8); }
+  width: 17px; height: 17px;
+  background: var(--blue); border: 3px solid #fff;
+  box-shadow: 0 0 0 4px rgba(10,132,255,0.22);
+  animation: pulseBlue 1.6s ease-in-out infinite;
 }
 @keyframes pulseBlue {
-  0%,100% { box-shadow: 0 0 0 5px rgba(10,132,255,0.22), 0 0 20px rgba(10,132,255,0.5); }
-  50%      { box-shadow: 0 0 0 9px rgba(10,132,255,0.1),  0 0 30px rgba(10,132,255,0.8); }
+  0%,100% { box-shadow: 0 0 0 4px rgba(10,132,255,0.22); }
+  50%      { box-shadow: 0 0 0 7px rgba(10,132,255,0.12); }
 }
 
 /* First row: no segment above */
 .stop-first .tl-seg { display: none; }
 
 /* Stop card */
-.stop-card { flex: 1; padding: 10px 8px 14px 2px; border-radius: var(--radius); transition: background 0.2s; }
-.stop-card.current { background: rgba(48,209,88,0.07); }
+.stop-card { flex: 1; padding: 10px 12px 14px 12px; border-radius: var(--radius-lg); transition: background 0.2s; }
+.stop-card.current { background: var(--blue); }
+.stop-card.current .stop-seq-num,
+.stop-card.current .stop-name-main,
+.stop-card.current .stop-lm,
+.stop-card.current .stop-eta { color: #fff; }
+.stop-card.current .tag-here { background: rgba(255,255,255,0.25); color: #fff; }
+.stop-card.current .tag-dist { background: rgba(255,255,255,0.18); border-color: transparent; color: #fff; }
 .stop-card.passed { opacity: 0.36; }
 .stop-card.dest-card { background: rgba(10,132,255,0.07); }
 .stop-card.beyond { opacity: 0.2; pointer-events: none; }
+.stop-card.next .stop-name-main { color: var(--blue); }
+.next-station-chip {
+  display: inline-flex; align-items: center; background: var(--card2); color: var(--text2);
+  font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.3px;
+  padding: 3px 8px; border-radius: 6px; margin-bottom: 5px;
+}
 .stop-row.beyond-row .tl-seg { opacity: 0.15; }
 .stop-row.beyond-row .tl-dot { opacity: 0.15; }
 .stop-seq-num { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 2px; font-weight: 500; }
@@ -523,7 +528,7 @@ body.scroll-locked-mode #etaChip {
 
   <div class="bottom-bar">
     <button class="btn-primary" id="mainBtn" onclick="requestStop()">🛑 <span id="btn-stop-text">Stop Tracking</span></button>
-    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change</button>
+    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change Destination</button>
   </div>
 </div>
 
@@ -684,18 +689,18 @@ body.scroll-locked-mode #etaChip {
 const STOPS = [
   { name:"Monumento", coords:[[14.65730,120.98838],[14.65724,120.98836],[14.65722,120.98835],[14.65732,120.98832],[14.65710,120.99674],[14.65727,120.99671],[14.65708,120.99682],[14.65742,120.98791],[14.65737,120.98795],[14.65732,120.98635]], landmarks:"Motortrade · Jollibee · KFC · Goldilocks · Greenwich · Tapa King · Shakey's · MCU · Honda · PNB" },
   { name:"Bagong Barrio", coords:[[14.65729,120.99717]], landmarks:"Uncle John's · Pag-Ibig Fund Caloocan-EDSA" },
-  { name:"Balintawak", coords:[[14.65753,121.00486],[14.65737,121.00545]], landmarks:"Puregold Balintawak · 1160 EDSA" },
+  { name:"Balintawak", coords:[[14.65753,121.00486],[14.65737,121.00545]], landmarks:"Puregold Balintawak" },
   { name:"Kaingin / Royal", coords:[[14.65754,121.01111],[14.65776,121.01122],[14.65747,121.01186],[14.65745,121.01183]], landmarks:"Floor Center · Apolonio Samson" },
-  { name:"Roosevelt / Muñoz", coords:[[14.65786,121.01987],[14.65773,121.02024],[14.65759,121.01922],[14.65764,121.01937],[14.65763,121.01928]], landmarks:"EDSA-Muñoz Pedestrian Footbridge · Muñoz Market · Jollibee" },
-  { name:"SM North EDSA", coords:[[14.65614,121.02858],[14.65612,121.02863],[14.65579,121.02829],[14.65576,121.02835]], landmarks:"SM North EDSA · Word of Hope · Santo Cristo" },
-  { name:"Trinoma / North Avenue", coords:[[14.65169,121.03289],[14.65161,121.03229],[14.65160,121.03230],[14.65159,121.03235]], landmarks:"Trinoma Mall · East Maya Drive · Phil-Am" },
-  { name:"PHILAM QC", coords:[[14.64763,121.03563],[14.64700,121.03576],[14.64748,121.03520]], landmarks:"Vertis North · Bagong Pag-asa · Quezon Avenue Station" },
+  { name:"Fernando Poe Jr. (Roosevelt) / Muñoz", coords:[[14.65786,121.01987],[14.65773,121.02024],[14.65759,121.01922],[14.65764,121.01937],[14.65763,121.01928]], landmarks:"Muñoz Market · Jollibee" },
+  { name:"SM North EDSA", coords:[[14.65614,121.02858],[14.65612,121.02863],[14.65579,121.02829],[14.65576,121.02835]], landmarks:"SM North· Word of Hope · Santo Cristo" },
+  { name:"North Avenue", coords:[[14.65169,121.03289],[14.65161,121.03229],[14.65160,121.03230],[14.65159,121.03235]], landmarks:"Trinoma" },
+  { name:"Philam Quezon City", coords:[[14.64763,121.03563],[14.64700,121.03576],[14.64748,121.03520]], landmarks:"Vertis North" },
   { name:"Quezon Avenue", coords:[[14.64170,121.03940],[14.64190,121.03937]], landmarks:"Cyberpod Two · Kenny Rogers · Tokyo Tokyo · Pinyahan" },
-  { name:"GMA Kamuning", coords:[[14.63610,121.04210],[14.63599,121.04223]], landmarks:"Victoria Sports Tower · VS Hotel · South Triangle" },
-  { name:"Nepa Qmart", coords:[[14.62801,121.04712],[14.62837,121.04689],[14.62799,121.04713]], landmarks:"Nepa Q-Mart · Pinagkaisahan" },
-  { name:"Main Avenue", coords:[[14.61437,121.05326],[14.61419,121.05355],[14.61435,121.05334]], landmarks:"Cubao · SM Hypermarket · INGCO · EDSA-Bonny Serrano Footbridge" },
-  { name:"Santolan-Annapolis", coords:[[14.60880,121.05593]], landmarks:"PNP · Bagong Lipunan ng Crame" },
-  { name:"Ortigas / SM Megamall", coords:[[14.58651,121.05617],[14.58635,121.05621]], landmarks:"SM Megamall · SM Busway Station" }
+  { name:"Kamuning", coords:[[14.63610,121.04210],[14.63599,121.04223]], landmarks:"GMA· Victoria Sports Tower · VS Hotel · South Triangle" },
+  { name:"Nepa Q-Mart", coords:[[14.62801,121.04712],[14.62837,121.04689],[14.62799,121.04713]], landmarks:"Nepa Q-Mart" },
+  { name:"Main Avenue (Cubao)", coords:[[14.61437,121.05326],[14.61419,121.05355],[14.61435,121.05334]], landmarks:"SM Hypermarket · INGCO" },
+  { name:"Santolan - Annapolis", coords:[[14.60880,121.05593]], landmarks:"PNP" },
+  { name:"Ortigas", coords:[[14.58651,121.05617],[14.58635,121.05621]], landmarks:"SM Megamall" }
 ];
 
 const T = {
@@ -713,7 +718,8 @@ const T = {
     rem5:"Keep your valuables in front of you.", rem7:"Hold the handrail while standing.",
     rem10:"Be aware of your surroundings.", rem11:"Take all belongings before getting off.",
     list_label:"Bus Stops", btn_stop:"Stop Tracking",
-    btn_back:"↩ Change", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
+    btn_back:"↩ Change Destination", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
+    next_station_label:"Next Station:",
     dest_alert_arrive:n=>`<b>Get off now! ${n}</b> — this is your stop.`,
     dest_alert_near:(n,d)=>`Almost at <b>${n}</b> — only ${d} away!`,
     missed_alert:n=>`Did you miss <b>${n}</b>?`,
@@ -757,6 +763,7 @@ const T = {
     rem10:"Maging alerto sa paligid mo.", rem11:"Siguraduhing dala mo lahat bago bumaba.",
     list_label:"Mga Hintuan", btn_stop:"I-stop ang Tracking",
     btn_back:"↩ Baguhin", tag_here:"📍 Nandito ka", tag_next:"Susunod →", tag_dest:"🏁 Bababa dito",
+    next_station_label:"Susunod na Hintuan:",
     dest_alert_arrive:n=>`<b>Bababa ka na! ${n}</b> — ito na ang stop mo.`,
     dest_alert_near:(n,d)=>`Malapit na ang <b>${n}</b> — ${d} na lang!`,
     missed_alert:n=>`Nalagpasan mo ba ang <b>${n}</b>?`,
@@ -963,12 +970,12 @@ function launchTracker(){
   applyTranslations(); renderList();
 }
 function goBack(){
-  stopGps(); releaseWakeLock(); closeSettings(); closeArrival();
+  releaseWakeLock(); closeSettings(); closeArrival();
   if(scrollLocked){ scrollLocked=false; document.body.classList.remove('scroll-locked-mode'); document.getElementById('stopList').classList.remove('scroll-locked'); }
   document.getElementById('remindersModal').classList.remove('open');
   document.getElementById('screenTracker').classList.add('hidden');
   document.getElementById('screenOnboard').classList.remove('hidden');
-  document.getElementById('noGps').classList.add('show');
+  document.getElementById('noGps').classList.toggle('show', !tracking);
   document.getElementById('curCard').classList.remove('show');
   document.getElementById('destAlert').classList.remove('show');
   document.getElementById('missedAlert').classList.remove('show');
@@ -1062,11 +1069,18 @@ function updateDotsAndCards(currentIdx,closestIdx){
     const dot=row.querySelector('.tl-dot');
     if(dot) dot.className='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
     const card=row.querySelector('.stop-card');
-    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isBeyond?' beyond':'');
+    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isBeyond?' beyond':isNext?' next':'');
+    const nextChip=row.querySelector('.next-station-chip');
+    if(nextChip) nextChip.remove();
+    if(isNext&&!isBeyond&&card){
+      const chip=document.createElement('div');
+      chip.className='next-station-chip';
+      chip.innerHTML=`<span>${T[lang].next_station_label}</span>`;
+      card.insertBefore(chip,card.firstChild);
+    }
     const tagsEl=row.querySelector('.stop-tags');
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
-    if(isNext&&!isBeyond)tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
     if(isDest&&!isCurrent)tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
     if(isBeyond)tags+=`<span class="tag tag-peek">${lang==='tl'?'lampas sa stop mo':'beyond your stop'}</span>`;
     if(userLat!==null&&!isCurrent&&!isPassed&&!isBeyond){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
@@ -1086,21 +1100,22 @@ function renderList(currentIdx=-1,closestIdx=-1,fills=null){
     const fill=fills?(fills[i]||0):0;
     const dotCls='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
     // beyond = very faded, passed = faded, current = highlighted, dest = blue highlight
-    const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isBeyond?' beyond':'');
+    const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isBeyond?' beyond':isNext?' next':'');
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
-    if(isNext&&!isBeyond)tags+=`<span class="tag tag-next">${T[lang].tag_next}</span>`;
     if(isDest&&!isCurrent)tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
     if(isBeyond)tags+=`<span class="tag tag-peek">${lang==='tl'?'lampas sa stop mo':'beyond your stop'}</span>`;
     if(userLat!==null&&!isCurrent&&!isPassed&&!isBeyond){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
     const etaMins=computeETA(i);
     const etaHtml=etaMins!==null&&!isCurrent&&!isPassed&&!isBeyond?`<div class="stop-eta">~${etaMins} min</div>`:'';
+    const nextChipHtml=(isNext&&!isBeyond)?`<div class="next-station-chip"><span>${T[lang].next_station_label}</span></div>`:'';
     return `<div class="stop-row${isFirst?' stop-first':''}${isLast?' stop-last':''}${isBeyond?' beyond-row':''}">
       <div class="tl-col">
         <div class="tl-seg" style="--fill:${fill.toFixed(3)}"></div>
         <div class="${dotCls}"></div>
       </div>
       <div class="${cardCls}">
+        ${nextChipHtml}
         <div class="stop-seq-num">${T[lang].stop_of(i+1,visCount)}</div>
         <div class="stop-name-main">${stop.name}</div>
         <div class="stop-lm">${stop.landmarks}</div>
@@ -1132,6 +1147,8 @@ function renderNoteHistory(){ const hist=document.getElementById('notesHistory')
 applyTranslations();
 buildDestList();
 renderList();
+// Always ask for the user's current location as soon as LambRoute opens
+startGps();
 </script>
 </body>
 </html>
