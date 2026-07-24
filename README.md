@@ -1,3 +1,5 @@
 # LambRoute
-Bus stop tracker for EDSA commuters
-<b>Link: https://imlambertf.github.io/LambRoute</b>
+
+Bus stop tracker for EDSA commuters.
+
+**Use this link:** https://imlambertf.github.io/LambRoute
