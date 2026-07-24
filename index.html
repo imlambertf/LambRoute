@@ -896,12 +896,15 @@ function computeTripProgress(localIdx){
   }
 }
 
+function saveSettings(){ try{ localStorage.setItem('lambSettings', JSON.stringify({theme,lang,fontSize})); }catch(e){} }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('lambSettings')); return s||null; }catch(e){ return null; } }
+
 // ── SETTINGS ──
 function openSettings(){ updateGpsSettingUI(); document.getElementById('settingsSheet').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsSheet').classList.remove('open'); }
-function setTheme(t){ theme=t; document.body.classList.toggle('light-mode',t==='light'); document.body.classList.toggle('oled-mode',t==='oled'); ['sh-dark','sh-oled','sh-light'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('active',(t==='dark'&&id==='sh-dark')||(t==='oled'&&id==='sh-oled')||(t==='light'&&id==='sh-light')); }); }
-function setFontSize(size){ fontSize=size; const sc={small:0.9,normal:1,large:1.15}; document.documentElement.style.setProperty('--font-scale',sc[size]); ['fs-small','fs-normal','fs-large'].forEach(id=>document.getElementById(id).classList.toggle('active',id===`fs-${size}`)); }
-function setLang(l){ lang=l; document.getElementById('sh-en').classList.toggle('active',l==='en'); document.getElementById('sh-tl').classList.toggle('active',l==='tl'); applyTranslations(); buildDestList(); if(tracking||userLat!==null) render(); else renderList(); }
+function setTheme(t){ theme=t; document.body.classList.toggle('light-mode',t==='light'); document.body.classList.toggle('oled-mode',t==='oled'); ['sh-dark','sh-oled','sh-light'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('active',(t==='dark'&&id==='sh-dark')||(t==='oled'&&id==='sh-oled')||(t==='light'&&id==='sh-light')); }); saveSettings(); }
+function setFontSize(size){ fontSize=size; const sc={small:0.9,normal:1,large:1.15}; document.documentElement.style.setProperty('--font-scale',sc[size]); ['fs-small','fs-normal','fs-large'].forEach(id=>document.getElementById(id).classList.toggle('active',id===`fs-${size}`)); saveSettings(); }
+function setLang(l){ lang=l; document.getElementById('sh-en').classList.toggle('active',l==='en'); document.getElementById('sh-tl').classList.toggle('active',l==='tl'); saveSettings(); applyTranslations(); buildDestList(); if(tracking||userLat!==null) render(); else renderList(); }
 
 // Reminders accordion
 function toggleRemAcc(){
@@ -1284,6 +1287,16 @@ function closeNotes(){ document.getElementById('notesModal').classList.remove('o
 function saveNote(){ const txt=document.getElementById('tripNoteInput').value.trim();if(!txt)return;tripNotes.unshift({text:txt,date:new Date().toLocaleString()});try{ localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30))); }catch(e){} document.getElementById('tripNoteInput').value='';renderNoteHistory(); }
 function renderNoteHistory(){ const hist=document.getElementById('notesHistory');if(!tripNotes.length){hist.innerHTML='';return;}hist.innerHTML=`<div class="notes-history-label">${T[lang].notes_history_label}</div>`+tripNotes.slice(0,5).map(n=>`<div class="note-entry"><div class="note-entry-date">${n.date}</div>${n.text}</div>`).join(''); }
 
+const savedSettings=loadSettings();
+if(savedSettings){
+  if(savedSettings.theme) setTheme(savedSettings.theme);
+  if(savedSettings.fontSize) setFontSize(savedSettings.fontSize);
+  if(savedSettings.lang){
+    lang=savedSettings.lang;
+    document.getElementById('sh-en').classList.toggle('active',lang==='en');
+    document.getElementById('sh-tl').classList.toggle('active',lang==='tl');
+  }
+}
 applyTranslations();
 buildDestList();
 renderList();
