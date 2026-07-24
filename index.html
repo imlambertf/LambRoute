@@ -183,6 +183,11 @@ body.scroll-locked-mode #etaChip {
 /* ── SKIP / "JUST TRACK ME" VIEW — circle (current) + box (next stop) ── */
 .skip-view { display: none; flex-direction: column; align-items: center; padding: 36px 24px 0; flex-shrink: 0; }
 .skip-view.show { display: flex; }
+.skip-pill {
+  display: inline-flex; align-items: center; gap: 5px; background: var(--green); color: #000;
+  font-size: calc(11px * var(--font-scale)); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  border-radius: 20px; padding: 5px 12px; margin-bottom: 16px;
+}
 .skip-circle {
   position: relative; width: 200px; height: 200px; border-radius: 50%;
   background: var(--green); border: 6px solid var(--green-soft);
@@ -557,6 +562,7 @@ body.trip-moving .tl-seg::before {
   </div>
 
   <div id="skipView" class="skip-view">
+    <div class="skip-pill" id="skipPillLabel">📍 You are here</div>
     <div class="skip-circle">
       <div class="skip-circle-drain" id="skipDrain"></div>
       <div class="skip-circle-label" id="skipCurName">—</div>
@@ -941,7 +947,7 @@ function applyTranslations(){
    ['rm-title','rm_title'],['rm-sub','rm_sub'],['rm1','rm1'],['rm2','rm2'],
    ['rm5','rm5'],['rm6','rm6'],['rm7','rm7'],['rm8','rm8'],['rm-go-btn','rm_go'],
    ['conf-title','conf_title'],['conf-sub','conf_sub'],['conf-yes','conf_yes'],['conf-no','conf_no'],
-   ['skipNextPrefix','skip_next_label'],
+   ['skipNextPrefix','skip_next_label'],['skipPillLabel','cur_pill'],
   ].forEach(([id,k])=>s(id,k));
   document.getElementById('ob-btn-start').textContent=selectedDest===null||selectedDest===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[selectedDest].name);
   updateScrollLockBtn(); updateGpsSettingUI();
@@ -1054,10 +1060,12 @@ function launchTracker(){
   document.getElementById('navRouteName').textContent=routeText;
   document.getElementById('skipView').classList.toggle('show', isSkip);
   document.getElementById('listLabel').classList.toggle('show', !isSkip);
+  document.getElementById('stopList').style.display = isSkip ? 'none' : '';
   document.getElementById('scrollLockBtn').classList.toggle('show', !isSkip);
   arrivalShown=false; countdownFired={};
   segFills=new Array(STOPS.length).fill(0);
-  applyTranslations(); renderList();
+  applyTranslations();
+  if(isSkip){ document.getElementById('stopList').innerHTML=''; } else { renderList(); }
 }
 function goBack(){
   releaseWakeLock(); closeSettings(); closeArrival();
