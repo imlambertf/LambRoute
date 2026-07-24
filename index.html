@@ -187,19 +187,19 @@ body.scroll-locked-mode #etaChip {
 
 .tl-col { width: 44px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; align-self: stretch; }
 
-/* Segment — rounded blue capsule rail, fills from top to bottom */
+/* Segment — rounded green capsule rail, fills from top to bottom */
 .tl-seg {
-  width: 10px; flex: 1; background: rgba(10,132,255,0.18); border-radius: 999px;
+  width: 10px; flex: 1; background: var(--green-soft); border-radius: 999px;
   position: relative; overflow: hidden; min-height: 20px; margin-top: 8px;
 }
-/* Blue fill progress */
+/* Green fill progress */
 .tl-seg::after {
   content: ''; position: absolute; left: 0; right: 0; top: 0;
   height: calc(var(--fill,0) * 100%);
-  background: var(--blue); border-radius: 999px;
+  background: var(--green); border-radius: 999px;
   transition: height 1.8s cubic-bezier(0.25,0.46,0.45,0.94);
 }
-/* Animated chevron flow inside the green fill */
+/* Animated chevron flow inside the fill — only runs once the trip is actually moving */
 .tl-seg::before {
   content: '';
   position: absolute; left: 0; right: 0; top: 0;
@@ -212,8 +212,10 @@ body.scroll-locked-mode #etaChip {
     rgba(0,0,0,0.18) 8px
   );
   border-radius: 5px;
-  animation: stripFlow 0.8s linear infinite;
   z-index: 1;
+}
+body.trip-moving .tl-seg::before {
+  animation: stripFlow 0.8s linear infinite;
 }
 @keyframes stripFlow {
   from { background-position: 0 0; }
@@ -223,20 +225,22 @@ body.scroll-locked-mode #etaChip {
 /* Dot — below segment, always a visible node like the reference rail */
 .tl-dot {
   width: 15px; height: 15px; border-radius: 50%;
-  background: var(--bg); border: 3px solid var(--blue);
+  background: var(--bg); border: 3px solid var(--green);
   flex-shrink: 0; z-index: 3; margin-top: -4px;
   transition: background 0.3s, border-color 0.3s, transform 0.3s;
 }
-/* Current stop: solid blue node, gentle pulse ring */
+/* Current stop: solid green node. Pulse ring only animates once actually moving */
 .tl-dot.current {
   width: 17px; height: 17px;
-  background: var(--blue); border: 3px solid #fff;
-  box-shadow: 0 0 0 4px rgba(10,132,255,0.22);
-  animation: pulseBlue 1.6s ease-in-out infinite;
+  background: var(--green); border: 3px solid #fff;
+  box-shadow: 0 0 0 4px rgba(48,209,88,0.22);
 }
-@keyframes pulseBlue {
-  0%,100% { box-shadow: 0 0 0 4px rgba(10,132,255,0.22); }
-  50%      { box-shadow: 0 0 0 7px rgba(10,132,255,0.12); }
+body.trip-moving .tl-dot.current {
+  animation: pulseGreen 1.6s ease-in-out infinite;
+}
+@keyframes pulseGreen {
+  0%,100% { box-shadow: 0 0 0 4px rgba(48,209,88,0.22); }
+  50%      { box-shadow: 0 0 0 7px rgba(48,209,88,0.12); }
 }
 
 /* First row: no segment above */
@@ -244,17 +248,18 @@ body.scroll-locked-mode #etaChip {
 
 /* Stop card */
 .stop-card { flex: 1; padding: 10px 12px 14px 12px; border-radius: var(--radius-lg); transition: background 0.2s; }
-.stop-card.current { background: var(--blue); }
+.stop-card.current { background: var(--green); }
 .stop-card.current .stop-seq-num,
 .stop-card.current .stop-name-main,
 .stop-card.current .stop-lm,
-.stop-card.current .stop-eta { color: #fff; }
-.stop-card.current .tag-here { background: rgba(255,255,255,0.25); color: #fff; }
-.stop-card.current .tag-dist { background: rgba(255,255,255,0.18); border-color: transparent; color: #fff; }
+.stop-card.current .stop-eta { color: #000; }
+.stop-card.current .tag-here { background: rgba(0,0,0,0.15); color: #000; }
+.stop-card.current .tag-dist { background: rgba(0,0,0,0.1); border-color: transparent; color: #000; }
 .stop-card.passed { opacity: 0.36; }
 .stop-card.dest-card { background: rgba(10,132,255,0.07); }
+.stop-card.current.dest-card { background: var(--green); }
 .stop-card.beyond { opacity: 0.2; pointer-events: none; }
-.stop-card.next .stop-name-main { color: var(--blue); }
+.stop-card.next .stop-name-main { color: var(--green-mid); }
 .next-station-chip {
   display: inline-flex; align-items: center; background: var(--card2); color: var(--text2);
   font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.3px;
@@ -400,16 +405,13 @@ body.scroll-locked-mode #etaChip {
 .sheet-done:active { opacity: 0.8; }
 
 /* ── MODALS ── */
-#reportModal, #notesModal { position: fixed; inset: 0; z-index: 300; display: none; }
-#reportModal.open, #notesModal.open { display: block; }
+#notesModal { position: fixed; inset: 0; z-index: 300; display: none; }
+#notesModal.open { display: block; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
 .modal-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--card); border-radius: 20px 20px 0 0; padding: 0 20px calc(env(safe-area-inset-bottom,20px) + 16px); animation: slideUpSheet 0.3s cubic-bezier(0.34,1.2,0.64,1); }
 .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 14px; }
 .modal-title { font-size: calc(17px * var(--font-scale)); font-weight: 700; margin-bottom: 10px; }
 .modal-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); margin-bottom: 12px; line-height: 1.5; }
-.report-opts { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
-.report-opt { display: flex; align-items: center; gap: 12px; padding: 11px 14px; background: var(--card2); border-radius: var(--radius); cursor: pointer; font-size: calc(13px * var(--font-scale)); transition: background 0.15s; border: 1.5px solid transparent; }
-.report-opt.selected { border-color: var(--blue); background: rgba(10,132,255,0.1); }
 .notes-area { width: 100%; min-height: 110px; background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: inherit; font-size: calc(14px * var(--font-scale)); padding: 12px; resize: none; line-height: 1.5; margin-bottom: 8px; }
 .notes-area:focus { outline: none; border-color: var(--blue); }
 .notes-history { margin-top: 10px; }
@@ -528,7 +530,7 @@ body.scroll-locked-mode #etaChip {
 
   <div class="bottom-bar">
     <button class="btn-primary" id="mainBtn" onclick="requestStop()">🛑 <span id="btn-stop-text">Stop Tracking</span></button>
-    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change Destination</button>
+    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change</button>
   </div>
 </div>
 
@@ -649,26 +651,6 @@ body.scroll-locked-mode #etaChip {
   </div>
 </div>
 
-<!-- ══ REPORT MODAL ══ -->
-<div id="reportModal">
-  <div class="modal-backdrop" onclick="closeReport()"></div>
-  <div class="modal-panel">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="rep-title">Report an Issue</div>
-    <div class="modal-sub" id="rep-sub">What's the problem?</div>
-    <div class="report-opts">
-      <div class="report-opt" onclick="selectReport(this,'wrong_coords')">📍 Wrong stop coordinates</div>
-      <div class="report-opt" onclick="selectReport(this,'wrong_name')">✏️ Wrong stop name or landmark</div>
-      <div class="report-opt" onclick="selectReport(this,'gps_issue')">📡 GPS not detecting my location</div>
-      <div class="report-opt" onclick="selectReport(this,'missing_stop')">🚏 Missing bus stop</div>
-      <div class="report-opt" onclick="selectReport(this,'other')">💬 Other issue</div>
-    </div>
-    <textarea class="notes-area" id="reportNote" placeholder="Add details (optional)..." rows="3"></textarea>
-    <button class="modal-btn" onclick="submitReport()" id="rep-submit">Submit Report</button>
-    <button class="modal-btn modal-btn-cancel" onclick="closeReport()" id="rep-cancel">Cancel</button>
-  </div>
-</div>
-
 <!-- ══ NOTES MODAL ══ -->
 <div id="notesModal">
   <div class="modal-backdrop" onclick="closeNotes()"></div>
@@ -718,7 +700,7 @@ const T = {
     rem5:"Keep your valuables in front of you.", rem7:"Hold the handrail while standing.",
     rem10:"Be aware of your surroundings.", rem11:"Take all belongings before getting off.",
     list_label:"Bus Stops", btn_stop:"Stop Tracking",
-    btn_back:"↩ Change Destination", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
+    btn_back:"↩ Change", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
     next_station_label:"Next Station:",
     dest_alert_arrive:n=>`<b>Get off now! ${n}</b> — this is your stop.`,
     dest_alert_near:(n,d)=>`Almost at <b>${n}</b> — only ${d} away!`,
@@ -733,7 +715,6 @@ const T = {
     sh_font:"Text Size", sh_rem:"Reminders", sh_rem_acc:"View reminders",
     sh_tools:"Tools", sh_notes:"Trip Notes", sh_notes_sub:"Write notes about your commute",
     sh_report:"Report an Issue", sh_report_sub:"Wrong stop info, broken coords, etc.", sh_done:"Done",
-    rep_title:"Report an Issue", rep_sub:"What's the problem?", rep_submit:"Submit Report", rep_cancel:"Cancel",
     notes_title:"Trip Notes", notes_sub:"Jot down anything about your commute.", notes_save:"Save Note", notes_cancel:"Cancel",
     scroll_locked:"🔒", scroll_unlocked:"🔓",
     toast_locked:"Auto-scroll off", toast_unlocked:"Auto-scroll on",
@@ -777,7 +758,6 @@ const T = {
     sh_font:"Laki ng Teksto", sh_rem:"Huwag kalimutan", sh_rem_acc:"Tingnan ang mga paalala",
     sh_tools:"Mga Kasangkapan", sh_notes:"Trip Notes", sh_notes_sub:"Mag-sulat tungkol sa biyahe mo",
     sh_report:"Mag-report ng Issue", sh_report_sub:"Maling impormasyon, coords, atbp.", sh_done:"Tapos na",
-    rep_title:"Mag-report ng Issue", rep_sub:"Ano ang problema?", rep_submit:"I-submit", rep_cancel:"Kanselahin",
     notes_title:"Trip Notes", notes_sub:"Isulat ang tungkol sa iyong biyahe.", notes_save:"I-save", notes_cancel:"Kanselahin",
     scroll_locked:"🔒", scroll_unlocked:"🔓",
     toast_locked:"Naka-off ang auto-scroll", toast_unlocked:"Naka-on ang auto-scroll",
@@ -805,6 +785,11 @@ let arrivalShown=false, toastTimer=null;
 let tripNotes=JSON.parse(localStorage.getItem('lambNotes')||'[]');
 let selectedReportType=null;
 let remAccOpen=false;
+// Trip-scoping: only show stops between where the trip started and the chosen destination
+let tripOriginIdx=null, tripStops=[], tripDirection=1, tripCum=[0], tripTotal=1, tripStopsDirty=true;
+// Movement detection: animations only turn on once the trip is actually moving
+let prevLat=null, prevLng=null, isMoving=false;
+const MOVE_DIST_THRESHOLD=20, MOVE_SPEED_THRESHOLD=0.6;
 
 // ── HAVERSINE ──
 function hav(la1,lo1,la2,lo2){ const R=6371000,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180,a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
@@ -829,6 +814,53 @@ function computeRouteProgress(ci){
 function computeETA(destIdx){ if(userLat===null||destIdx<0||lastSpeed<0.5) return null; const d=distToStop(destIdx); return d===Infinity?null:Math.ceil(d/lastSpeed/60); }
 
 const THRESHOLD=150;
+
+// ── TRIP SCOPING (direction-aware, origin→destination only) ──
+function nearestStopIndex(){
+  let ci=0,cd=Infinity;
+  STOPS.forEach((_,i)=>{const d=distToStop(i);if(d<cd){cd=d;ci=i;}});
+  return {ci,cd};
+}
+function buildTripStops(){
+  if(selectedDest<0){
+    // No specific destination chosen — track across the full route as before
+    tripStops=STOPS.map((_,i)=>i); tripDirection=1;
+  } else if(tripOriginIdx===null){
+    // GPS origin not known yet — best-guess range until a real fix arrives
+    if(selectedDest===0){ tripStops=STOPS.map((_,i)=>i).slice().reverse(); tripDirection=-1; }
+    else { tripStops=STOPS.slice(0,selectedDest+1).map((_,i)=>i); tripDirection=1; }
+  } else {
+    tripDirection = selectedDest>=tripOriginIdx?1:-1;
+    tripStops=[];
+    for(let i=tripOriginIdx; tripDirection===1? i<=selectedDest : i>=selectedDest; i+=tripDirection){ tripStops.push(i); }
+  }
+  tripCum=[0];
+  for(let k=1;k<tripStops.length;k++){
+    const a=CENTROIDS[tripStops[k-1]], b=CENTROIDS[tripStops[k]];
+    tripCum.push(tripCum[k-1]+hav(a[0],a[1],b[0],b[1]));
+  }
+  tripTotal=tripCum[tripCum.length-1]||1;
+  tripStopsDirty=true;
+}
+function computeTripProgress(localIdx){
+  if(userLat===null||localIdx<0||tripStops.length<2) return 0;
+  const n=tripStops.length;
+  if(localIdx===0) return 0;
+  if(localIdx>=n-1) return 1;
+  const origPrev=tripStops[localIdx-1], origCur=tripStops[localIdx], origNext=tripStops[localIdx+1];
+  const dPrev=hav(userLat,userLng,...CENTROIDS[origPrev]);
+  const dCur=distToStop(origCur), dNxt=distToStop(origNext);
+  const dCurCentroid=hav(userLat,userLng,...CENTROIDS[origCur]);
+  if(dNxt<dPrev){
+    const seg=hav(...CENTROIDS[origCur],...CENTROIDS[origNext]);
+    const f=Math.max(0,Math.min(1,dCur/(dCur+dNxt+0.001)));
+    return (tripCum[localIdx]+f*seg)/tripTotal;
+  } else {
+    const seg=hav(...CENTROIDS[origPrev],...CENTROIDS[origCur]);
+    const f=Math.max(0,Math.min(1,dPrev/(dPrev+dCurCentroid+0.001)));
+    return (tripCum[localIdx-1]+f*seg)/tripTotal;
+  }
+}
 
 // ── SETTINGS ──
 function openSettings(){ updateGpsSettingUI(); document.getElementById('settingsSheet').classList.add('open'); }
@@ -858,7 +890,6 @@ function applyTranslations(){
    ['sh-rem-label','sh_rem'],['sh-rem-acc-label','sh_rem_acc'],
    ['sh-tools-label','sh_tools'],['sh-notes-label','sh_notes'],['sh-notes-sub','sh_notes_sub'],
    ['sh-report-label','sh_report'],['sh-report-sub','sh_report_sub'],['sh-done','sh_done'],
-   ['rep-title','rep_title'],['rep-sub','rep_sub'],['rep-submit','rep_submit'],['rep-cancel','rep_cancel'],
    ['notes-title','notes_title'],['notes-sub','notes_sub'],['notes-save','notes_save'],['notes-cancel','notes_cancel'],
    ['arr-headline','arr_headline'],['arr-sub','arr_sub'],['arr-lm-label','arr_lm_label'],['arr-close-btn','arr_close'],
    ['rm-title','rm_title'],['rm-sub','rm_sub'],['rm1','rm1'],['rm2','rm2'],
@@ -922,6 +953,9 @@ function confirmStop(){
   document.getElementById('scrollLockBtn').classList.remove('show');
   document.getElementById('ticketBanner').classList.remove('gone');
   arrivalShown=false; countdownFired={}; segFills=new Array(STOPS.length).fill(0);
+  tripOriginIdx=null; tripStops=[]; tripStopsDirty=true;
+  isMoving=false; prevLat=null; prevLng=null;
+  document.body.classList.remove('trip-moving');
   selectedDest=null;
   document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
   document.getElementById('skipBtn').classList.remove('selected');
@@ -955,13 +989,15 @@ function closeRemindersModal(){
 function launchTracker(){
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
-  // Monumento=index 0, Ortigas=index 13
-  // If dest is Monumento (0), user is going Ortigas→Monumento
-  // Otherwise show Monumento→[dest]
+  // Capture the real starting point from GPS if we already have a fix;
+  // otherwise buildTripStops() falls back to a best guess until one arrives
+  tripOriginIdx = (userLat!==null) ? nearestStopIndex().ci : null;
+  buildTripStops();
+  // Route label — reflects the actual detected origin once known, falls back to Monumento/Ortigas otherwise
+  let originName = tripOriginIdx!==null ? STOPS[tripOriginIdx].name : (selectedDest===0 ? 'Ortigas' : 'Monumento');
   let routeText;
-  if(selectedDest===0) routeText='Ortigas → Monumento';
-  else if(selectedDest>0) routeText=`Monumento → ${STOPS[selectedDest].name}`;
-  else routeText='Monumento → Ortigas';
+  if(selectedDest>=0) routeText = `${originName} → ${STOPS[selectedDest].name}`;
+  else routeText = originName;
   document.getElementById('navRouteName').textContent=routeText;
   document.getElementById('listLabel').classList.add('show');
   document.getElementById('scrollLockBtn').classList.add('show');
@@ -983,6 +1019,10 @@ function goBack(){
   document.getElementById('scrollLockBtn').classList.remove('show');
   scrollLocked=false; arrivalShown=false; countdownFired={};
   segFills=new Array(STOPS.length).fill(0); updateScrollLockBtn();
+  // Reset trip scoping so the next launch recalculates origin from wherever the user is now
+  tripOriginIdx=null; tripStops=[]; tripStopsDirty=true;
+  isMoving=false; prevLat=null; prevLng=null;
+  document.body.classList.remove('trip-moving');
 }
 function dismissTicket(){ document.getElementById('ticketBanner').classList.add('gone'); }
 
@@ -1020,41 +1060,64 @@ function onErr(e){
 // ── RENDER ──
 function render(){
   if(userLat===null) return;
-  let ci=0,cd=Infinity;
-  STOPS.forEach((_,i)=>{const d=distToStop(i);if(d<cd){cd=d;ci=i;}});
-  const atStop=cd<=THRESHOLD,currentIdx=atStop?ci:-1;
+  const {ci,cd}=nearestStopIndex();
+  const atStop=cd<=THRESHOLD, rawCurrentIdx=atStop?ci:-1;
+
+  // Capture the real trip origin as soon as we get a GPS fix, if we didn't have one at launch
+  if(selectedDest>=0 && tripOriginIdx===null){ tripOriginIdx=ci; buildTripStops(); }
+
+  // Position within the trip-scoped, direction-aware list (not the raw STOPS index)
+  const currentIdx = rawCurrentIdx>=0 ? tripStops.indexOf(rawCurrentIdx) : -1;
+
+  // Movement detection — animations only switch on once we detect real motion
+  if(prevLat!==null){
+    const moved=hav(prevLat,prevLng,userLat,userLng);
+    if((lastSpeed>MOVE_SPEED_THRESHOLD)||(moved>MOVE_DIST_THRESHOLD)) isMoving=true;
+  }
+  prevLat=userLat; prevLng=userLng;
+  document.body.classList.toggle('trip-moving', isMoving);
 
   document.getElementById('cur-pill-label').textContent=T[lang].cur_pill;
   const card=document.getElementById('curCard');
-  if(atStop){ card.classList.add('show'); document.getElementById('curName').textContent=STOPS[ci].name; document.getElementById('curLandmark').textContent=STOPS[ci].landmarks; const nxt=STOPS[ci+1]; document.getElementById('curNext').innerHTML=nxt?`${T[lang].cur_next_prefix} <b>${nxt.name}</b>`:`<b>${T[lang].cur_last}</b>`; } else card.classList.remove('show');
+  if(atStop){
+    card.classList.add('show');
+    document.getElementById('curName').textContent=STOPS[ci].name;
+    document.getElementById('curLandmark').textContent=STOPS[ci].landmarks;
+    const nxtOrig = currentIdx>=0 && currentIdx+1<tripStops.length ? tripStops[currentIdx+1] : null;
+    document.getElementById('curNext').innerHTML = nxtOrig!==null ? `${T[lang].cur_next_prefix} <b>${STOPS[nxtOrig].name}</b>` : `<b>${T[lang].cur_last}</b>`;
+  } else card.classList.remove('show');
 
   const etaChip=document.getElementById('etaChip');
   if(selectedDest>=0){ const mins=computeETA(selectedDest); if(mins!==null){etaChip.textContent=`${T[lang].eta_prefix}${mins} ${T[lang].eta_min}`;etaChip.classList.add('show');}else etaChip.classList.remove('show'); } else etaChip.classList.remove('show');
 
   const da=document.getElementById('destAlert');
   if(selectedDest>=0){
-    if(atStop&&currentIdx===selectedDest&&!arrivalShown){ arrivalShown=true; showArrival(STOPS[selectedDest]); da.classList.remove('show'); playAudio('arrive'); vibrate([200,100,200,100,400]); }
-    else if(atStop&&currentIdx===selectedDest){ da.classList.add('show'); document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_arrive(STOPS[selectedDest].name); }
-    else { const d=distToStop(selectedDest); if(d<1500&&d>THRESHOLD){da.classList.add('show');document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_near(STOPS[selectedDest].name,fmt(d));playAudio('near');} else if(!(atStop&&currentIdx===selectedDest)) da.classList.remove('show'); }
+    if(atStop&&rawCurrentIdx===selectedDest&&!arrivalShown){ arrivalShown=true; showArrival(STOPS[selectedDest]); da.classList.remove('show'); playAudio('arrive'); vibrate([200,100,200,100,400]); }
+    else if(atStop&&rawCurrentIdx===selectedDest){ da.classList.add('show'); document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_arrive(STOPS[selectedDest].name); }
+    else { const d=distToStop(selectedDest); if(d<1500&&d>THRESHOLD){da.classList.add('show');document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_near(STOPS[selectedDest].name,fmt(d));playAudio('near');} else if(!(atStop&&rawCurrentIdx===selectedDest)) da.classList.remove('show'); }
   }
 
   const ma=document.getElementById('missedAlert');
-  if(selectedDest>=0&&currentIdx>selectedDest){ document.getElementById('missedAlertText').innerHTML=T[lang].missed_alert(STOPS[selectedDest].name); ma.classList.add('show'); } else ma.classList.remove('show');
+  const missed = selectedDest>=0 && rawCurrentIdx>=0 && tripStops.indexOf(rawCurrentIdx)===-1 &&
+    ((tripDirection===1 && rawCurrentIdx>selectedDest) || (tripDirection===-1 && rawCurrentIdx<selectedDest));
+  if(missed){ document.getElementById('missedAlertText').innerHTML=T[lang].missed_alert(STOPS[selectedDest].name); ma.classList.add('show'); } else ma.classList.remove('show');
 
-  if(selectedDest>=0&&currentIdx>=0){ const stopsAway=selectedDest-currentIdx; if(stopsAway>=1&&stopsAway<=3&&!countdownFired[stopsAway]){ countdownFired[stopsAway]=true; vibrate(stopsAway===1?[300,100,300]:stopsAway===2?[200,100,200]:[150]); playAudio('countdown'); } }
+  if(selectedDest>=0&&currentIdx>=0){ const stopsAway=(tripStops.length-1)-currentIdx; if(stopsAway>=1&&stopsAway<=3&&!countdownFired[stopsAway]){ countdownFired[stopsAway]=true; vibrate(stopsAway===1?[300,100,300]:stopsAway===2?[200,100,200]:[150]); playAudio('countdown'); } }
 
-  const progress=computeRouteProgress(ci);
-  const newFills=STOPS.map((_,i)=>{
-    if(i>=STOPS.length-1) return 0;
-    const s=CUM_DIST[i]/TOTAL_DIST,e=CUM_DIST[i+1]/TOTAL_DIST,len=e-s;
+  const progress=computeTripProgress(currentIdx);
+  const newFills=tripStops.map((_,i)=>{
+    if(i>=tripStops.length-1) return 0;
+    const s=tripCum[i]/tripTotal,e=tripCum[i+1]/tripTotal,len=e-s;
     return len===0?0:Math.max(0,Math.min(1,(progress-s)/len));
   });
 
   const list=document.getElementById('stopList');
-  const segs=list.querySelectorAll('.tl-seg');
-  if(segs.length===0){ renderList(currentIdx,ci,newFills); }
-  else { segs.forEach((seg,i)=>{const f=(newFills[i]||0).toFixed(3);if(seg.style.getPropertyValue('--fill')!==f)seg.style.setProperty('--fill',f);}); updateDotsAndCards(currentIdx,ci); }
-  segFills=newFills;
+  if(tripStopsDirty){ tripStopsDirty=false; renderList(currentIdx,ci,newFills); }
+  else {
+    const segs=list.querySelectorAll('.tl-seg');
+    segs.forEach((seg,i)=>{const f=(newFills[i]||0).toFixed(3);if(seg.style.getPropertyValue('--fill')!==f)seg.style.setProperty('--fill',f);});
+    updateDotsAndCards(currentIdx,ci);
+  }
 
   if(!scrollLocked&&currentIdx>=0){ setTimeout(()=>{const rows=list.querySelectorAll('.stop-row:not(.peek-row)');if(rows[currentIdx])rows[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});},200); }
 }
@@ -1064,15 +1127,14 @@ function updateDotsAndCards(currentIdx,closestIdx){
   const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
   rows.forEach((row,i)=>{
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
-    const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===selectedDest;
-    const isBeyond=selectedDest>=0&&i>selectedDest;
+    const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===tripStops.length-1;
     const dot=row.querySelector('.tl-dot');
     if(dot) dot.className='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
     const card=row.querySelector('.stop-card');
-    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isBeyond?' beyond':isNext?' next':'');
+    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isNext?' next':'');
     const nextChip=row.querySelector('.next-station-chip');
     if(nextChip) nextChip.remove();
-    if(isNext&&!isBeyond&&card){
+    if(isNext&&card){
       const chip=document.createElement('div');
       chip.className='next-station-chip';
       chip.innerHTML=`<span>${T[lang].next_station_label}</span>`;
@@ -1082,34 +1144,31 @@ function updateDotsAndCards(currentIdx,closestIdx){
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
     if(isDest&&!isCurrent)tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
-    if(isBeyond)tags+=`<span class="tag tag-peek">${lang==='tl'?'lampas sa stop mo':'beyond your stop'}</span>`;
-    if(userLat!==null&&!isCurrent&&!isPassed&&!isBeyond){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
+    if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(tripStops[i]);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
     if(tagsEl)tagsEl.innerHTML=tags;
   });
 }
 
 function renderList(currentIdx=-1,closestIdx=-1,fills=null){
   const list=document.getElementById('stopList');
-  const visCount=STOPS.length;
+  const visCount=tripStops.length;
 
-  let html=STOPS.map((stop,i)=>{
+  let html=tripStops.map((origIdx,i)=>{
+    const stop=STOPS[origIdx];
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
-    const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===selectedDest;
-    const isBeyond=selectedDest>=0&&i>selectedDest;
+    const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===visCount-1;
     const isFirst=i===0, isLast=i===visCount-1;
     const fill=fills?(fills[i]||0):0;
     const dotCls='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
-    // beyond = very faded, passed = faded, current = highlighted, dest = blue highlight
-    const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isBeyond?' beyond':isNext?' next':'');
+    const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isNext?' next':'');
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
     if(isDest&&!isCurrent)tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
-    if(isBeyond)tags+=`<span class="tag tag-peek">${lang==='tl'?'lampas sa stop mo':'beyond your stop'}</span>`;
-    if(userLat!==null&&!isCurrent&&!isPassed&&!isBeyond){const d=distToStop(i);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
-    const etaMins=computeETA(i);
-    const etaHtml=etaMins!==null&&!isCurrent&&!isPassed&&!isBeyond?`<div class="stop-eta">~${etaMins} min</div>`:'';
-    const nextChipHtml=(isNext&&!isBeyond)?`<div class="next-station-chip"><span>${T[lang].next_station_label}</span></div>`:'';
-    return `<div class="stop-row${isFirst?' stop-first':''}${isLast?' stop-last':''}${isBeyond?' beyond-row':''}">
+    if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(origIdx);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
+    const etaMins=computeETA(origIdx);
+    const etaHtml=etaMins!==null&&!isCurrent&&!isPassed?`<div class="stop-eta">~${etaMins} min</div>`:'';
+    const nextChipHtml=isNext?`<div class="next-station-chip"><span>${T[lang].next_station_label}</span></div>`:'';
+    return `<div class="stop-row${isFirst?' stop-first':''}${isLast?' stop-last':''}">
       <div class="tl-col">
         <div class="tl-seg" style="--fill:${fill.toFixed(3)}"></div>
         <div class="${dotCls}"></div>
@@ -1132,13 +1191,10 @@ function vibrate(pattern){ if(navigator.vibrate) navigator.vibrate(pattern); }
 // Report & Notes
 function openReport(){
   closeSettings();
-  // Build Google Form URL — optionally pre-fill GPS location if available
+  // Opens the Google Form for reporting issues in a new tab
   let url = 'https://forms.gle/cLA1as7fntzBnJV37';
   window.open(url, '_blank');
 }
-function closeReport(){ document.getElementById('reportModal').classList.remove('open'); }
-function selectReport(el,type){}
-function submitReport(){}
 function openNotes(){ closeSettings();document.getElementById('tripNoteInput').value='';renderNoteHistory();document.getElementById('notesModal').classList.add('open'); }
 function closeNotes(){ document.getElementById('notesModal').classList.remove('open'); }
 function saveNote(){ const txt=document.getElementById('tripNoteInput').value.trim();if(!txt)return;tripNotes.unshift({text:txt,date:new Date().toLocaleString()});localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30)));document.getElementById('tripNoteInput').value='';renderNoteHistory(); }
