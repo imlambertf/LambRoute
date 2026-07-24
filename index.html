@@ -294,15 +294,12 @@ body.trip-moving .tl-seg::before {
 .stop-card.passed { opacity: 0.36; }
 .stop-card.dest-card { background: rgba(10,132,255,0.07); }
 .stop-card.current.dest-card { background: var(--green); }
-.stop-card.beyond { opacity: 0.2; pointer-events: none; }
 .stop-card.next .stop-name-main { color: var(--green-mid); }
 .next-station-chip {
   display: inline-flex; align-items: center; background: var(--card2); color: var(--text2);
   font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.3px;
   padding: 3px 8px; border-radius: 6px; margin-bottom: 5px;
 }
-.stop-row.beyond-row .tl-seg { opacity: 0.15; }
-.stop-row.beyond-row .tl-dot { opacity: 0.15; }
 .stop-seq-num { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 2px; font-weight: 500; }
 .stop-name-main { font-size: calc(15px * var(--font-scale)); font-weight: 600; line-height: 1.2; }
 .stop-lm { font-size: calc(11px * var(--font-scale)); color: var(--text3); margin-top: 3px; line-height: 1.4; }
@@ -313,11 +310,6 @@ body.trip-moving .tl-seg::before {
 .tag-next { background: rgba(255,255,255,0.08); color: var(--text2); }
 .tag-dest { background: rgba(10,132,255,0.15); color: var(--blue); }
 .tag-dist { background: var(--card); color: var(--text3); border: 1px solid var(--border); }
-.tag-peek { background: var(--card); color: var(--text3); border: 1px solid var(--border); }
-
-.peek-section { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px; opacity: 0.3; }
-.peek-label { font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text3); padding: 5px 0 3px; }
-.peek-more { font-size: calc(11px * var(--font-scale)); color: var(--text3); text-align: center; padding: 3px 0 8px; }
 
 /* Bottom bar */
 .bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 13px calc(env(safe-area-inset-bottom,20px) + 4px); background: linear-gradient(to top, var(--bg) 55%, transparent); display: flex; gap: 10px; }
@@ -762,6 +754,8 @@ const T = {
     err_unavail:"Can't detect location. Try going outside.", err_title:"Location Error",
     sh_title:"Settings", sh_gps:"GPS Tracking", sh_lang:"Language", sh_theme:"Appearance",
     sh_font:"Text Size", sh_rem:"Reminders", sh_rem_acc:"View reminders",
+    theme_dark:"🌙 Dark", theme_oled:"⚫ OLED", theme_light:"☀️ Light",
+    notes_placeholder:"e.g. It's raining, lots of people at Cubao...", notes_history_label:"Past Notes",
     sh_tools:"Tools", sh_notes:"Trip Notes", sh_notes_sub:"Write notes about your commute",
     sh_report:"Report an Issue", sh_report_sub:"Wrong stop info, broken coords, etc.", sh_done:"Done",
     notes_title:"Trip Notes", notes_sub:"Jot down anything about your commute.", notes_save:"Save Note", notes_cancel:"Cancel",
@@ -806,6 +800,8 @@ const T = {
     err_unavail:"Hindi ma-detect ang location. Subukan sa labas.", err_title:"Location Error",
     sh_title:"Mga Setting", sh_gps:"GPS Tracking", sh_lang:"Wika", sh_theme:"Hitsura",
     sh_font:"Laki ng Teksto", sh_rem:"Huwag kalimutan", sh_rem_acc:"Tingnan ang mga paalala",
+    theme_dark:"🌙 Madilim", theme_oled:"⚫ OLED", theme_light:"☀️ Maliwanag",
+    notes_placeholder:"e.g. Umuulan, madaming tao sa Cubao...", notes_history_label:"Nakaraang Tala",
     sh_tools:"Mga Kasangkapan", sh_notes:"Trip Notes", sh_notes_sub:"Mag-sulat tungkol sa biyahe mo",
     sh_report:"Mag-report ng Issue", sh_report_sub:"Maling impormasyon, coords, atbp.", sh_done:"Tapos na",
     notes_title:"Trip Notes", notes_sub:"Isulat ang tungkol sa iyong biyahe.", notes_save:"I-save", notes_cancel:"Kanselahin",
@@ -827,12 +823,11 @@ const T = {
 let lang='en', theme='dark', fontSize='small';
 let selectedDest=null, tracking=false;
 let watchId=null, userLat=null, userLng=null, gpsState='off';
-let segFills=new Array(STOPS.length).fill(0);
 let scrollLocked=false, wakeLock=null;
 let lastSpeed=0, speedHistory=[];
 let countdownFired={};
 let arrivalShown=false, toastTimer=null;
-let tripNotes=JSON.parse(localStorage.getItem('lambNotes')||'[]');
+let tripNotes=(()=>{ try{ return JSON.parse(localStorage.getItem('lambNotes')||'[]'); }catch(e){ return []; } })();
 let selectedReportType=null;
 let remAccOpen=false;
 // Trip-scoping: only show stops between where the trip started and the chosen destination
@@ -849,20 +844,7 @@ function distToStop(i){ if(userLat===null) return Infinity; return Math.min(...S
 function fmt(m){return m<1000?`${Math.round(m)}m`:`${(m/1000).toFixed(1)}km`;}
 
 const CENTROIDS=STOPS.map(s=>{ const la=s.coords.map(c=>c[0]),lo=s.coords.map(c=>c[1]); return [la.reduce((a,b)=>a+b,0)/la.length,lo.reduce((a,b)=>a+b,0)/lo.length]; });
-const CUM_DIST=[0];
-for(let i=1;i<STOPS.length;i++){ const[la1,lo1]=CENTROIDS[i-1],[la2,lo2]=CENTROIDS[i]; CUM_DIST.push(CUM_DIST[i-1]+hav(la1,lo1,la2,lo2)); }
-const TOTAL_DIST=CUM_DIST[CUM_DIST.length-1];
 
-function computeRouteProgress(ci){
-  if(userLat===null||ci<0) return 0;
-  const n=STOPS.length;
-  if(ci===0) return 0;
-  if(ci>=n-1) return 1;
-  const dPrev=hav(userLat,userLng,...CENTROIDS[ci-1]),dCur=distToStop(ci),dNxt=ci+1<n?distToStop(ci+1):Infinity;
-  const dNext=hav(userLat,userLng,...CENTROIDS[ci]);
-  if(dNxt<dPrev){ const seg=hav(...CENTROIDS[ci],...CENTROIDS[ci+1]),f=Math.max(0,Math.min(1,dCur/(dCur+dNxt+0.001))); return (CUM_DIST[ci]+f*seg)/TOTAL_DIST; }
-  else { const seg=hav(...CENTROIDS[ci-1],...CENTROIDS[ci]),f=Math.max(0,Math.min(1,dPrev/(dPrev+dNext+0.001))); return (CUM_DIST[ci-1]+f*seg)/TOTAL_DIST; }
-}
 function computeETA(destIdx){ if(userLat===null||destIdx<0||lastSpeed<0.5) return null; const d=distToStop(destIdx); return d===Infinity?null:Math.ceil(d/lastSpeed/60); }
 
 const THRESHOLD=150;
@@ -930,10 +912,13 @@ function toggleRemAcc(){
 
 function applyTranslations(){
   const s=(id,k)=>{const el=document.getElementById(id);if(el&&T[lang][k]!==undefined)el.textContent=T[lang][k];};
+  const ph=(id,k)=>{const el=document.getElementById(id);if(el&&T[lang][k]!==undefined)el.placeholder=T[lang][k];};
+  ph('tripNoteInput','notes_placeholder');
   [['ob-title','ob_title'],['ob-sub','ob_sub'],['ob-sec-label','ob_sec_label'],
    ['ob-skip-title','ob_skip_title'],['ob-skip-sub','ob_skip_sub'],
    ['tk-main','tk_main'],['tk-sub','tk_sub'],['nav-label','nav_label'],
    ['cur-pill-label','cur_pill'],['nogps-title','nogps_title'],['nogps-sub','nogps_sub'],
+   ['sh-dark','theme_dark'],['sh-oled','theme_oled'],['sh-light','theme_light'],
    ['rem1','rem1'],['rem2','rem2'],['rem3','rem3'],['rem4','rem4'],
    ['rem5','rem5'],['rem7','rem7'],['rem10','rem10'],['rem11','rem11'],
    ['listLabel','list_label'],['btn-back','btn_back'],['btn-stop-text','btn_stop'],
@@ -1005,7 +990,7 @@ function confirmStop(){
   document.getElementById('etaChip').classList.remove('show');
   document.getElementById('scrollLockBtn').classList.remove('show');
   document.getElementById('ticketBanner').classList.remove('gone');
-  arrivalShown=false; countdownFired={}; segFills=new Array(STOPS.length).fill(0);
+  arrivalShown=false; countdownFired={};
   tripOriginIdx=null; tripStops=[]; tripStopsDirty=true;
   skipLastIdx=null; skipDirection=1;
   document.getElementById('skipView').classList.remove('show');
@@ -1063,7 +1048,6 @@ function launchTracker(){
   document.getElementById('stopList').style.display = isSkip ? 'none' : '';
   document.getElementById('scrollLockBtn').classList.toggle('show', !isSkip);
   arrivalShown=false; countdownFired={};
-  segFills=new Array(STOPS.length).fill(0);
   applyTranslations();
   if(isSkip){ document.getElementById('stopList').innerHTML=''; } else { renderList(); }
 }
@@ -1080,7 +1064,7 @@ function goBack(){
   document.getElementById('etaChip').classList.remove('show');
   document.getElementById('scrollLockBtn').classList.remove('show');
   scrollLocked=false; arrivalShown=false; countdownFired={};
-  segFills=new Array(STOPS.length).fill(0); updateScrollLockBtn();
+  updateScrollLockBtn();
   // Reset trip scoping so the next launch recalculates origin from wherever the user is now
   tripOriginIdx=null; tripStops=[]; tripStopsDirty=true;
   skipLastIdx=null; skipDirection=1;
@@ -1106,7 +1090,7 @@ function stopGps(){
   document.getElementById('destAlert').classList.remove('show');
   document.getElementById('missedAlert').classList.remove('show');
   document.getElementById('etaChip').classList.remove('show');
-  segFills=new Array(STOPS.length).fill(0); renderList();
+  if(selectedDest!==-1) renderList();
 }
 function onPos(pos){
   if(pos.coords.speed!==null&&pos.coords.speed>=0){speedHistory.push(pos.coords.speed);if(speedHistory.length>5)speedHistory.shift();lastSpeed=speedHistory.reduce((a,b)=>a+b,0)/speedHistory.length;}
@@ -1226,7 +1210,7 @@ function updateDotsAndCards(currentIdx,closestIdx){
     const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
     const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===tripStops.length-1;
     const dot=row.querySelector('.tl-dot');
-    if(dot) dot.className='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
+    if(dot) dot.className='tl-dot'+(isCurrent?' current':'');
     const card=row.querySelector('.stop-card');
     if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isNext?' next':'');
     const nextChip=row.querySelector('.next-station-chip');
@@ -1256,7 +1240,7 @@ function renderList(currentIdx=-1,closestIdx=-1,fills=null){
     const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===visCount-1;
     const isFirst=i===0, isLast=i===visCount-1;
     const fill=fills?(fills[i]||0):0;
-    const dotCls='tl-dot'+(isCurrent?(isDest?' dest current':' current'):'');
+    const dotCls='tl-dot'+(isCurrent?' current':'');
     const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isNext?' next':'');
     let tags='';
     if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
@@ -1294,8 +1278,8 @@ function openReport(){
 }
 function openNotes(){ closeSettings();document.getElementById('tripNoteInput').value='';renderNoteHistory();document.getElementById('notesModal').classList.add('open'); }
 function closeNotes(){ document.getElementById('notesModal').classList.remove('open'); }
-function saveNote(){ const txt=document.getElementById('tripNoteInput').value.trim();if(!txt)return;tripNotes.unshift({text:txt,date:new Date().toLocaleString()});localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30)));document.getElementById('tripNoteInput').value='';renderNoteHistory(); }
-function renderNoteHistory(){ const hist=document.getElementById('notesHistory');if(!tripNotes.length){hist.innerHTML='';return;}hist.innerHTML=`<div class="notes-history-label">${lang==='tl'?'Nakaraang Tala':'Past Notes'}</div>`+tripNotes.slice(0,5).map(n=>`<div class="note-entry"><div class="note-entry-date">${n.date}</div>${n.text}</div>`).join(''); }
+function saveNote(){ const txt=document.getElementById('tripNoteInput').value.trim();if(!txt)return;tripNotes.unshift({text:txt,date:new Date().toLocaleString()});try{ localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30))); }catch(e){} document.getElementById('tripNoteInput').value='';renderNoteHistory(); }
+function renderNoteHistory(){ const hist=document.getElementById('notesHistory');if(!tripNotes.length){hist.innerHTML='';return;}hist.innerHTML=`<div class="notes-history-label">${T[lang].notes_history_label}</div>`+tripNotes.slice(0,5).map(n=>`<div class="note-entry"><div class="note-entry-date">${n.date}</div>${n.text}</div>`).join(''); }
 
 applyTranslations();
 buildDestList();
