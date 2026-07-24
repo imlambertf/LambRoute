@@ -12,7 +12,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 :root {
-  --bg: #000000; --card: #1c1c1e; --card2: #2c2c2e; --border: #38383a;
+  --bg: #121214; --card: #1c1c1e; --card2: #2c2c2e; --border: #38383a;
   --green: #30d158; --green-soft: rgba(48,209,88,0.14); --green-mid: #25a244;
   --text: #ffffff; --text2: rgba(255,255,255,0.6); --text3: rgba(255,255,255,0.3);
   --yellow: #ffd60a; --blue: #0a84ff; --red: #ff453a;
@@ -74,7 +74,7 @@ body.scroll-locked-mode #etaChip {
 .onboard-header { padding: 16px 24px 8px; }
 .onboard-eyebrow { font-size: calc(30px * var(--font-scale)); font-weight: 700; color: var(--green); margin-bottom: 2px; }
 .onboard-tagline { font-size: calc(13px * var(--font-scale)); color: var(--text3); margin-bottom: 12px; }
-.onboard-title { font-size: calc(22px * var(--font-scale)); font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
+.onboard-title { font-size: calc(24px * var(--font-scale)); font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
 .onboard-sub { font-size: calc(14px * var(--font-scale)); color: var(--text2); margin-top: 6px; line-height: 1.5; }
 .section-label { font-size: calc(12px * var(--font-scale)); font-weight: 600; color: var(--text3); letter-spacing: 0.5px; padding: 16px 24px 8px; text-transform: uppercase; }
 .dest-list { padding: 0 16px; display: flex; flex-direction: column; gap: 2px; }
@@ -510,7 +510,7 @@ body.trip-moving .tl-seg::before {
       <div class="rem-modal-item"><span class="rmi">🧳</span><span id="rm8">Take all belongings before getting off.</span></div>
     </div>
     <div class="rem-modal-footer">
-      <button class="btn-rem-go" onclick="closeRemindersModal()" id="rm-go-btn">Let's go! 🚀</button>
+      <button class="btn-rem-go" onclick="confirmRemindersAndGo()" id="rm-go-btn">Let's go! 🚀</button>
     </div>
   </div>
 </div>
@@ -1023,6 +1023,9 @@ function startApp(){
   document.getElementById('remindersModal').classList.add('open');
 }
 function closeRemindersModal(){
+  document.getElementById('remindersModal').classList.remove('open');
+}
+function confirmRemindersAndGo(){
   document.getElementById('remindersModal').classList.remove('open');
   launchTracker();
 }
