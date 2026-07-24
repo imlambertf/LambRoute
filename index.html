@@ -180,6 +180,37 @@ body.scroll-locked-mode #etaChip {
 .list-label { font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); padding: 12px 18px 4px; flex-shrink: 0; display: none; }
 .list-label.show { display: block; }
 
+/* ── SKIP / "JUST TRACK ME" VIEW — circle (current) + box (next stop) ── */
+.skip-view { display: none; flex-direction: column; align-items: center; padding: 36px 24px 0; flex-shrink: 0; }
+.skip-view.show { display: flex; }
+.skip-circle {
+  position: relative; width: 200px; height: 200px; border-radius: 50%;
+  background: var(--green); border: 6px solid var(--green-soft);
+  overflow: hidden; flex-shrink: 0;
+}
+.skip-circle-drain {
+  position: absolute; top: 0; left: 0; bottom: 0; width: 0%;
+  background: var(--card2); transition: width 1.5s ease; z-index: 1;
+}
+.skip-circle-label {
+  position: relative; z-index: 2; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  color: #fff; font-weight: 700; font-size: calc(19px * var(--font-scale)); line-height: 1.2; padding: 0 22px;
+}
+.skip-next-box {
+  position: relative; overflow: hidden; margin-top: 22px; width: 100%; max-width: 260px;
+  border: 2.5px solid var(--green); border-radius: var(--radius-lg);
+  padding: 13px 16px; text-align: center;
+}
+.skip-next-fill {
+  position: absolute; top: 0; left: 0; bottom: 0; width: 0%;
+  background: var(--green); opacity: 0.22; transition: width 1.5s ease; z-index: 1;
+}
+.skip-next-label {
+  position: relative; z-index: 2; font-size: calc(14px * var(--font-scale)); color: var(--green-mid);
+}
+.skip-next-label b { color: var(--text); font-size: calc(15px * var(--font-scale)); }
+
 /* ── STOP LIST ── */
 .stop-list { flex: 1; overflow-y: auto; padding: 0 13px calc(env(safe-area-inset-bottom,20px) + 80px); -webkit-overflow-scrolling: touch; }
 .stop-list.scroll-locked { overflow-y: hidden; }
@@ -187,10 +218,31 @@ body.scroll-locked-mode #etaChip {
 
 .tl-col { width: 44px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; align-self: stretch; }
 
-/* Segment — rounded green capsule rail, fills from top to bottom */
+/* Dot — leads each row, aligned with the stop name text like the reference list */
+.tl-dot {
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--bg); border: 3px solid var(--green);
+  flex-shrink: 0; z-index: 3; margin-top: 24px;
+  transition: background 0.3s, border-color 0.3s, transform 0.3s;
+}
+/* Current stop: solid green node. Pulse ring only animates once actually moving */
+.tl-dot.current {
+  width: 17px; height: 17px;
+  background: var(--green); border: 3px solid #fff;
+  box-shadow: 0 0 0 4px rgba(48,209,88,0.22);
+}
+body.trip-moving .tl-dot.current {
+  animation: pulseGreen 1.6s ease-in-out infinite;
+}
+@keyframes pulseGreen {
+  0%,100% { box-shadow: 0 0 0 4px rgba(48,209,88,0.22); }
+  50%      { box-shadow: 0 0 0 7px rgba(48,209,88,0.12); }
+}
+
+/* Segment — rounded green capsule rail, trails below each dot connecting to the next one */
 .tl-seg {
   width: 10px; flex: 1; background: var(--green-soft); border-radius: 999px;
-  position: relative; overflow: hidden; min-height: 20px; margin-top: 8px;
+  position: relative; overflow: hidden; min-height: 20px; margin-top: 6px; margin-bottom: 4px;
 }
 /* Green fill progress */
 .tl-seg::after {
@@ -222,29 +274,8 @@ body.trip-moving .tl-seg::before {
   to { background-position: 0 16px; }
 }
 
-/* Dot — below segment, always a visible node like the reference rail */
-.tl-dot {
-  width: 15px; height: 15px; border-radius: 50%;
-  background: var(--bg); border: 3px solid var(--green);
-  flex-shrink: 0; z-index: 3; margin-top: -4px;
-  transition: background 0.3s, border-color 0.3s, transform 0.3s;
-}
-/* Current stop: solid green node. Pulse ring only animates once actually moving */
-.tl-dot.current {
-  width: 17px; height: 17px;
-  background: var(--green); border: 3px solid #fff;
-  box-shadow: 0 0 0 4px rgba(48,209,88,0.22);
-}
-body.trip-moving .tl-dot.current {
-  animation: pulseGreen 1.6s ease-in-out infinite;
-}
-@keyframes pulseGreen {
-  0%,100% { box-shadow: 0 0 0 4px rgba(48,209,88,0.22); }
-  50%      { box-shadow: 0 0 0 7px rgba(48,209,88,0.12); }
-}
-
-/* First row: no segment above */
-.stop-first .tl-seg { display: none; }
+/* Last row: no trailing segment after the final stop */
+.stop-last .tl-seg { display: none; }
 
 /* Stop card */
 .stop-card { flex: 1; padding: 10px 12px 14px 12px; border-radius: var(--radius-lg); transition: background 0.2s; }
@@ -525,6 +556,17 @@ body.trip-moving .tl-dot.current {
     <div class="no-gps-sub" id="nogps-sub">Enable GPS in Settings to start tracking.</div>
   </div>
 
+  <div id="skipView" class="skip-view">
+    <div class="skip-circle">
+      <div class="skip-circle-drain" id="skipDrain"></div>
+      <div class="skip-circle-label" id="skipCurName">—</div>
+    </div>
+    <div class="skip-next-box" id="skipNextBox">
+      <div class="skip-next-fill" id="skipNextFill"></div>
+      <div class="skip-next-label"><span id="skipNextPrefix">Next Stop:</span> <b id="skipNextName">—</b></div>
+    </div>
+  </div>
+
   <div class="list-label" id="listLabel">Bus Stops</div>
   <div class="stop-list" id="stopList"></div>
 
@@ -700,8 +742,9 @@ const T = {
     rem5:"Keep your valuables in front of you.", rem7:"Hold the handrail while standing.",
     rem10:"Be aware of your surroundings.", rem11:"Take all belongings before getting off.",
     list_label:"Bus Stops", btn_stop:"Stop Tracking",
-    btn_back:"↩ Change", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
+    btn_back:"↩ Change Destination", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
     next_station_label:"Next Station:",
+    skip_next_label:"Next Stop:", skip_locating:"Locating…",
     dest_alert_arrive:n=>`<b>Get off now! ${n}</b> — this is your stop.`,
     dest_alert_near:(n,d)=>`Almost at <b>${n}</b> — only ${d} away!`,
     missed_alert:n=>`Did you miss <b>${n}</b>?`,
@@ -743,8 +786,9 @@ const T = {
     rem5:"Ilagay sa harap ang mga importanteng gamit mo.", rem7:"Kumapit sa handrail kung nakatayo.",
     rem10:"Maging alerto sa paligid mo.", rem11:"Siguraduhing dala mo lahat bago bumaba.",
     list_label:"Mga Hintuan", btn_stop:"I-stop ang Tracking",
-    btn_back:"↩ Baguhin", tag_here:"📍 Nandito ka", tag_next:"Susunod →", tag_dest:"🏁 Bababa dito",
+    btn_back:"↩ Baguhin ang Destinasyon", tag_here:"📍 Nandito ka", tag_next:"Susunod →", tag_dest:"🏁 Bababa dito",
     next_station_label:"Susunod na Hintuan:",
+    skip_next_label:"Susunod na Hinto:", skip_locating:"Hinahanap…",
     dest_alert_arrive:n=>`<b>Bababa ka na! ${n}</b> — ito na ang stop mo.`,
     dest_alert_near:(n,d)=>`Malapit na ang <b>${n}</b> — ${d} na lang!`,
     missed_alert:n=>`Nalagpasan mo ba ang <b>${n}</b>?`,
@@ -787,6 +831,8 @@ let selectedReportType=null;
 let remAccOpen=false;
 // Trip-scoping: only show stops between where the trip started and the chosen destination
 let tripOriginIdx=null, tripStops=[], tripDirection=1, tripCum=[0], tripTotal=1, tripStopsDirty=true;
+// "Just track me" (no destination) mode: current + next stop only, direction inferred live from movement
+let skipLastIdx=null, skipDirection=1;
 // Movement detection: animations only turn on once the trip is actually moving
 let prevLat=null, prevLng=null, isMoving=false;
 const MOVE_DIST_THRESHOLD=20, MOVE_SPEED_THRESHOLD=0.6;
@@ -895,6 +941,7 @@ function applyTranslations(){
    ['rm-title','rm_title'],['rm-sub','rm_sub'],['rm1','rm1'],['rm2','rm2'],
    ['rm5','rm5'],['rm6','rm6'],['rm7','rm7'],['rm8','rm8'],['rm-go-btn','rm_go'],
    ['conf-title','conf_title'],['conf-sub','conf_sub'],['conf-yes','conf_yes'],['conf-no','conf_no'],
+   ['skipNextPrefix','skip_next_label'],
   ].forEach(([id,k])=>s(id,k));
   document.getElementById('ob-btn-start').textContent=selectedDest===null||selectedDest===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[selectedDest].name);
   updateScrollLockBtn(); updateGpsSettingUI();
@@ -954,6 +1001,8 @@ function confirmStop(){
   document.getElementById('ticketBanner').classList.remove('gone');
   arrivalShown=false; countdownFired={}; segFills=new Array(STOPS.length).fill(0);
   tripOriginIdx=null; tripStops=[]; tripStopsDirty=true;
+  skipLastIdx=null; skipDirection=1;
+  document.getElementById('skipView').classList.remove('show');
   isMoving=false; prevLat=null; prevLng=null;
   document.body.classList.remove('trip-moving');
   selectedDest=null;
@@ -989,18 +1038,23 @@ function closeRemindersModal(){
 function launchTracker(){
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
+  const isSkip = selectedDest===-1;
   // Capture the real starting point from GPS if we already have a fix;
   // otherwise buildTripStops() falls back to a best guess until one arrives
   tripOriginIdx = (userLat!==null) ? nearestStopIndex().ci : null;
   buildTripStops();
+  skipLastIdx = (isSkip && userLat!==null) ? nearestStopIndex().ci : null;
+  skipDirection = 1;
   // Route label — reflects the actual detected origin once known, falls back to Monumento/Ortigas otherwise
-  let originName = tripOriginIdx!==null ? STOPS[tripOriginIdx].name : (selectedDest===0 ? 'Ortigas' : 'Monumento');
+  let originName = tripOriginIdx!==null ? STOPS[tripOriginIdx].name : (isSkip ? T[lang].skip_locating : (selectedDest===0 ? 'Ortigas' : 'Monumento'));
   let routeText;
-  if(selectedDest>=0) routeText = `${originName} → ${STOPS[selectedDest].name}`;
+  if(isSkip) routeText = originName;
+  else if(selectedDest>=0) routeText = `${originName} → ${STOPS[selectedDest].name}`;
   else routeText = originName;
   document.getElementById('navRouteName').textContent=routeText;
-  document.getElementById('listLabel').classList.add('show');
-  document.getElementById('scrollLockBtn').classList.add('show');
+  document.getElementById('skipView').classList.toggle('show', isSkip);
+  document.getElementById('listLabel').classList.toggle('show', !isSkip);
+  document.getElementById('scrollLockBtn').classList.toggle('show', !isSkip);
   arrivalShown=false; countdownFired={};
   segFills=new Array(STOPS.length).fill(0);
   applyTranslations(); renderList();
@@ -1021,6 +1075,8 @@ function goBack(){
   segFills=new Array(STOPS.length).fill(0); updateScrollLockBtn();
   // Reset trip scoping so the next launch recalculates origin from wherever the user is now
   tripOriginIdx=null; tripStops=[]; tripStopsDirty=true;
+  skipLastIdx=null; skipDirection=1;
+  document.getElementById('skipView').classList.remove('show');
   isMoving=false; prevLat=null; prevLng=null;
   document.body.classList.remove('trip-moving');
 }
@@ -1062,6 +1118,9 @@ function render(){
   if(userLat===null) return;
   const {ci,cd}=nearestStopIndex();
   const atStop=cd<=THRESHOLD, rawCurrentIdx=atStop?ci:-1;
+
+  // "Just track me" mode uses its own simple current+next view — bypass the full-list logic entirely
+  if(selectedDest===-1){ renderSkipView(ci,atStop); return; }
 
   // Capture the real trip origin as soon as we get a GPS fix, if we didn't have one at launch
   if(selectedDest>=0 && tripOriginIdx===null){ tripOriginIdx=ci; buildTripStops(); }
@@ -1122,6 +1181,36 @@ function render(){
   if(!scrollLocked&&currentIdx>=0){ setTimeout(()=>{const rows=list.querySelectorAll('.stop-row:not(.peek-row)');if(rows[currentIdx])rows[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});},200); }
 }
 
+// ── SKIP MODE RENDER — current stop circle + next stop box only, no destination bound ──
+function renderSkipView(ci,atStop){
+  if(!atStop && skipLastIdx===null){
+    document.getElementById('skipCurName').textContent=T[lang].skip_locating;
+    document.getElementById('skipNextName').textContent='—';
+    document.getElementById('skipDrain').style.width='0%';
+    document.getElementById('skipNextFill').style.width='0%';
+    return;
+  }
+  // Snap to the newly-arrived stop and infer direction from the transition
+  if(atStop){
+    if(skipLastIdx!==null && ci!==skipLastIdx) skipDirection = ci>skipLastIdx ? 1 : -1;
+    skipLastIdx=ci;
+  }
+  const curIdx=skipLastIdx;
+  let nextIdx=curIdx+skipDirection;
+  if(nextIdx<0){ nextIdx=1; skipDirection=1; }
+  if(nextIdx>STOPS.length-1){ nextIdx=STOPS.length-2; skipDirection=-1; }
+
+  document.getElementById('skipCurName').textContent=STOPS[curIdx].name;
+  document.getElementById('skipNextName').textContent=STOPS[nextIdx].name;
+
+  const dCur=hav(userLat,userLng,...CENTROIDS[curIdx]);
+  const dNext=hav(userLat,userLng,...CENTROIDS[nextIdx]);
+  // Freshly at a stop = full circle, empty box. Progress only builds once we've actually left it.
+  const progress = atStop ? 0 : Math.max(0,Math.min(1, dCur/(dCur+dNext+0.001)));
+  document.getElementById('skipDrain').style.width=(progress*100)+'%';
+  document.getElementById('skipNextFill').style.width=(progress*100)+'%';
+}
+
 function updateDotsAndCards(currentIdx,closestIdx){
   const list=document.getElementById('stopList');
   const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
@@ -1170,8 +1259,8 @@ function renderList(currentIdx=-1,closestIdx=-1,fills=null){
     const nextChipHtml=isNext?`<div class="next-station-chip"><span>${T[lang].next_station_label}</span></div>`:'';
     return `<div class="stop-row${isFirst?' stop-first':''}${isLast?' stop-last':''}">
       <div class="tl-col">
-        <div class="tl-seg" style="--fill:${fill.toFixed(3)}"></div>
         <div class="${dotCls}"></div>
+        <div class="tl-seg" style="--fill:${fill.toFixed(3)}"></div>
       </div>
       <div class="${cardCls}">
         ${nextChipHtml}
