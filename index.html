@@ -215,6 +215,7 @@ body.scroll-locked-mode #etaChip {
   position: relative; z-index: 2; font-size: calc(14px * var(--font-scale)); color: var(--green-mid);
 }
 .skip-next-label b { color: var(--text); font-size: calc(15px * var(--font-scale)); }
+.skip-next-dist { position: relative; z-index: 2; font-size: calc(11px * var(--font-scale)); color: var(--text3); margin-top: 3px; font-weight: 600; }
 
 /* ── STOP LIST ── */
 .stop-list { flex: 1; overflow-y: auto; padding: 0 13px calc(env(safe-area-inset-bottom,20px) + 80px); -webkit-overflow-scrolling: touch; }
@@ -396,6 +397,7 @@ body.trip-moving .tl-seg::before {
 }
 .gps-setting-label { display: flex; align-items: center; gap: 10px; }
 .gps-setting-label span { font-size: calc(14px * var(--font-scale)); font-weight: 500; }
+.gps-accuracy { font-size: calc(11px * var(--font-scale)) !important; font-weight: 500 !important; color: var(--text3) !important; }
 .gps-pip-big { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); transition: all 0.3s; flex-shrink: 0; }
 .gps-pip-big.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
 .gps-pip-big.searching { background: var(--yellow); animation: blink 0.7s infinite; }
@@ -444,8 +446,11 @@ body.trip-moving .tl-seg::before {
 .notes-area:focus { outline: none; border-color: var(--blue); }
 .notes-history { margin-top: 10px; }
 .notes-history-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
-.note-entry { background: var(--card2); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; font-size: calc(12px * var(--font-scale)); color: var(--text2); line-height: 1.4; }
-.note-entry-date { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 3px; }
+.note-entry { background: var(--card2); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; font-size: calc(12px * var(--font-scale)); color: var(--text2); line-height: 1.4; position: relative; }
+.note-entry-date { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.note-entry-loc { color: var(--green-mid); font-weight: 600; }
+.note-delete-btn { background: none; border: none; color: var(--text3); font-size: 13px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; font-family: inherit; }
+.note-delete-btn:active { color: var(--red); }
 .modal-btn { width: 100%; padding: 13px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 7px; }
 .modal-btn:active { opacity: 0.8; }
 .modal-btn-cancel { background: var(--card2); color: var(--text2); margin-top: 6px; }
@@ -453,6 +458,20 @@ body.trip-moving .tl-seg::before {
 /* ── SCROLL LOCK TOAST ── */
 #scrollToast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(30,30,32,0.92); color: var(--text); padding: 9px 18px; border-radius: 20px; font-size: calc(13px * var(--font-scale)); font-weight: 600; z-index: 1001; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; white-space: nowrap; backdrop-filter: blur(8px); border: 1px solid var(--border); }
 #scrollToast.show { opacity: 1; }
+
+/* ── LANDMARKS TUTORIAL COACH-MARK (first visit only) ── */
+.tutorial-overlay { position: fixed; inset: 0; z-index: 800; display: none; }
+.tutorial-overlay.show { display: block; }
+.tutorial-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+.tutorial-bubble {
+  position: fixed; background: var(--green); color: #000; border-radius: 14px;
+  padding: 12px 14px; max-width: 250px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: fadeUp 0.3s ease;
+}
+.tutorial-arrow { position: absolute; top: -8px; left: 24px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 8px solid var(--green); }
+.tutorial-text { font-size: calc(13px * var(--font-scale)); font-weight: 600; line-height: 1.45; }
+.tutorial-next-btn { display: block; margin: 10px 0 0 auto; background: #000; color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: calc(12px * var(--font-scale)); cursor: pointer; font-family: inherit; }
+.tutorial-next-btn:active { opacity: 0.8; }
 
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
@@ -562,6 +581,7 @@ body.trip-moving .tl-seg::before {
     <div class="skip-next-box" id="skipNextBox">
       <div class="skip-next-fill" id="skipNextFill"></div>
       <div class="skip-next-label"><span id="skipNextPrefix">Next Stop:</span> <b id="skipNextName">—</b></div>
+      <div class="skip-next-dist" id="skipNextDist"></div>
     </div>
   </div>
 
@@ -619,6 +639,7 @@ body.trip-moving .tl-seg::before {
         <div class="gps-setting-label">
           <div class="gps-pip-big" id="gpsPipBig"></div>
           <span id="gpsStatusLabel">GPS Off</span>
+          <span id="gpsAccuracyLabel" class="gps-accuracy"></span>
         </div>
         <button class="gps-toggle-btn" id="gpsToggleBtn" onclick="toggleGps()">Enable GPS</button>
       </div>
@@ -700,12 +721,22 @@ body.trip-moving .tl-seg::before {
     <div class="modal-sub" id="notes-sub">Jot down anything about your commute.</div>
     <textarea class="notes-area" id="tripNoteInput" placeholder="e.g. Umuulan, madaming tao sa Cubao..."></textarea>
     <button class="modal-btn" onclick="saveNote()" id="notes-save">Save Note</button>
+    <button class="modal-btn modal-btn-cancel" onclick="shareNotes()" id="notes-share">📤 Share Notes</button>
     <button class="modal-btn modal-btn-cancel" onclick="closeNotes()" id="notes-cancel">Cancel</button>
     <div class="notes-history" id="notesHistory"></div>
   </div>
 </div>
 
 <div id="scrollToast"></div>
+
+<div id="tutorialOverlay" class="tutorial-overlay">
+  <div class="tutorial-backdrop" onclick="dismissTutorial()"></div>
+  <div class="tutorial-bubble" id="tutorialBubble">
+    <div class="tutorial-arrow"></div>
+    <div class="tutorial-text" id="tutorialText">This small text under each stop shows nearby landmarks.</div>
+    <button class="tutorial-next-btn" onclick="dismissTutorial()" id="tutorialNextBtn">Next →</button>
+  </div>
+</div>
 
 <script>
 const STOPS = [
@@ -755,7 +786,9 @@ const T = {
     sh_title:"Settings", sh_gps:"GPS Tracking", sh_lang:"Language", sh_theme:"Appearance",
     sh_font:"Text Size", sh_rem:"Reminders", sh_rem_acc:"View reminders",
     theme_dark:"🌙 Dark", theme_oled:"⚫ OLED", theme_light:"☀️ Light",
-    notes_placeholder:"e.g. It's raining, lots of people at Cubao...", notes_history_label:"Past Notes",
+    notes_placeholder:"e.g. It's raining, lots of people at Cubao...", notes_history_label:"Past Notes", notes_copied:"Notes copied",
+    notes_share:"📤 Share Notes",
+    tutorial_landmarks:"This small text under each stop name shows nearby landmarks — helpful for spotting your stop.", tutorial_next:"Next →",
     sh_tools:"Tools", sh_notes:"Trip Notes", sh_notes_sub:"Write notes about your commute",
     sh_report:"Report an Issue", sh_report_sub:"Wrong stop info, broken coords, etc.", sh_done:"Done",
     notes_title:"Trip Notes", notes_sub:"Jot down anything about your commute.", notes_save:"Save Note", notes_cancel:"Cancel",
@@ -801,7 +834,9 @@ const T = {
     sh_title:"Mga Setting", sh_gps:"GPS Tracking", sh_lang:"Wika", sh_theme:"Hitsura",
     sh_font:"Laki ng Teksto", sh_rem:"Huwag kalimutan", sh_rem_acc:"Tingnan ang mga paalala",
     theme_dark:"🌙 Madilim", theme_oled:"⚫ OLED", theme_light:"☀️ Maliwanag",
-    notes_placeholder:"e.g. Umuulan, madaming tao sa Cubao...", notes_history_label:"Nakaraang Tala",
+    notes_placeholder:"e.g. Umuulan, madaming tao sa Cubao...", notes_history_label:"Nakaraang Tala", notes_copied:"Na-copy na ang mga tala",
+    notes_share:"📤 I-share ang Notes",
+    tutorial_landmarks:"Ang maliit na text na 'to sa ilalim ng bawat stop ay mga landmark — makakatulong ito para makilala mo agad ang stop mo.", tutorial_next:"Susunod →",
     sh_tools:"Mga Kasangkapan", sh_notes:"Trip Notes", sh_notes_sub:"Mag-sulat tungkol sa biyahe mo",
     sh_report:"Mag-report ng Issue", sh_report_sub:"Maling impormasyon, coords, atbp.", sh_done:"Tapos na",
     notes_title:"Trip Notes", notes_sub:"Isulat ang tungkol sa iyong biyahe.", notes_save:"I-save", notes_cancel:"Kanselahin",
@@ -822,7 +857,7 @@ const T = {
 
 let lang='en', theme='dark', fontSize='small';
 let selectedDest=null, tracking=false;
-let watchId=null, userLat=null, userLng=null, gpsState='off';
+let watchId=null, userLat=null, userLng=null, gpsState='off', lastAccuracy=null;
 let scrollLocked=false, wakeLock=null;
 let lastSpeed=0, speedHistory=[];
 let countdownFired={};
@@ -847,7 +882,7 @@ const CENTROIDS=STOPS.map(s=>{ const la=s.coords.map(c=>c[0]),lo=s.coords.map(c=
 
 function computeETA(destIdx){ if(userLat===null||destIdx<0||lastSpeed<0.5) return null; const d=distToStop(destIdx); return d===Infinity?null:Math.ceil(d/lastSpeed/60); }
 
-const THRESHOLD=150;
+const THRESHOLD=80;
 
 // ── TRIP SCOPING (direction-aware, origin→destination only) ──
 function nearestStopIndex(){
@@ -936,12 +971,19 @@ function applyTranslations(){
    ['rm5','rm5'],['rm6','rm6'],['rm7','rm7'],['rm8','rm8'],['rm-go-btn','rm_go'],
    ['conf-title','conf_title'],['conf-sub','conf_sub'],['conf-yes','conf_yes'],['conf-no','conf_no'],
    ['skipNextPrefix','skip_next_label'],['skipPillLabel','cur_pill'],
+   ['tutorialText','tutorial_landmarks'],['tutorialNextBtn','tutorial_next'],
+   ['notes-share','notes_share'],
   ].forEach(([id,k])=>s(id,k));
   document.getElementById('ob-btn-start').textContent=selectedDest===null||selectedDest===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[selectedDest].name);
   updateScrollLockBtn(); updateGpsSettingUI();
 }
 
 // ── GPS SETTING UI ──
+function updateGpsAccuracyLabel(){
+  const el=document.getElementById('gpsAccuracyLabel');
+  if(!el) return;
+  el.textContent = (gpsState==='on' && lastAccuracy!==null) ? `± ${lastAccuracy}m` : '';
+}
 function updateGpsSettingUI(){
   const pip=document.getElementById('gpsPipBig');
   const lbl=document.getElementById('gpsStatusLabel');
@@ -950,6 +992,7 @@ function updateGpsSettingUI(){
   if(gpsState==='on'){ pip.className='gps-pip-big on'; lbl.textContent=T[lang].gps_label_on; btn.textContent=T[lang].gps_btn_on; btn.classList.add('on'); }
   else if(gpsState==='searching'){ pip.className='gps-pip-big searching'; lbl.textContent=T[lang].gps_label_searching; btn.textContent=T[lang].gps_btn_on; btn.classList.remove('on'); }
   else { pip.className='gps-pip-big'; lbl.textContent=T[lang].gps_label_off; btn.textContent=T[lang].gps_btn_off; btn.classList.remove('on'); }
+  updateGpsAccuracyLabel();
 }
 
 // ── SCROLL LOCK ──
@@ -1035,6 +1078,10 @@ function confirmRemindersAndGo(){
 function launchTracker(){
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
+  document.getElementById('curCard').classList.remove('show');
+  document.getElementById('destAlert').classList.remove('show');
+  document.getElementById('missedAlert').classList.remove('show');
+  document.getElementById('etaChip').classList.remove('show');
   const isSkip = selectedDest===-1;
   // Capture the real starting point from GPS if we already have a fix;
   // otherwise buildTripStops() falls back to a best guess until one arrives
@@ -1077,8 +1124,33 @@ function goBack(){
   document.getElementById('skipView').classList.remove('show');
   isMoving=false; prevLat=null; prevLng=null;
   document.body.classList.remove('trip-moving');
+  selectedDest=null;
+  document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('skipBtn').classList.remove('selected');
+  document.getElementById('btnStart').classList.remove('ready');
+  document.getElementById('ob-btn-start').textContent=T[lang].ob_btn_start;
 }
 function dismissTicket(){ document.getElementById('ticketBanner').classList.add('gone'); }
+
+// ── LANDMARKS TUTORIAL (first visit only) ──
+function showTutorialIfNeeded(){
+  let seen=false;
+  try{ seen = localStorage.getItem('lambTutorialSeen')==='1'; }catch(e){}
+  if(seen) return;
+  setTimeout(()=>{
+    const target = document.querySelector('#destList .dest-item .dest-lm');
+    const bubble = document.getElementById('tutorialBubble');
+    if(!target||!bubble) return;
+    const rect = target.getBoundingClientRect();
+    bubble.style.top = (rect.bottom + 12) + 'px';
+    bubble.style.left = Math.max(16, Math.min(rect.left, window.innerWidth-266)) + 'px';
+    document.getElementById('tutorialOverlay').classList.add('show');
+  }, 500);
+}
+function dismissTutorial(){
+  document.getElementById('tutorialOverlay').classList.remove('show');
+  try{ localStorage.setItem('lambTutorialSeen','1'); }catch(e){}
+}
 
 // ── GPS ──
 function toggleGps(){ tracking?stopGps():startGps(); updateGpsSettingUI(); }
@@ -1089,7 +1161,7 @@ function startGps(){
 }
 function stopGps(){
   if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
-  tracking=false;userLat=null;userLng=null;gpsState='off';lastSpeed=0;speedHistory=[];
+  tracking=false;userLat=null;userLng=null;gpsState='off';lastSpeed=0;speedHistory=[];lastAccuracy=null;
   updateGpsSettingUI(); releaseWakeLock();
   document.getElementById('noGps').classList.add('show');
   document.getElementById('curCard').classList.remove('show');
@@ -1101,7 +1173,9 @@ function stopGps(){
 function onPos(pos){
   if(pos.coords.speed!==null&&pos.coords.speed>=0){speedHistory.push(pos.coords.speed);if(speedHistory.length>5)speedHistory.shift();lastSpeed=speedHistory.reduce((a,b)=>a+b,0)/speedHistory.length;}
   userLat=pos.coords.latitude;userLng=pos.coords.longitude;
+  lastAccuracy = (typeof pos.coords.accuracy==='number') ? Math.round(pos.coords.accuracy) : null;
   if(!tracking){tracking=true;gpsState='on';updateGpsSettingUI();document.getElementById('noGps').classList.remove('show');}
+  updateGpsAccuracyLabel();
   render();
 }
 function onErr(e){
@@ -1114,6 +1188,7 @@ function onErr(e){
 // ── RENDER ──
 function render(){
   if(userLat===null) return;
+  if(document.getElementById('screenTracker').classList.contains('hidden')) return;
   const {ci,cd}=nearestStopIndex();
   const atStop=cd<=THRESHOLD, rawCurrentIdx=atStop?ci:-1;
 
@@ -1180,18 +1255,33 @@ function render(){
 }
 
 // ── SKIP MODE RENDER — current stop circle + next stop box only, no destination bound ──
+function projectProgress(pLat,pLng,aLat,aLng,bLat,bLng){
+  // Flat local projection (accurate enough for stop-to-stop distances): how far along line A->B does P fall, 0-1
+  const R=6371000, rad=Math.PI/180, cosLat=Math.cos(aLat*rad);
+  const toXY=(la,lo)=>[R*(lo*rad)*cosLat, R*(la*rad)];
+  const [ax,ay]=toXY(aLat,aLng), [bx,by]=toXY(bLat,bLng), [px,py]=toXY(pLat,pLng);
+  const abx=bx-ax, aby=by-ay, apx=px-ax, apy=py-ay;
+  const abLenSq=abx*abx+aby*aby;
+  if(abLenSq===0) return 0;
+  return Math.max(0,Math.min(1,(apx*abx+apy*aby)/abLenSq));
+}
 function renderSkipView(ci,atStop){
   if(!atStop && skipLastIdx===null){
     document.getElementById('skipCurName').textContent=T[lang].skip_locating;
     document.getElementById('skipNextName').textContent='—';
     document.getElementById('skipDrain').style.width='0%';
     document.getElementById('skipNextFill').style.width='0%';
+    document.getElementById('skipNextDist').textContent='';
     return;
   }
-  // Snap to the newly-arrived stop and infer direction from the transition
+  // Only trust an arrival if it's the immediate adjacent stop — a farther jump is almost
+  // certainly GPS noise, so we ignore it instead of letting it flip the direction wrongly
   if(atStop){
-    if(skipLastIdx!==null && ci!==skipLastIdx) skipDirection = ci>skipLastIdx ? 1 : -1;
-    skipLastIdx=ci;
+    if(skipLastIdx===null){ skipLastIdx=ci; }
+    else if(ci!==skipLastIdx && Math.abs(ci-skipLastIdx)===1){
+      skipDirection = ci>skipLastIdx ? 1 : -1;
+      skipLastIdx=ci;
+    }
   }
   const curIdx=skipLastIdx;
   let nextIdx=curIdx+skipDirection;
@@ -1201,10 +1291,10 @@ function renderSkipView(ci,atStop){
   document.getElementById('skipCurName').textContent=STOPS[curIdx].name;
   document.getElementById('skipNextName').textContent=STOPS[nextIdx].name;
 
-  const dCur=hav(userLat,userLng,...CENTROIDS[curIdx]);
   const dNext=hav(userLat,userLng,...CENTROIDS[nextIdx]);
-  // Freshly at a stop = full circle, empty box. Progress only builds once we've actually left it.
-  const progress = atStop ? 0 : Math.max(0,Math.min(1, dCur/(dCur+dNext+0.001)));
+  document.getElementById('skipNextDist').textContent = atStop ? '' : fmt(dNext)+(lang==='tl'?' pa':' away');
+  // Freshly at a stop = full circle, empty box. Otherwise, accurate projection along the current->next line.
+  const progress = atStop ? 0 : projectProgress(userLat,userLng, ...CENTROIDS[curIdx], ...CENTROIDS[nextIdx]);
   document.getElementById('skipDrain').style.width=(progress*100)+'%';
   document.getElementById('skipNextFill').style.width=(progress*100)+'%';
 }
@@ -1284,8 +1374,27 @@ function openReport(){
 }
 function openNotes(){ closeSettings();document.getElementById('tripNoteInput').value='';renderNoteHistory();document.getElementById('notesModal').classList.add('open'); }
 function closeNotes(){ document.getElementById('notesModal').classList.remove('open'); }
-function saveNote(){ const txt=document.getElementById('tripNoteInput').value.trim();if(!txt)return;tripNotes.unshift({text:txt,date:new Date().toLocaleString()});try{ localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30))); }catch(e){} document.getElementById('tripNoteInput').value='';renderNoteHistory(); }
-function renderNoteHistory(){ const hist=document.getElementById('notesHistory');if(!tripNotes.length){hist.innerHTML='';return;}hist.innerHTML=`<div class="notes-history-label">${T[lang].notes_history_label}</div>`+tripNotes.slice(0,5).map(n=>`<div class="note-entry"><div class="note-entry-date">${n.date}</div>${n.text}</div>`).join(''); }
+function saveNote(){
+  const txt=document.getElementById('tripNoteInput').value.trim();if(!txt)return;
+  let nearStop=null;
+  if(userLat!==null){ const {ci,cd}=nearestStopIndex(); if(cd<=800) nearStop=STOPS[ci].name; }
+  tripNotes.unshift({text:txt,date:new Date().toLocaleString(),near:nearStop});
+  try{ localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30))); }catch(e){}
+  vibrate([80]);
+  document.getElementById('tripNoteInput').value='';renderNoteHistory();
+}
+function deleteNote(idx){
+  tripNotes.splice(idx,1);
+  try{ localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30))); }catch(e){}
+  renderNoteHistory();
+}
+function shareNotes(){
+  if(!tripNotes.length) return;
+  const text=tripNotes.map(n=>`${n.date}${n.near?' ('+n.near+')':''}\n${n.text}`).join('\n\n');
+  if(navigator.share){ navigator.share({title:'LambRoute Trip Notes', text}).catch(()=>{}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>showToast(T[lang].notes_copied)).catch(()=>{}); }
+}
+function renderNoteHistory(){ const hist=document.getElementById('notesHistory');if(!tripNotes.length){hist.innerHTML='';return;}hist.innerHTML=`<div class="notes-history-label">${T[lang].notes_history_label}</div>`+tripNotes.slice(0,5).map((n,i)=>`<div class="note-entry"><div class="note-entry-date"><span>${n.date}${n.near?' · <span class=\"note-entry-loc\">'+n.near+'</span>':''}</span><button class="note-delete-btn" onclick="deleteNote(${i})">✕</button></div>${n.text}</div>`).join(''); }
 
 const savedSettings=loadSettings();
 if(savedSettings){
@@ -1300,8 +1409,15 @@ if(savedSettings){
 applyTranslations();
 buildDestList();
 renderList();
+showTutorialIfNeeded();
 // Always ask for the user's current location as soon as LambRoute opens
 startGps();
+// Offline support — cache the app shell so LambRoute still opens without signal
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
