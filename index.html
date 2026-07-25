@@ -1061,7 +1061,7 @@ function buildDestList(){
       <div class="dest-check">✓</div>
     </div>`).join('');
 }
-function selectDest(idx){ selectedDest=idx; document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected')); document.getElementById('skipBtn').classList.remove('selected'); if(idx===-1) document.getElementById('skipBtn').classList.add('selected'); else{ const el=document.getElementById(`di${idx}`);if(el)el.classList.add('selected'); } document.getElementById('btnStart').classList.add('ready'); document.getElementById('ob-btn-start').textContent=idx===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[idx].name); }
+function selectDest(idx){ selectedDest=idx; document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected')); document.getElementById('skipBtn').classList.remove('selected'); if(idx===-1) document.getElementById('skipBtn').classList.add('selected'); else{ const el=document.getElementById(`di${idx}`);if(el)el.classList.add('selected'); showTutorialIfNeeded(idx); } document.getElementById('btnStart').classList.add('ready'); document.getElementById('ob-btn-start').textContent=idx===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[idx].name); }
 
 function startApp(){
   if(selectedDest===null) return;
@@ -1103,6 +1103,7 @@ function launchTracker(){
   arrivalShown=false; countdownFired={};
   applyTranslations();
   if(isSkip){ document.getElementById('stopList').innerHTML=''; } else { renderList(); }
+  if(userLat!==null) render();
 }
 function goBack(){
   releaseWakeLock(); closeSettings(); closeArrival();
@@ -1133,19 +1134,19 @@ function goBack(){
 function dismissTicket(){ document.getElementById('ticketBanner').classList.add('gone'); }
 
 // ── LANDMARKS TUTORIAL (first visit only) ──
-function showTutorialIfNeeded(){
+function showTutorialIfNeeded(idx){
   let seen=false;
   try{ seen = localStorage.getItem('lambTutorialSeen')==='1'; }catch(e){}
   if(seen) return;
   setTimeout(()=>{
-    const target = document.querySelector('#destList .dest-item .dest-lm');
+    const target = document.querySelector(`#di${idx} .dest-lm`);
     const bubble = document.getElementById('tutorialBubble');
     if(!target||!bubble) return;
     const rect = target.getBoundingClientRect();
     bubble.style.top = (rect.bottom + 12) + 'px';
     bubble.style.left = Math.max(16, Math.min(rect.left, window.innerWidth-266)) + 'px';
     document.getElementById('tutorialOverlay').classList.add('show');
-  }, 500);
+  }, 150);
 }
 function dismissTutorial(){
   document.getElementById('tutorialOverlay').classList.remove('show');
@@ -1409,7 +1410,6 @@ if(savedSettings){
 applyTranslations();
 buildDestList();
 renderList();
-showTutorialIfNeeded();
 // Always ask for the user's current location as soon as LambRoute opens
 startGps();
 // Offline support — cache the app shell so LambRoute still opens without signal
