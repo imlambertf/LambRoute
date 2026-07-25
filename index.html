@@ -1022,6 +1022,7 @@ function requestStop(){ document.getElementById('stopConfirmModal').classList.ad
 function closeStopConfirm(){ document.getElementById('stopConfirmModal').classList.remove('open'); }
 function confirmStop(){
   closeStopConfirm();
+  clearTripState();
   stopGps(); releaseWakeLock(); closeSettings(); closeArrival();
   // Unlock scroll if locked
   if(scrollLocked){ scrollLocked=false; document.body.classList.remove('scroll-locked-mode'); document.getElementById('stopList').classList.remove('scroll-locked'); }
@@ -1075,6 +1076,10 @@ function confirmRemindersAndGo(){
   document.getElementById('remindersModal').classList.remove('open');
   launchTracker();
 }
+function saveTripState(){ try{ localStorage.setItem('lambActiveTrip', JSON.stringify({selectedDest})); }catch(e){} }
+function loadTripState(){ try{ return JSON.parse(localStorage.getItem('lambActiveTrip')); }catch(e){ return null; } }
+function clearTripState(){ try{ localStorage.removeItem('lambActiveTrip'); }catch(e){} }
+
 function launchTracker(){
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
@@ -1104,8 +1109,10 @@ function launchTracker(){
   applyTranslations();
   if(isSkip){ document.getElementById('stopList').innerHTML=''; } else { renderList(); }
   if(userLat!==null) render();
+  saveTripState();
 }
 function goBack(){
+  clearTripState();
   releaseWakeLock(); closeSettings(); closeArrival();
   if(scrollLocked){ scrollLocked=false; document.body.classList.remove('scroll-locked-mode'); document.getElementById('stopList').classList.remove('scroll-locked'); }
   document.getElementById('remindersModal').classList.remove('open');
@@ -1410,6 +1417,12 @@ if(savedSettings){
 applyTranslations();
 buildDestList();
 renderList();
+// Resume an in-progress trip if the page was refreshed mid-trip, instead of resetting to onboarding
+const savedTrip=loadTripState();
+if(savedTrip && typeof savedTrip.selectedDest==='number'){
+  selectedDest=savedTrip.selectedDest;
+  launchTracker();
+}
 // Always ask for the user's current location as soon as LambRoute opens
 startGps();
 // Offline support — cache the app shell so LambRoute still opens without signal
