@@ -38,7 +38,7 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(20px); z-index: 0; }
 .safe-top { padding-top: var(--sat); }
 
-/* Direction Mode Switcher */
+/* Direction Switcher */
 .dir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px 12px; }
 .dir-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px; text-align: left; cursor: pointer; transition: all 0.2s; }
 .dir-card:active { transform: scale(0.97); }
@@ -241,12 +241,12 @@ body.trip-moving.flow-north .tl-seg::before {
 <div class="screen safe-top" id="screenOnboard">
   <div class="onboard-header">
     <div class="onboard-eyebrow">🚌 LambRoute</div>
-    <div class="onboard-tagline">Never miss your EDSA Carousel bus stop.</div>
-    <div class="onboard-title">Saan ang punta mo?</div>
-    <div class="onboard-sub">Piliin ang direksyon at ang iyong bababaang istasyon.</div>
+    <div class="onboard-tagline">Never miss your bus stop again.</div>
+    <div class="onboard-title">Where are we going?</div>
+    <div class="onboard-sub">Pick your direction and where you plan to hop off.</div>
   </div>
 
-  <div class="section-label">1. Direksyon</div>
+  <div class="section-label">1. Direction</div>
   <div class="dir-grid">
     <div class="dir-card" id="dirSB" onclick="setDirection('SB')">
       <div class="dir-icon">⬇️</div>
@@ -264,19 +264,19 @@ body.trip-moving.flow-north .tl-seg::before {
     <div class="skip-btn-row" id="skipBtn" onclick="setDirection('TRACK_ME')">
       <div class="skip-icon">🗺️</div>
       <div class="dest-info">
-        <div class="dest-name">I don't know yet / Just track me</div>
-        <div class="dest-lm">Kusa naming ipapakita kung saang station ka na</div>
+        <div class="dest-name">No clue / Just track me</div>
+        <div class="dest-lm">We'll just show whatever stop you're near</div>
       </div>
     </div>
   </div>
 
   <div id="destSection" style="display:none;">
-    <div class="section-label" id="destSectionTitle">2. Bababaang Istasyon</div>
+    <div class="section-label" id="destSectionTitle">2. Drop-off Stop</div>
     <div class="dest-list" id="destList"></div>
   </div>
 
   <div class="onboard-footer">
-    <button class="btn-start" id="btnStart" onclick="startApp()"><span id="btnStartText">Magsimula</span></button>
+    <button class="btn-start" id="btnStart" onclick="startApp()"><span id="btnStartText">Let's Roll</span></button>
   </div>
 </div>
 
@@ -285,17 +285,17 @@ body.trip-moving.flow-north .tl-seg::before {
   <div class="rem-modal-panel">
     <div class="rem-modal-handle"></div>
     <div class="rem-modal-top">
-      <div class="rem-modal-title">Bago ka umalis 🎒</div>
+      <div class="rem-modal-title">Heads Up 🎒</div>
       <button class="rem-modal-x" onclick="closeRemindersModal()">✕</button>
     </div>
     <div class="rem-modal-list">
-      <div class="rem-modal-item"><span>🎒</span><span>Isara ang zipper ng bag o backpack.</span></div>
-      <div class="rem-modal-item"><span>👛</span><span>I-check ang wallet o pamasahe bago umakyat.</span></div>
-      <div class="rem-modal-item"><span>💼</span><span>Ilagay sa harap ang mga importanteng gamit.</span></div>
-      <div class="rem-modal-item"><span>🤚</span><span>Kumapit nang maayos sa handrail habang nakatayo.</span></div>
+      <div class="rem-modal-item"><span>🎒</span><span>Zip up that backpack tight.</span></div>
+      <div class="rem-modal-item"><span>👛</span><span>Have your fare or Beep card ready.</span></div>
+      <div class="rem-modal-item"><span>💼</span><span>Hold your phone and wallet in front of you.</span></div>
+      <div class="rem-modal-item"><span>🤚</span><span>Grab a handrail if you're standing up.</span></div>
     </div>
     <div class="rem-modal-footer">
-      <button class="btn-rem-go" onclick="confirmRemindersAndGo()">Tara na! 🚀</button>
+      <button class="btn-rem-go" onclick="confirmRemindersAndGo()">Let's go! 🚀</button>
     </div>
   </div>
 </div>
@@ -314,7 +314,7 @@ body.trip-moving.flow-north .tl-seg::before {
   </div>
 
   <div id="curCard">
-    <div class="cur-pill">📍 Nandito ka</div>
+    <div class="cur-pill">📍 You're here</div>
     <div class="cur-stop-name" id="curName">—</div>
     <div class="cur-landmark" id="curLandmark"></div>
     <div class="cur-next" id="curNext"></div>
@@ -325,18 +325,18 @@ body.trip-moving.flow-north .tl-seg::before {
 
   <div id="noGps" class="show">
     <div style="font-size:32px; margin-bottom:8px;">📡</div>
-    <div style="font-weight:700;">Hinahanap ang GPS...</div>
-    <div style="font-size:12px; color:var(--text2); margin-top:4px;">Siguraduhing naka-enable ang Location sa iyong browser.</div>
+    <div style="font-weight:700;">Waiting for GPS...</div>
+    <div style="font-size:12px; color:var(--text2); margin-top:4px;">Make sure Location Access is turned on in your browser.</div>
   </div>
 
   <div id="skipView" class="skip-view">
     <div class="skip-circle">
       <div class="skip-circle-drain" id="skipDrain"></div>
-      <div class="skip-circle-label" id="skipCurName">Locating...</div>
+      <div class="skip-circle-label" id="skipCurName">Finding you...</div>
     </div>
     <div class="skip-next-box">
       <div class="skip-next-fill" id="skipNextFill"></div>
-      <div class="skip-next-label">Susunod na Stop: <b id="skipNextName">—</b></div>
+      <div class="skip-next-label">Next up: <b id="skipNextName">—</b></div>
       <div class="skip-next-dist" id="skipNextDist"></div>
     </div>
   </div>
@@ -344,8 +344,8 @@ body.trip-moving.flow-north .tl-seg::before {
   <div class="stop-list" id="stopList"></div>
 
   <div class="bottom-bar">
-    <button class="btn-primary" onclick="requestStop()">🛑 Stop Tracking</button>
-    <button class="btn-secondary" onclick="goBack()">↩ Palitan</button>
+    <button class="btn-primary" onclick="requestStop()">🛑 End Trip</button>
+    <button class="btn-secondary" onclick="goBack()">↩ Change</button>
   </div>
 </div>
 
@@ -354,14 +354,14 @@ body.trip-moving.flow-north .tl-seg::before {
   <div class="arrival-panel">
     <div class="arrival-green-top">
       <div style="font-size:42px;">🎉</div>
-      <h2 style="font-weight:800; margin-top:6px;">Nandito ka na!</h2>
-      <p style="font-size:13px; opacity:0.8;">Nakarating ka na sa iyong bababaan.</p>
+      <h2 style="font-weight:800; margin-top:6px;">You made it!</h2>
+      <p style="font-size:13px; opacity:0.8;">Time to step off the bus.</p>
     </div>
     <div class="arrival-body">
       <div id="arr-stop-name" style="font-size:20px; font-weight:700; margin-bottom:4px;">—</div>
       <div id="arr-landmarks" style="font-size:12px; color:var(--text2);">—</div>
     </div>
-    <button class="arrival-close" onclick="closeArrival()">Salamat 👋</button>
+    <button class="arrival-close" onclick="closeArrival()">Got it 👋</button>
   </div>
 </div>
 
@@ -369,17 +369,17 @@ body.trip-moving.flow-north .tl-seg::before {
 <div id="stopConfirmModal">
   <div class="confirm-panel">
     <div style="font-size:32px;">🛑</div>
-    <h3 style="margin-top:6px;">I-stop ang Biyahe?</h3>
-    <p style="font-size:12px; color:var(--text2); margin-top:4px;">Babalik ka sa simula ng rota selection.</p>
+    <h3 style="margin-top:6px;">End this trip?</h3>
+    <p style="font-size:12px; color:var(--text2); margin-top:4px;">This resets everything back to the start.</p>
     <div class="confirm-btns">
-      <button class="confirm-btn-yes" onclick="confirmStop()">Oo, I-stop</button>
-      <button class="confirm-btn-no" onclick="closeStopConfirm()">Kanselahin</button>
+      <button class="confirm-btn-yes" onclick="confirmStop()">Yep, End</button>
+      <button class="confirm-btn-no" onclick="closeStopConfirm()">Cancel</button>
     </div>
   </div>
 </div>
 
 <script>
-// Official Clean Coordinate Matrix (Monumento to Ortigas)
+// Clean coordinates (Monumento to Ortigas)
 const ALL_STOPS = [
   { id:0, name:"Monumento", coords:[[14.65730,120.98838],[14.65737,120.98795]], landmarks:"SM Grand Central · MCU · Samson Rd" },
   { id:1, name:"Bagong Barrio", coords:[[14.65729,120.99717]], landmarks:"Uncle John's · Pag-Ibig Fund Caloocan-EDSA" },
@@ -439,24 +439,23 @@ function setDirection(dir){
     destSec.style.display = 'none';
     chosenDestId = -1;
     btnStart.classList.add('ready');
-    btnStartText.textContent = "I-track Lang Ako 🚀";
+    btnStartText.textContent = "Track Me Live 🚀";
   } else {
     destSec.style.display = 'block';
     chosenDestId = null;
     btnStart.classList.remove('ready');
-    btnStartText.textContent = "Pumili ng Bababaan";
+    btnStartText.textContent = "Pick Your Drop-off";
     renderDestinationOptions();
   }
 }
 
-// FIX: Buong listahan ang ipinapakita ayon sa direksyon (hindi binabawasan nang sobra)
 function renderDestinationOptions(){
   let stopsList = [];
   if(selectedDirection === 'SB'){
-    // Southbound: Monumento hanggang Ortigas (Pababa)
+    // Southbound: Top to Bottom (Monumento -> Ortigas)
     stopsList = ALL_STOPS.slice();
   } else {
-    // Northbound: Ortigas hanggang Monumento (Pataas)
+    // Northbound: Bottom to Top (Ortigas -> Monumento)
     stopsList = ALL_STOPS.slice().reverse();
   }
 
@@ -477,7 +476,7 @@ function selectDestination(id, name){
   document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
   event.currentTarget.classList.add('selected');
   document.getElementById('btnStart').classList.add('ready');
-  document.getElementById('btnStartText').textContent = `Papuntang ${name} →`;
+  document.getElementById('btnStartText').textContent = `Head to ${name} →`;
 }
 
 function startApp(){
@@ -485,7 +484,6 @@ function startApp(){
 }
 function closeRemindersModal(){ document.getElementById('remindersModal').classList.remove('open'); }
 
-// FIX: Tama at kumpletong listahan ng ruta base sa direction
 function confirmRemindersAndGo(){
   closeRemindersModal();
   document.getElementById('screenOnboard').classList.add('hidden');
@@ -498,7 +496,7 @@ function confirmRemindersAndGo(){
     activeTripStops = ALL_STOPS.slice();
     document.getElementById('skipView').classList.add('show');
     document.getElementById('stopList').style.display = 'none';
-    document.getElementById('navRouteName').textContent = "Just Track Me Mode";
+    document.getElementById('navRouteName').textContent = "Auto Tracker Mode";
     document.getElementById('navDirLabel').textContent = "AUTOTRACK";
   } else {
     document.getElementById('skipView').classList.remove('show');
@@ -507,11 +505,9 @@ function confirmRemindersAndGo(){
     const destIdx = ALL_STOPS.findIndex(s=>s.id === chosenDestId);
 
     if(selectedDirection === 'SB'){
-      // Southbound: Buong ruta mula Monumento (0) hanggang sa napiling bababaan
       activeTripStops = ALL_STOPS.slice(0, destIdx + 1);
       document.getElementById('navDirLabel').textContent = "SOUTHBOUND";
     } else {
-      // Northbound: Mula Ortigas (13) hanggang sa napiling bababaan
       activeTripStops = ALL_STOPS.slice(destIdx, ALL_STOPS.length).reverse();
       document.getElementById('navDirLabel').textContent = "NORTHBOUND";
     }
@@ -546,7 +542,7 @@ function renderTrackerList(){
   }).join('');
 }
 
-// ── GPS TRACKING ENGINE ──
+// ── GPS ENGINE ──
 function startGps(){
   if(!navigator.geolocation) return;
   watchId = navigator.geolocation.watchPosition(onPos, onErr, {
@@ -617,7 +613,7 @@ function render(){
 
   const { station, isAt, dist } = getBestStop();
 
-  // "Just Track Me" View
+  // "Track Me" View
   if(selectedDirection === 'TRACK_ME'){
     document.getElementById('skipCurName').textContent = station ? station.name : "Locating...";
     const curIdx = ALL_STOPS.findIndex(s=>s.id === station.id);
@@ -635,7 +631,7 @@ function render(){
     document.getElementById('curLandmark').textContent = station.landmarks;
     const curIdxInTrip = activeTripStops.findIndex(s=>s.id === station.id);
     const nxt = activeTripStops[curIdxInTrip + 1];
-    document.getElementById('curNext').innerHTML = nxt ? `Next stop: <b>${nxt.name}</b>` : `<b>Huling hintuan mo na ito!</b>`;
+    document.getElementById('curNext').innerHTML = nxt ? `Next stop: <b>${nxt.name}</b>` : `<b>Final stop right here!</b>`;
   } else {
     card.classList.remove('show');
   }
@@ -658,8 +654,8 @@ function render(){
     // Tag Display
     const tagEl = row.querySelector('.stop-tags');
     let tags = '';
-    if(isCurrent) tags += `<span class="tag tag-here">📍 Nandito ka</span>`;
-    if(isDest && !isCurrent) tags += `<span class="tag tag-dest">🏁 Bababa dito</span>`;
+    if(isCurrent) tags += `<span class="tag tag-here">📍 You're here</span>`;
+    if(isDest && !isCurrent) tags += `<span class="tag tag-dest">🏁 Hop off here</span>`;
     if(!isCurrent && !isPassed) tags += `<span class="tag tag-dist">${fmt(distToStop(s))}</span>`;
     tagEl.innerHTML = tags;
 
