@@ -38,28 +38,20 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(20px); z-index: 0; }
 .safe-top { padding-top: var(--sat); }
 
-/* ── LOCK STATE ── */
-body.scroll-locked-mode .stop-list { overflow-y: hidden; }
-body.scroll-locked-mode .bottom-bar,
-body.scroll-locked-mode #curCard,
-body.scroll-locked-mode #destAlert,
-body.scroll-locked-mode #missedAlert,
-body.scroll-locked-mode #ticketBanner,
-body.scroll-locked-mode #noGps,
-body.scroll-locked-mode .list-label,
-body.scroll-locked-mode .nav-bar .gear-btn,
-body.scroll-locked-mode #etaChip {
-  pointer-events: none;
-  opacity: 0.4;
-}
-/* Scroll lock button always interactive */
+/* Direction Mode Switcher */
+.dir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px 12px; }
+.dir-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px; text-align: left; cursor: pointer; transition: all 0.2s; }
+.dir-card:active { transform: scale(0.97); }
+.dir-card.selected { border-color: var(--green); background: var(--green-soft); }
+.dir-icon { font-size: 20px; margin-bottom: 4px; }
+.dir-title { font-size: calc(14px * var(--font-scale)); font-weight: 700; color: var(--text); }
+.dir-sub { font-size: calc(11px * var(--font-scale)); color: var(--text3); margin-top: 2px; }
+
 #scrollLockBtn {
   background: var(--card); border: 1px solid var(--border); border-radius: 8px;
   padding: 5px 8px; font-size: 13px; cursor: pointer; font-family: inherit;
   color: var(--text3); transition: all 0.2s; flex-shrink: 0; display: none;
   position: relative; z-index: 100;
-  pointer-events: all !important;
-  opacity: 1 !important;
 }
 #scrollLockBtn.show { display: block; }
 #scrollLockBtn.locked { color: var(--green); border-color: var(--green); background: var(--green-soft); }
@@ -68,496 +60,267 @@ body.scroll-locked-mode #etaChip {
 .gear-btn {
   background: var(--card); border: 1px solid var(--border); border-radius: 10px;
   width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-  font-size: 18px; cursor: pointer; transition: background 0.15s; font-family: inherit; flex-shrink: 0;
+  font-size: 18px; cursor: pointer; transition: background 0.15s; flex-shrink: 0;
 }
-.gear-btn:active { background: var(--card2); transform: scale(0.93); }
-.onboard-header { padding: 16px 24px 8px; }
-.onboard-eyebrow { font-size: calc(30px * var(--font-scale)); font-weight: 700; color: var(--green); margin-bottom: 2px; }
+.onboard-header { padding: 12px 20px 8px; }
+.onboard-eyebrow { font-size: calc(26px * var(--font-scale)); font-weight: 800; color: var(--green); }
 .onboard-tagline { font-size: calc(13px * var(--font-scale)); color: var(--text3); margin-bottom: 12px; }
-.onboard-title { font-size: calc(24px * var(--font-scale)); font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
-.onboard-sub { font-size: calc(14px * var(--font-scale)); color: var(--text2); margin-top: 6px; line-height: 1.5; }
-.section-label { font-size: calc(12px * var(--font-scale)); font-weight: 600; color: var(--text3); letter-spacing: 0.5px; padding: 16px 24px 8px; text-transform: uppercase; }
-.dest-list { padding: 0 16px; display: flex; flex-direction: column; gap: 2px; }
-.dest-item { display: flex; align-items: center; padding: 12px 16px; background: var(--card); border-radius: var(--radius); cursor: pointer; transition: background 0.15s; gap: 12px; }
+.onboard-title { font-size: calc(22px * var(--font-scale)); font-weight: 700; letter-spacing: -0.5px; }
+.onboard-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); margin-top: 4px; line-height: 1.4; }
+.section-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; color: var(--text3); letter-spacing: 0.6px; padding: 14px 20px 8px; text-transform: uppercase; }
+
+.dest-list { padding: 0 16px; display: flex; flex-direction: column; gap: 4px; }
+.dest-item { display: flex; align-items: center; padding: 12px 14px; background: var(--card); border-radius: var(--radius); cursor: pointer; transition: background 0.15s; gap: 12px; }
 .dest-item:active { background: var(--card2); }
 .dest-item.selected { background: var(--green-soft); outline: 1.5px solid var(--green); }
-.dest-num { width: 26px; height: 26px; border-radius: 50%; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: calc(11px * var(--font-scale)); font-weight: 600; color: var(--text2); flex-shrink: 0; }
+.dest-num { width: 24px; height: 24px; border-radius: 50%; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: calc(11px * var(--font-scale)); font-weight: 600; color: var(--text2); flex-shrink: 0; }
 .dest-item.selected .dest-num { background: var(--green); color: #000; }
 .dest-info { flex: 1; }
-.dest-name { font-size: calc(14px * var(--font-scale)); font-weight: 500; }
-.dest-lm { font-size: calc(11px * var(--font-scale)); color: var(--text2); margin-top: 1px; line-height: 1.4; }
+.dest-name { font-size: calc(14px * var(--font-scale)); font-weight: 600; }
+.dest-lm { font-size: calc(11px * var(--font-scale)); color: var(--text2); margin-top: 1px; }
 .dest-check { width: 20px; height: 20px; border-radius: 50%; background: var(--green); display: none; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; }
 .dest-item.selected .dest-check { display: flex; }
-.skip-row { padding: 8px 16px 0; }
-.skip-btn-row { display: flex; align-items: center; padding: 12px 16px; background: var(--card); border-radius: var(--radius); cursor: pointer; gap: 12px; transition: background 0.15s; }
-.skip-btn-row:active { background: var(--card2); }
-.skip-btn-row.selected { background: rgba(10,132,255,0.12); outline: 1.5px solid var(--blue); }
-.skip-icon { width: 26px; height: 26px; border-radius: 50%; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-.skip-btn-row.selected .skip-icon { background: var(--blue); }
-.onboard-footer { padding: 14px 16px 8px; }
-.btn-start { width: 100%; padding: 15px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(16px * var(--font-scale)); font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 0.2s, transform 0.15s; opacity: 0.4; pointer-events: none; }
-.btn-start.ready { opacity: 1; pointer-events: all; }
-.btn-start:active { transform: scale(0.98); opacity: 0.85; }
 
-/* ── REMINDERS MODAL (bottom sheet, slides from bottom) ── */
-#remindersModal {
-  position: fixed; inset: 0; z-index: 400;
-  display: none; align-items: flex-end; justify-content: center;
-  background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-}
-#remindersModal.open { display: flex; animation: fadeIn 0.25s ease; }
-.rem-modal-panel {
-  background: var(--card); border-radius: 24px 24px 0 0;
-  width: 100%; max-width: 430px;
-  padding: 0 0 calc(env(safe-area-inset-bottom,24px) + 8px);
-  max-height: 85vh; overflow-y: auto;
-  animation: slideUpFull 0.35s cubic-bezier(0.34,1.1,0.64,1) forwards;
-}
-@keyframes slideUpFull {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
+.skip-row { padding: 8px 16px 0; }
+.skip-btn-row { display: flex; align-items: center; padding: 12px 16px; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); cursor: pointer; gap: 12px; }
+.skip-btn-row.selected { background: rgba(10,132,255,0.12); outline: 1.5px solid var(--blue); border-color: transparent; }
+.skip-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.skip-btn-row.selected .skip-icon { background: var(--blue); }
+
+.onboard-footer { padding: 16px 16px 12px; }
+.btn-start { width: 100%; padding: 15px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.15s; opacity: 0.4; pointer-events: none; }
+.btn-start.ready { opacity: 1; pointer-events: all; }
+.btn-start:active { transform: scale(0.98); }
+
+/* Reminders Modal */
+#remindersModal { position: fixed; inset: 0; z-index: 400; display: none; align-items: flex-end; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
+#remindersModal.open { display: flex; }
+.rem-modal-panel { background: var(--card); border-radius: 24px 24px 0 0; width: 100%; max-width: 430px; padding: 0 0 calc(env(safe-area-inset-bottom,24px) + 8px); max-height: 85vh; overflow-y: auto; }
 .rem-modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
 .rem-modal-top { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px 0; }
 .rem-modal-title { font-size: calc(18px * var(--font-scale)); font-weight: 700; }
-.rem-modal-x { background: var(--card2); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text2); cursor: pointer; font-family: inherit; }
-.rem-modal-x:active { background: var(--border); }
-.rem-modal-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); padding: 4px 20px 14px; line-height: 1.5; }
-.rem-modal-list { padding: 0 16px; display: flex; flex-direction: column; gap: 2px; }
-.rem-modal-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--card2); border-radius: var(--radius); font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.4; }
-.rem-modal-item .rmi { font-size: 18px; flex-shrink: 0; }
-.rem-modal-footer { padding: 16px 16px 0; }
-.btn-rem-go { width: 100%; padding: 15px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(16px * var(--font-scale)); font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.2s; }
-.btn-rem-go:active { transform: scale(0.98); opacity: 0.85; }
+.rem-modal-x { background: var(--card2); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text2); cursor: pointer; }
+.rem-modal-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+.rem-modal-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--card2); border-radius: var(--radius); font-size: calc(13px * var(--font-scale)); color: var(--text2); }
+.rem-modal-footer { padding: 12px 16px 0; }
+.btn-rem-go { width: 100%; padding: 14px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; }
 
-/* ── TRACKER ── */
+/* Tracker UI */
 #screenTracker { overflow: hidden; }
-
-/* Ticket banner — uses safe area properly */
-#ticketBanner {
-  background: rgba(255,214,10,0.08); border-bottom: 1px solid rgba(255,214,10,0.18);
-  padding: 9px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-}
-#ticketBanner.gone { display: none; }
-.ticket-icon { font-size: 14px; flex-shrink: 0; }
-.ticket-text { flex: 1; font-size: calc(11px * var(--font-scale)); font-weight: 600; line-height: 1.4; color: #b8860b; }
-.ticket-text span { display: block; margin-top: 1px; font-weight: 400; color: #8b6914; }
-.light-mode .ticket-text { color: #5a3e00; }
-.light-mode .ticket-text span { color: #3d2b00; }
-.ticket-x { background: none; border: none; color: rgba(107,79,0,0.5); font-size: 17px; cursor: pointer; padding: 3px 5px; line-height: 1; flex-shrink: 0; font-family: inherit; }
-
-/* Nav bar — no GPS chip, just gear + scroll lock + ETA */
 .nav-bar { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-bottom: 1px solid var(--border); gap: 8px; background: var(--bg); position: relative; z-index: 10; }
 .nav-left { flex: 1; min-width: 0; }
-.nav-route-label { font-size: calc(10px * var(--font-scale)); color: var(--text3); font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 1px; }
-.nav-route-name { font-size: calc(14px * var(--font-scale)); font-weight: 700; letter-spacing: -0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-route-label { font-size: calc(10px * var(--font-scale)); color: var(--text3); font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
+.nav-route-name { font-size: calc(14px * var(--font-scale)); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nav-right { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
 
-#etaChip { font-size: calc(11px * var(--font-scale)); color: var(--text3); background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 4px 8px; display: none; flex-shrink: 0; font-weight: 600; }
+#etaChip { font-size: calc(11px * var(--font-scale)); color: var(--text3); background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 4px 8px; display: none; font-weight: 600; }
 #etaChip.show { display: block; }
 
-/* ── ONBOARDING ── */
-#curCard { margin: 10px 13px 0; background: var(--green-soft); border: 1.5px solid var(--green); border-radius: var(--radius-lg); padding: 13px 15px; display: none; flex-shrink: 0; animation: fadeUp 0.3s ease; }
+#curCard { margin: 10px 13px 0; background: var(--green-soft); border: 1.5px solid var(--green); border-radius: var(--radius-lg); padding: 12px 14px; display: none; flex-shrink: 0; animation: fadeUp 0.3s ease; }
 #curCard.show { display: block; }
-.cur-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--green); color: #000; font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 5px; padding: 3px 7px; margin-bottom: 7px; }
-.cur-stop-name { font-size: calc(20px * var(--font-scale)); font-weight: 700; letter-spacing: -0.4px; line-height: 1.1; }
-.cur-landmark { font-size: calc(11px * var(--font-scale)); color: var(--text2); margin-top: 4px; line-height: 1.5; }
-.cur-next { margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(48,209,88,0.2); font-size: calc(12px * var(--font-scale)); color: var(--text2); }
+.cur-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--green); color: #000; font-size: calc(10px * var(--font-scale)); font-weight: 700; text-transform: uppercase; border-radius: 5px; padding: 2px 6px; margin-bottom: 6px; }
+.cur-stop-name { font-size: calc(19px * var(--font-scale)); font-weight: 800; line-height: 1.1; }
+.cur-landmark { font-size: calc(11px * var(--font-scale)); color: var(--text2); margin-top: 3px; }
+.cur-next { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(48,209,88,0.2); font-size: calc(12px * var(--font-scale)); color: var(--text2); }
 .cur-next b { color: var(--text); }
 
-#missedAlert { margin: 6px 13px 0; background: rgba(255,69,58,0.12); border: 1.5px solid var(--red); border-radius: var(--radius); padding: 9px 13px; display: none; font-size: calc(13px * var(--font-scale)); color: var(--red); flex-shrink: 0; gap: 8px; align-items: center; }
+#missedAlert { margin: 6px 13px 0; background: rgba(255,69,58,0.12); border: 1.5px solid var(--red); border-radius: var(--radius); padding: 9px 13px; display: none; font-size: calc(13px * var(--font-scale)); color: var(--red); gap: 8px; align-items: center; }
 #missedAlert.show { display: flex; }
-#destAlert { margin: 7px 13px 0; background: rgba(10,132,255,0.12); border: 1.5px solid var(--blue); border-radius: var(--radius); padding: 10px 13px; display: none; font-size: calc(12px * var(--font-scale)); color: var(--blue); flex-shrink: 0; gap: 8px; align-items: center; }
+#destAlert { margin: 7px 13px 0; background: rgba(10,132,255,0.12); border: 1.5px solid var(--blue); border-radius: var(--radius); padding: 10px 13px; display: none; font-size: calc(12px * var(--font-scale)); color: var(--blue); gap: 8px; align-items: center; }
 #destAlert.show { display: flex; }
 #destAlert b { color: var(--text); }
 
-#noGps { margin: 16px 13px 0; background: var(--card); border-radius: var(--radius-lg); padding: 24px 18px; text-align: center; display: none; flex-shrink: 0; }
+#noGps { margin: 16px 13px 0; background: var(--card); border-radius: var(--radius-lg); padding: 24px 18px; text-align: center; display: none; }
 #noGps.show { display: block; }
-.no-gps-icon { font-size: 36px; margin-bottom: 10px; }
-.no-gps-title { font-size: calc(15px * var(--font-scale)); font-weight: 600; margin-bottom: 5px; }
-.no-gps-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.5; }
 
-.list-label { font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); padding: 12px 18px 4px; flex-shrink: 0; display: none; }
-.list-label.show { display: block; }
-
-/* ── SKIP / "JUST TRACK ME" VIEW — circle (current) + box (next stop) ── */
-.skip-view { display: none; flex-direction: column; align-items: center; padding: 36px 24px 0; flex-shrink: 0; }
+.skip-view { display: none; flex-direction: column; align-items: center; padding: 36px 24px 0; }
 .skip-view.show { display: flex; }
-.skip-pill {
-  display: inline-flex; align-items: center; gap: 5px; background: var(--green); color: #000;
-  font-size: calc(11px * var(--font-scale)); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
-  border-radius: 20px; padding: 5px 12px; margin-bottom: 16px;
-}
-.skip-circle {
-  position: relative; width: 200px; height: 200px; border-radius: 50%;
-  background: var(--green); border: 6px solid var(--green-soft);
-  overflow: hidden; flex-shrink: 0;
-}
-.skip-circle-drain {
-  position: absolute; top: 0; left: 0; bottom: 0; width: 0%;
-  background: var(--card2); transition: width 1.5s ease; z-index: 1;
-}
-.skip-circle-label {
-  position: relative; z-index: 2; width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center; text-align: center;
-  color: #fff; font-weight: 700; font-size: calc(19px * var(--font-scale)); line-height: 1.2; padding: 0 22px;
-}
-.skip-next-box {
-  position: relative; overflow: hidden; margin-top: 22px; width: 100%; max-width: 260px;
-  border: 2.5px solid var(--green); border-radius: var(--radius-lg);
-  padding: 13px 16px; text-align: center;
-}
-.skip-next-fill {
-  position: absolute; top: 0; left: 0; bottom: 0; width: 0%;
-  background: var(--green); opacity: 0.22; transition: width 1.5s ease; z-index: 1;
-}
-.skip-next-label {
-  position: relative; z-index: 2; font-size: calc(14px * var(--font-scale)); color: var(--green-mid);
-}
-.skip-next-label b { color: var(--text); font-size: calc(15px * var(--font-scale)); }
-.skip-next-dist { position: relative; z-index: 2; font-size: calc(11px * var(--font-scale)); color: var(--text3); margin-top: 3px; font-weight: 600; }
+.skip-circle { position: relative; width: 190px; height: 190px; border-radius: 50%; background: var(--green); border: 5px solid var(--green-soft); overflow: hidden; }
+.skip-circle-drain { position: absolute; top: 0; left: 0; bottom: 0; width: 0%; background: var(--card2); transition: width 0.8s linear; z-index: 1; }
+.skip-circle-label { position: relative; z-index: 2; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; font-weight: 700; font-size: calc(18px * var(--font-scale)); padding: 0 16px; }
+.skip-next-box { position: relative; overflow: hidden; margin-top: 20px; width: 100%; max-width: 260px; border: 2px solid var(--green); border-radius: var(--radius-lg); padding: 12px 14px; text-align: center; }
+.skip-next-fill { position: absolute; top: 0; left: 0; bottom: 0; width: 0%; background: var(--green); opacity: 0.22; transition: width 0.8s linear; z-index: 1; }
+.skip-next-label { position: relative; z-index: 2; font-size: calc(13px * var(--font-scale)); color: var(--green-mid); }
+.skip-next-label b { color: var(--text); }
+.skip-next-dist { position: relative; z-index: 2; font-size: calc(11px * var(--font-scale)); color: var(--text3); margin-top: 2px; }
 
-/* ── STOP LIST ── */
-.stop-list { flex: 1; overflow-y: auto; padding: 0 13px calc(env(safe-area-inset-bottom,20px) + 80px); -webkit-overflow-scrolling: touch; }
-.stop-list.scroll-locked { overflow-y: hidden; }
+/* ── ACCURATE DIRECTIONAL ANIMATIONS ── */
+.stop-list { flex: 1; overflow-y: auto; padding: 0 13px calc(env(safe-area-inset-bottom,20px) + 80px); }
 .stop-row { display: flex; align-items: flex-start; min-height: 64px; }
-
 .tl-col { width: 44px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; align-self: stretch; }
 
-/* Dot — leads each row, aligned with the stop name text like the reference list */
 .tl-dot {
   width: 15px; height: 15px; border-radius: 50%;
   background: var(--bg); border: 3px solid var(--green);
-  flex-shrink: 0; z-index: 3; margin-top: 24px;
-  transition: background 0.3s, border-color 0.3s, transform 0.3s;
+  flex-shrink: 0; z-index: 3; margin-top: 22px;
+  transition: all 0.3s ease;
 }
-/* Current stop: solid green node. Pulse ring only animates once actually moving */
 .tl-dot.current {
   width: 17px; height: 17px;
   background: var(--green); border: 3px solid #fff;
-  box-shadow: 0 0 0 4px rgba(48,209,88,0.22);
+  box-shadow: 0 0 0 4px rgba(48,209,88,0.25);
 }
-body.trip-moving .tl-dot.current {
-  animation: pulseGreen 1.6s ease-in-out infinite;
-}
-@keyframes pulseGreen {
-  0%,100% { box-shadow: 0 0 0 4px rgba(48,209,88,0.22); }
-  50%      { box-shadow: 0 0 0 7px rgba(48,209,88,0.12); }
-}
+body.trip-moving .tl-dot.current { animation: pulseGreen 1.6s ease-in-out infinite; }
+@keyframes pulseGreen { 0%,100%{box-shadow:0 0 0 4px rgba(48,209,88,0.22)} 50%{box-shadow:0 0 0 7px rgba(48,209,88,0.12)} }
 
-/* Segment — rounded green capsule rail, trails below each dot connecting to the next one */
 .tl-seg {
   width: 10px; flex: 1; background: var(--green-soft); border-radius: 999px;
-  position: relative; overflow: hidden; min-height: 20px; margin-top: 6px; margin-bottom: 4px;
+  position: relative; overflow: hidden; min-height: 24px; margin-top: 6px; margin-bottom: 4px;
 }
-/* Green fill progress */
 .tl-seg::after {
   content: ''; position: absolute; left: 0; right: 0; top: 0;
   height: calc(var(--fill,0) * 100%);
   background: var(--green); border-radius: 999px;
-  transition: height 1.8s cubic-bezier(0.25,0.46,0.45,0.94);
+  transition: height 0.8s linear;
 }
-/* Animated chevron flow inside the fill — only runs once the trip is actually moving */
 .tl-seg::before {
-  content: '';
-  position: absolute; left: 0; right: 0; top: 0;
+  content: ''; position: absolute; left: 0; right: 0; top: 0;
   height: calc(var(--fill,0) * 100%);
   background: repeating-linear-gradient(
     to bottom,
-    transparent 0px,
-    transparent 6px,
-    rgba(0,0,0,0.18) 6px,
-    rgba(0,0,0,0.18) 8px
+    transparent 0px, transparent 6px,
+    rgba(0,0,0,0.22) 6px, rgba(0,0,0,0.22) 8px
   );
-  border-radius: 5px;
-  z-index: 1;
+  background-size: 100% 16px;
+  border-radius: 5px; z-index: 1;
 }
-body.trip-moving .tl-seg::before {
-  animation: stripFlow 0.8s linear infinite;
+
+/* Southbound (Downwards flow) */
+body.trip-moving.flow-south .tl-seg::before {
+  animation: stripFlowDown 0.8s linear infinite;
 }
-@keyframes stripFlow {
+@keyframes stripFlowDown {
   from { background-position: 0 0; }
   to { background-position: 0 16px; }
 }
 
-/* Last row: no trailing segment after the final stop */
+/* Northbound (Upwards flow) */
+body.trip-moving.flow-north .tl-seg::before {
+  animation: stripFlowUp 0.8s linear infinite;
+}
+@keyframes stripFlowUp {
+  from { background-position: 0 16px; }
+  to { background-position: 0 0; }
+}
+
 .stop-last .tl-seg { display: none; }
 
-/* Stop card */
 .stop-card { flex: 1; padding: 10px 12px 14px 12px; border-radius: var(--radius-lg); transition: background 0.2s; }
 .stop-card.current { background: var(--green); }
-.stop-card.current .stop-seq-num,
-.stop-card.current .stop-name-main,
-.stop-card.current .stop-lm,
-.stop-card.current .stop-eta { color: #000; }
-.stop-card.current .tag-here { background: rgba(0,0,0,0.15); color: #000; }
-.stop-card.current .tag-dist { background: rgba(0,0,0,0.1); border-color: transparent; color: #000; }
-.stop-card.passed { opacity: 0.36; }
+.stop-card.current .stop-seq-num, .stop-card.current .stop-name-main, .stop-card.current .stop-lm, .stop-card.current .stop-eta { color: #000; }
+.stop-card.passed { opacity: 0.35; }
 .stop-card.dest-card { background: rgba(10,132,255,0.07); }
 .stop-card.current.dest-card { background: var(--green); }
 .stop-card.next .stop-name-main { color: var(--green-mid); }
-.next-station-chip {
-  display: inline-flex; align-items: center; background: var(--card2); color: var(--text2);
-  font-size: calc(10px * var(--font-scale)); font-weight: 700; letter-spacing: 0.3px;
-  padding: 3px 8px; border-radius: 6px; margin-bottom: 5px;
-}
-.stop-seq-num { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 2px; font-weight: 500; }
-.stop-name-main { font-size: calc(15px * var(--font-scale)); font-weight: 600; line-height: 1.2; }
+.stop-seq-num { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 2px; font-weight: 600; }
+.stop-name-main { font-size: calc(15px * var(--font-scale)); font-weight: 700; line-height: 1.2; }
 .stop-lm { font-size: calc(11px * var(--font-scale)); color: var(--text3); margin-top: 3px; line-height: 1.4; }
 .stop-eta { font-size: calc(10px * var(--font-scale)); color: var(--blue); margin-top: 2px; font-weight: 600; }
 .stop-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
 .tag { font-size: calc(10px * var(--font-scale)); font-weight: 700; padding: 2px 7px; border-radius: 5px; }
 .tag-here { background: rgba(48,209,88,0.15); color: var(--green); }
-.tag-next { background: rgba(255,255,255,0.08); color: var(--text2); }
 .tag-dest { background: rgba(10,132,255,0.15); color: var(--blue); }
 .tag-dist { background: var(--card); color: var(--text3); border: 1px solid var(--border); }
 
-/* Bottom bar */
-.bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 13px calc(env(safe-area-inset-bottom,20px) + 4px); background: linear-gradient(to top, var(--bg) 55%, transparent); display: flex; gap: 10px; }
-.btn-primary { flex: 1; padding: 14px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-.btn-primary:active { transform: scale(0.97); opacity: 0.85; }
-.btn-primary.stop-mode { background: var(--card2); color: var(--text); }
-.btn-secondary { padding: 14px 15px; background: var(--card); color: var(--text2); border: 1px solid var(--border); border-radius: var(--radius-lg); font-size: calc(13px * var(--font-scale)); font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-.btn-secondary:active { background: var(--card2); transform: scale(0.97); }
+.bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 14px calc(env(safe-area-inset-bottom,20px) + 4px); background: linear-gradient(to top, var(--bg) 60%, transparent); display: flex; gap: 10px; }
+.btn-primary { flex: 1; padding: 14px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; }
+.btn-secondary { padding: 14px 15px; background: var(--card); color: var(--text2); border: 1px solid var(--border); border-radius: var(--radius-lg); font-size: calc(13px * var(--font-scale)); font-weight: 600; cursor: pointer; }
 
-/* ── ARRIVAL MODAL ── */
-#arrivalModal {
-  position: fixed; inset: 0; z-index: 500;
-  display: none; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  padding: 24px;
-}
-#arrivalModal.open { display: flex; animation: fadeIn 0.3s ease; }
-.arrival-panel { background: var(--card); border-radius: 24px; width: 100%; max-width: 380px; overflow: hidden; animation: scaleIn 0.35s cubic-bezier(0.34,1.56,0.64,1); position: relative; }
-.arrival-green-top { background: var(--green); padding: 28px 24px 24px; text-align: center; position: relative; }
-.arrival-emoji { font-size: 52px; margin-bottom: 10px; }
-.arrival-headline { font-size: calc(26px * var(--font-scale)); font-weight: 800; color: #000; letter-spacing: -0.5px; line-height: 1.1; }
-.arrival-sub { font-size: calc(14px * var(--font-scale)); color: rgba(0,0,0,0.65); margin-top: 4px; font-weight: 500; }
-.arrival-body { padding: 20px 24px 24px; }
-.arrival-stop-name { font-size: calc(22px * var(--font-scale)); font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
-.arrival-landmarks-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 6px; }
-.arrival-landmarks { font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.6; }
-.arrival-close { width: 100%; padding: 15px; background: var(--green); color: #000; border: none; font-size: calc(16px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.2s; border-radius: 0 0 24px 24px; }
-.arrival-close:active { opacity: 0.8; }
-.arrival-x { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.15); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: rgba(0,0,0,0.6); cursor: pointer; font-family: inherit; }
+/* Modals */
+#arrivalModal, #stopConfirmModal { position: fixed; inset: 0; z-index: 500; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); padding: 24px; }
+#arrivalModal.open, #stopConfirmModal.open { display: flex; }
+.arrival-panel { background: var(--card); border-radius: 24px; width: 100%; max-width: 380px; overflow: hidden; position: relative; text-align: center; }
+.arrival-green-top { background: var(--green); padding: 28px 24px 20px; color: #000; }
+.arrival-body { padding: 20px 24px; text-align: left; }
+.arrival-close { width: 100%; padding: 15px; background: var(--green); color: #000; border: none; font-size: 15px; font-weight: 700; cursor: pointer; }
+.confirm-panel { background: var(--card); border-radius: 20px; width: 100%; max-width: 320px; padding: 24px 20px; text-align: center; }
+.confirm-btns { display: flex; gap: 10px; margin-top: 18px; }
+.confirm-btn-yes { flex: 1; padding: 12px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-weight: 700; cursor: pointer; }
+.confirm-btn-no { flex: 1; padding: 12px; background: var(--card2); color: var(--text); border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
 
-/* ── STOP CONFIRM MODAL ── */
-#stopConfirmModal {
-  position: fixed; inset: 0; z-index: 600;
-  display: none; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  padding: 28px;
-}
-#stopConfirmModal.open { display: flex; animation: fadeIn 0.2s ease; }
-.confirm-panel {
-  background: var(--card); border-radius: 20px; width: 100%; max-width: 320px;
-  padding: 24px 20px 20px; text-align: center;
-  animation: scaleIn 0.25s cubic-bezier(0.34,1.4,0.64,1);
-}
-.confirm-icon { font-size: 36px; margin-bottom: 12px; }
-.confirm-title { font-size: calc(18px * var(--font-scale)); font-weight: 700; margin-bottom: 6px; }
-.confirm-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
-.confirm-btns { display: flex; gap: 10px; }
-.confirm-btn-yes { flex: 1; padding: 13px; background: var(--red); color: #fff; border: none; border-radius: var(--radius-lg); font-size: calc(14px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; }
-.confirm-btn-yes:active { opacity: 0.8; }
-.confirm-btn-no { flex: 1; padding: 13px; background: var(--card2); color: var(--text); border: none; border-radius: var(--radius-lg); font-size: calc(14px * var(--font-scale)); font-weight: 600; cursor: pointer; font-family: inherit; }
-.confirm-btn-no:active { opacity: 0.8; }
-
-/* ── SETTINGS SHEET ── */
-#settingsSheet { position: fixed; inset: 0; z-index: 200; display: none; }
-#settingsSheet.open { display: block; }
-.sheet-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-.sheet-panel {
-  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: 430px; background: var(--card);
-  border-radius: 20px 20px 0 0;
-  padding-bottom: calc(env(safe-area-inset-bottom,20px) + 16px);
-  max-height: 88vh; overflow-y: auto;
-  animation: slideUpSheet 0.3s cubic-bezier(0.34,1.2,0.64,1);
-}
-@keyframes slideUpSheet { from{transform:translateX(-50%) translateY(100%)} to{transform:translateX(-50%) translateY(0)} }
-.sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 0; }
-.sheet-title { font-size: calc(17px * var(--font-scale)); font-weight: 700; text-align: center; padding: 14px 20px 14px; border-bottom: 1px solid var(--border); }
-.sheet-section { padding: 14px 20px 0; }
-.sheet-section-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
-.pill-toggle { display: flex; background: var(--card2); border-radius: 12px; padding: 3px; gap: 3px; width: 100%; }
-.pill-opt { flex: 1; padding: 9px 0; border-radius: 9px; font-size: calc(14px * var(--font-scale)); font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s; border: none; background: transparent; font-family: inherit; text-align: center; }
-.pill-opt.active { background: var(--text); color: #000; }
-.light-mode .pill-opt.active { background: #1c1c1e; color: #fff; }
-.font-toggle { display: flex; background: var(--card2); border-radius: 12px; padding: 3px; gap: 3px; width: 100%; }
-.font-opt { flex: 1; padding: 8px 0; border-radius: 9px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s; border: none; background: transparent; font-family: inherit; text-align: center; }
-.font-opt:nth-child(1){font-size:11px} .font-opt:nth-child(2){font-size:14px} .font-opt:nth-child(3){font-size:17px}
-.font-opt.active { background: var(--text); color: #000; }
-.light-mode .font-opt.active { background: #1c1c1e; color: #fff; }
-
-/* GPS toggle in settings */
-.gps-setting-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px; background: var(--card2); border-radius: var(--radius);
-}
-.gps-setting-label { display: flex; align-items: center; gap: 10px; }
-.gps-setting-label span { font-size: calc(14px * var(--font-scale)); font-weight: 500; }
-.gps-accuracy { font-size: calc(11px * var(--font-scale)) !important; font-weight: 500 !important; color: var(--text3) !important; }
-.gps-pip-big { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); transition: all 0.3s; flex-shrink: 0; }
-.gps-pip-big.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
-.gps-pip-big.searching { background: var(--yellow); animation: blink 0.7s infinite; }
-.gps-toggle-btn {
-  padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
-  background: var(--card); color: var(--text2);
-  font-size: calc(12px * var(--font-scale)); font-weight: 600;
-  cursor: pointer; font-family: inherit; transition: all 0.2s;
-  white-space: nowrap;
-}
-.gps-toggle-btn.on { background: var(--green-soft); border-color: var(--green); color: var(--green); }
-.gps-toggle-btn:active { transform: scale(0.95); }
-
-/* Reminders accordion */
-.rem-accordion-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; background: var(--card2); border-radius: var(--radius);
-  cursor: pointer; transition: background 0.15s;
-}
-.rem-accordion-header:active { background: var(--border); }
-.rem-accordion-title { font-size: calc(14px * var(--font-scale)); font-weight: 500; display: flex; align-items: center; gap: 8px; }
-.rem-accordion-arrow { font-size: 11px; color: var(--text3); transition: transform 0.25s; }
-.rem-accordion-arrow.open { transform: rotate(180deg); }
-.rem-accordion-body { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
-.rem-accordion-body.open { max-height: 400px; }
-.rem-accordion-list { padding: 6px 0 0; display: flex; flex-direction: column; gap: 2px; }
-.rem-acc-item { display: flex; align-items: center; gap: 9px; font-size: calc(12px * var(--font-scale)); color: var(--text2); padding: 7px 14px; line-height: 1.4; background: var(--card2); border-radius: 8px; }
-.rem-acc-item span:first-child { font-size: 14px; flex-shrink: 0; }
-
-.sheet-action-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: var(--card2); border: none; border-radius: var(--radius); font-family: inherit; font-size: calc(14px * var(--font-scale)); font-weight: 500; color: var(--text); cursor: pointer; transition: all 0.15s; margin-bottom: 8px; text-align: left; }
-.sheet-action-btn:active { opacity: 0.7; transform: scale(0.98); }
-.sheet-action-btn .sab-icon { font-size: 18px; flex-shrink: 0; }
-.sheet-action-btn .sab-sub { font-size: calc(11px * var(--font-scale)); color: var(--text3); display: block; margin-top: 1px; }
-.sheet-done { margin: 14px 20px 0; width: calc(100% - 40px); padding: 13px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; }
-.sheet-done:active { opacity: 0.8; }
-
-/* ── MODALS ── */
-#notesModal { position: fixed; inset: 0; z-index: 300; display: none; }
-#notesModal.open { display: block; }
-.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-.modal-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--card); border-radius: 20px 20px 0 0; padding: 0 20px calc(env(safe-area-inset-bottom,20px) + 16px); animation: slideUpSheet 0.3s cubic-bezier(0.34,1.2,0.64,1); }
-.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 14px; }
-.modal-title { font-size: calc(17px * var(--font-scale)); font-weight: 700; margin-bottom: 10px; }
-.modal-sub { font-size: calc(13px * var(--font-scale)); color: var(--text2); margin-bottom: 12px; line-height: 1.5; }
-.notes-area { width: 100%; min-height: 110px; background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: inherit; font-size: calc(14px * var(--font-scale)); padding: 12px; resize: none; line-height: 1.5; margin-bottom: 8px; }
-.notes-area:focus { outline: none; border-color: var(--blue); }
-.notes-history { margin-top: 10px; }
-.notes-history-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
-.note-entry { background: var(--card2); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; font-size: calc(12px * var(--font-scale)); color: var(--text2); line-height: 1.4; position: relative; }
-.note-entry-date { font-size: calc(10px * var(--font-scale)); color: var(--text3); margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.note-entry-loc { color: var(--green-mid); font-weight: 600; }
-.note-delete-btn { background: none; border: none; color: var(--text3); font-size: 13px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; font-family: inherit; }
-.note-delete-btn:active { color: var(--red); }
-.modal-btn { width: 100%; padding: 13px; background: var(--green); color: #000; border: none; border-radius: var(--radius-lg); font-size: calc(15px * var(--font-scale)); font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 7px; }
-.modal-btn:active { opacity: 0.8; }
-.modal-btn-cancel { background: var(--card2); color: var(--text2); margin-top: 6px; }
-
-/* ── SCROLL LOCK TOAST ── */
-#scrollToast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(30,30,32,0.92); color: var(--text); padding: 9px 18px; border-radius: 20px; font-size: calc(13px * var(--font-scale)); font-weight: 600; z-index: 1001; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; white-space: nowrap; backdrop-filter: blur(8px); border: 1px solid var(--border); }
-#scrollToast.show { opacity: 1; }
-
-/* ── LANDMARKS TUTORIAL COACH-MARK (first visit only) ── */
-.tutorial-overlay { position: fixed; inset: 0; z-index: 800; display: none; }
-.tutorial-overlay.show { display: block; }
-.tutorial-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
-.tutorial-bubble {
-  position: fixed; background: var(--green); color: #000; border-radius: 14px;
-  padding: 12px 14px; max-width: 250px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  animation: fadeUp 0.3s ease;
-}
-.tutorial-arrow { position: absolute; top: -8px; left: 24px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 8px solid var(--green); }
-.tutorial-text { font-size: calc(13px * var(--font-scale)); font-weight: 600; line-height: 1.45; }
-.tutorial-next-btn { display: block; margin: 10px 0 0 auto; background: #000; color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: calc(12px * var(--font-scale)); cursor: pointer; font-family: inherit; }
-.tutorial-next-btn:active { opacity: 0.8; }
-
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-@keyframes scaleIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
 </style>
 </head>
 <body>
 
-
-
-
-<!-- ══ ONBOARDING ══ -->
+<!-- ONBOARDING SCREEN -->
 <div class="screen safe-top" id="screenOnboard">
-  <div class="onboard-top-bar">
-    <button class="gear-btn" onclick="openSettings()">⚙️</button>
-  </div>
   <div class="onboard-header">
     <div class="onboard-eyebrow">🚌 LambRoute</div>
-    <div class="onboard-tagline">Never miss your bus stop.</div>
-    <div class="onboard-title" id="ob-title">Where are you headed?</div>
-    <div class="onboard-sub" id="ob-sub">Choose your destination so we can alert you when you're almost there.</div>
+    <div class="onboard-tagline">Never miss your EDSA Carousel bus stop.</div>
+    <div class="onboard-title">Saan ang punta mo?</div>
+    <div class="onboard-sub">Piliin ang direksyon para ma-filter ang mga hinto batay sa iyong sakayan.</div>
   </div>
-  <div class="section-label" id="ob-sec-label">Bus Stops</div>
-  <div class="dest-list" id="destList"></div>
+
+  <div class="section-label">1. Direksyon</div>
+  <div class="dir-grid">
+    <div class="dir-card" id="dirSB" onclick="setDirection('SB')">
+      <div class="dir-icon">⬇️</div>
+      <div class="dir-title">Southbound</div>
+      <div class="dir-sub">Monumento → Ortigas</div>
+    </div>
+    <div class="dir-card" id="dirNB" onclick="setDirection('NB')">
+      <div class="dir-icon">⬆️</div>
+      <div class="dir-title">Northbound</div>
+      <div class="dir-sub">Ortigas → Monumento</div>
+    </div>
+  </div>
+
   <div class="skip-row">
-    <div class="skip-btn-row" id="skipBtn" onclick="selectDest(-1)">
+    <div class="skip-btn-row" id="skipBtn" onclick="setDirection('TRACK_ME')">
       <div class="skip-icon">🗺️</div>
       <div class="dest-info">
-        <div class="dest-name" id="ob-skip-title">I don't know yet / Just track me</div>
-        <div class="dest-lm" id="ob-skip-sub">We'll show you which stop you're at</div>
+        <div class="dest-name">I don't know yet / Just track me</div>
+        <div class="dest-lm">Kusa naming ipapakita kung saang station ka na</div>
       </div>
     </div>
   </div>
+
+  <div id="destSection" style="display:none;">
+    <div class="section-label">2. Bababaan mong Stop</div>
+    <div class="dest-list" id="destList"></div>
+  </div>
+
   <div class="onboard-footer">
-    <button class="btn-start" id="btnStart" onclick="startApp()"><span id="ob-btn-start">Let's Go</span></button>
+    <button class="btn-start" id="btnStart" onclick="startApp()"><span>Magsimula</span></button>
   </div>
 </div>
 
-<!-- ══ REMINDERS MODAL ══ -->
+<!-- REMINDERS MODAL -->
 <div id="remindersModal">
   <div class="rem-modal-panel">
     <div class="rem-modal-handle"></div>
     <div class="rem-modal-top">
-      <div class="rem-modal-title" id="rm-title">Before you go</div>
+      <div class="rem-modal-title">Bago ka umalis 🎒</div>
       <button class="rem-modal-x" onclick="closeRemindersModal()">✕</button>
     </div>
-    <div class="rem-modal-sub" id="rm-sub">Quick reminders before boarding.</div>
     <div class="rem-modal-list">
-      <div class="rem-modal-item"><span class="rmi">🎒</span><span id="rm1">Close your bag or backpack zipper.</span></div>
-      <div class="rem-modal-item"><span class="rmi">👛</span><span id="rm2">Check your wallet or coin purse.</span></div>
-      <div class="rem-modal-item"><span class="rmi">💼</span><span id="rm5">Keep your valuables in front of you.</span></div>
-      <div class="rem-modal-item"><span class="rmi">🤚</span><span id="rm6">Hold the handrail while standing.</span></div>
-      <div class="rem-modal-item"><span class="rmi">👀</span><span id="rm7">Be aware of your surroundings.</span></div>
-      <div class="rem-modal-item"><span class="rmi">🧳</span><span id="rm8">Take all belongings before getting off.</span></div>
+      <div class="rem-modal-item"><span>🎒</span><span>Isara ang zipper ng bag o backpack.</span></div>
+      <div class="rem-modal-item"><span>👛</span><span>I-check ang wallet o pamasahe bago umakyat.</span></div>
+      <div class="rem-modal-item"><span>💼</span><span>Ilagay sa harap ang mga importanteng gamit.</span></div>
+      <div class="rem-modal-item"><span>🤚</span><span>Kumapit nang maayos sa handrail habang nakatayo.</span></div>
     </div>
     <div class="rem-modal-footer">
-      <button class="btn-rem-go" onclick="confirmRemindersAndGo()" id="rm-go-btn">Let's go! 🚀</button>
+      <button class="btn-rem-go" onclick="confirmRemindersAndGo()">Tara na! 🚀</button>
     </div>
   </div>
 </div>
 
-<!-- ══ TRACKER ══ -->
+<!-- TRACKER SCREEN -->
 <div class="screen hidden safe-top" id="screenTracker">
-  <div id="ticketBanner">
-    <span class="ticket-icon">🎫</span>
-    <div class="ticket-text">
-      <span id="tk-main">Have your ticket ready for inspection.</span>
-      <span id="tk-sub">Keep it — conductor may check anytime.</span>
-    </div>
-    <button class="ticket-x" onclick="dismissTicket()">✕</button>
-  </div>
   <div class="nav-bar">
     <div class="nav-left">
-      <div class="nav-route-label" id="nav-label">ROUTE</div>
-      <div class="nav-route-name" id="navRouteName">Monumento → Ortigas</div>
+      <div class="nav-route-label" id="navDirLabel">ROUTE</div>
+      <div class="nav-route-name" id="navRouteName">EDSA Carousel</div>
     </div>
     <div class="nav-right">
       <div id="etaChip">—</div>
       <button id="scrollLockBtn" onclick="toggleScrollLock()">🔓</button>
-      <button class="gear-btn" onclick="openSettings()">⚙️</button>
     </div>
   </div>
 
   <div id="curCard">
-    <div class="cur-pill" id="cur-pill-label">📍 You are here</div>
+    <div class="cur-pill">📍 Nandito ka</div>
     <div class="cur-stop-name" id="curName">—</div>
     <div class="cur-landmark" id="curLandmark"></div>
     <div class="cur-next" id="curNext"></div>
@@ -567,870 +330,390 @@ body.trip-moving .tl-seg::before {
   <div id="destAlert"><span>🏁</span><div id="destAlertText"></div></div>
 
   <div id="noGps" class="show">
-    <div class="no-gps-icon">📡</div>
-    <div class="no-gps-title" id="nogps-title">Enable GPS</div>
-    <div class="no-gps-sub" id="nogps-sub">Enable GPS in Settings to start tracking.</div>
+    <div style="font-size:32px; margin-bottom:8px;">📡</div>
+    <div style="font-weight:700;">Hinahanap ang GPS...</div>
+    <div style="font-size:12px; color:var(--text2); margin-top:4px;">Siguraduhing naka-enable ang Location sa iyong browser.</div>
   </div>
 
   <div id="skipView" class="skip-view">
-    <div class="skip-pill" id="skipPillLabel">📍 You are here</div>
     <div class="skip-circle">
       <div class="skip-circle-drain" id="skipDrain"></div>
-      <div class="skip-circle-label" id="skipCurName">—</div>
+      <div class="skip-circle-label" id="skipCurName">Locating...</div>
     </div>
-    <div class="skip-next-box" id="skipNextBox">
+    <div class="skip-next-box">
       <div class="skip-next-fill" id="skipNextFill"></div>
-      <div class="skip-next-label"><span id="skipNextPrefix">Next Stop:</span> <b id="skipNextName">—</b></div>
+      <div class="skip-next-label">Susunod na Stop: <b id="skipNextName">—</b></div>
       <div class="skip-next-dist" id="skipNextDist"></div>
     </div>
   </div>
 
-  <div class="list-label" id="listLabel">Bus Stops</div>
   <div class="stop-list" id="stopList"></div>
 
   <div class="bottom-bar">
-    <button class="btn-primary" id="mainBtn" onclick="requestStop()">🛑 <span id="btn-stop-text">Stop Tracking</span></button>
-    <button class="btn-secondary" onclick="goBack()" id="btn-back">↩ Change</button>
+    <button class="btn-primary" onclick="requestStop()">🛑 Stop Tracking</button>
+    <button class="btn-secondary" onclick="goBack()">↩ Palitan</button>
   </div>
 </div>
 
-<!-- ══ ARRIVAL MODAL ══ -->
+<!-- ARRIVAL MODAL -->
 <div id="arrivalModal">
   <div class="arrival-panel">
     <div class="arrival-green-top">
-      <button class="arrival-x" onclick="closeArrival()">✕</button>
-      <div class="arrival-emoji">🎉</div>
-      <div class="arrival-headline" id="arr-headline">You're here!</div>
-      <div class="arrival-sub" id="arr-sub">You've reached your destination.</div>
+      <div style="font-size:42px;">🎉</div>
+      <h2 style="font-weight:800; margin-top:6px;">Nandito ka na!</h2>
+      <p style="font-size:13px; opacity:0.8;">Nakarating ka na sa iyong bababaan.</p>
     </div>
     <div class="arrival-body">
-      <div class="arrival-stop-name" id="arr-stop-name">—</div>
-      <div class="arrival-landmarks-label" id="arr-lm-label">Landmarks</div>
-      <div class="arrival-landmarks" id="arr-landmarks">—</div>
+      <div id="arr-stop-name" style="font-size:20px; font-weight:700; margin-bottom:4px;">—</div>
+      <div id="arr-landmarks" style="font-size:12px; color:var(--text2);">—</div>
     </div>
-    <button class="arrival-close" id="arr-close-btn" onclick="closeArrival()">Done 👋</button>
+    <button class="arrival-close" onclick="closeArrival()">Salamat 👋</button>
   </div>
 </div>
 
-<!-- ══ STOP CONFIRM MODAL ══ -->
+<!-- STOP CONFIRM MODAL -->
 <div id="stopConfirmModal">
   <div class="confirm-panel">
-    <div class="confirm-icon">🛑</div>
-    <div class="confirm-title" id="conf-title">Stop Tracking?</div>
-    <div class="confirm-sub" id="conf-sub">This will reset your trip and return to the main screen.</div>
+    <div style="font-size:32px;">🛑</div>
+    <h3 style="margin-top:6px;">I-stop ang Biyahe?</h3>
+    <p style="font-size:12px; color:var(--text2); margin-top:4px;">Babalik ka sa simula ng rota selection.</p>
     <div class="confirm-btns">
-      <button class="confirm-btn-yes" id="conf-yes" onclick="confirmStop()">Yes, Stop</button>
-      <button class="confirm-btn-no" id="conf-no" onclick="closeStopConfirm()">Cancel</button>
+      <button class="confirm-btn-yes" onclick="confirmStop()">Oo, I-stop</button>
+      <button class="confirm-btn-no" onclick="closeStopConfirm()">Kanselahin</button>
     </div>
-  </div>
-</div>
-
-<!-- ══ SETTINGS SHEET ══ -->
-<div id="settingsSheet">
-  <div class="sheet-backdrop" onclick="closeSettings()"></div>
-  <div class="sheet-panel">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="sh-title">Settings</div>
-
-    <!-- GPS -->
-    <div class="sheet-section">
-      <div class="sheet-section-label" id="sh-gps-label">GPS Tracking</div>
-      <div class="gps-setting-row">
-        <div class="gps-setting-label">
-          <div class="gps-pip-big" id="gpsPipBig"></div>
-          <span id="gpsStatusLabel">GPS Off</span>
-          <span id="gpsAccuracyLabel" class="gps-accuracy"></span>
-        </div>
-        <button class="gps-toggle-btn" id="gpsToggleBtn" onclick="toggleGps()">Enable GPS</button>
-      </div>
-    </div>
-
-    <!-- Language -->
-    <div class="sheet-section" style="margin-top:12px">
-      <div class="sheet-section-label" id="sh-lang-label">Language</div>
-      <div class="pill-toggle">
-        <button class="pill-opt active" id="sh-en" onclick="setLang('en')">English</button>
-        <button class="pill-opt" id="sh-tl" onclick="setLang('tl')">Tagalog</button>
-      </div>
-    </div>
-
-    <!-- Appearance -->
-    <div class="sheet-section" style="margin-top:12px">
-      <div class="sheet-section-label" id="sh-theme-label">Appearance</div>
-      <div class="pill-toggle">
-        <button class="pill-opt active" id="sh-dark" onclick="setTheme('dark')">🌙 Dark</button>
-        <button class="pill-opt" id="sh-oled" onclick="setTheme('oled')">⚫ OLED</button>
-        <button class="pill-opt" id="sh-light" onclick="setTheme('light')">☀️ Light</button>
-      </div>
-    </div>
-
-    <!-- Text Size -->
-    <div class="sheet-section" style="margin-top:12px">
-      <div class="sheet-section-label" id="sh-font-label">Text Size</div>
-      <div class="font-toggle">
-        <button class="font-opt active" id="fs-small" onclick="setFontSize('small')">A</button>
-        <button class="font-opt" id="fs-normal" onclick="setFontSize('normal')">A</button>
-        <button class="font-opt" id="fs-large" onclick="setFontSize('large')">A</button>
-      </div>
-    </div>
-
-    <!-- Reminders accordion -->
-    <div class="sheet-section" style="margin-top:12px">
-      <div class="sheet-section-label" id="sh-rem-label">Reminders</div>
-      <div class="rem-accordion-header" onclick="toggleRemAcc()">
-        <div class="rem-accordion-title">🎒 <span id="sh-rem-acc-label">View reminders</span></div>
-        <div class="rem-accordion-arrow" id="remAccArrow">▼</div>
-      </div>
-      <div class="rem-accordion-body" id="remAccBody">
-        <div class="rem-accordion-list">
-          <div class="rem-acc-item"><span>🎒</span><span id="rem1">Close your bag or backpack zipper.</span></div>
-          <div class="rem-acc-item"><span>👛</span><span id="rem2">Check your wallet or coin purse.</span></div>
-          <div class="rem-acc-item"><span>📦</span><span id="rem3">Don't leave your stuff on the seat.</span></div>
-          <div class="rem-acc-item"><span>📱</span><span id="rem4">Hold on to your phone.</span></div>
-          <div class="rem-acc-item"><span>💼</span><span id="rem5">Keep your valuables in front of you.</span></div>
-          <div class="rem-acc-item"><span>🤚</span><span id="rem7">Hold the handrail while standing.</span></div>
-          <div class="rem-acc-item"><span>👀</span><span id="rem10">Be aware of your surroundings.</span></div>
-          <div class="rem-acc-item"><span>🧳</span><span id="rem11">Take all belongings before getting off.</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tools -->
-    <div class="sheet-section" style="margin-top:14px">
-      <div class="sheet-section-label" id="sh-tools-label">Tools</div>
-      <button class="sheet-action-btn" onclick="openNotes()">
-        <span class="sab-icon">📝</span>
-        <div><span id="sh-notes-label">Trip Notes</span><span class="sab-sub" id="sh-notes-sub">Write notes about your commute</span></div>
-      </button>
-      <button class="sheet-action-btn" onclick="openReport()">
-        <span class="sab-icon">🚨</span>
-        <div><span id="sh-report-label">Report an Issue</span><span class="sab-sub" id="sh-report-sub">Wrong stop info, broken coords, etc.</span></div>
-      </button>
-    </div>
-
-    <button class="sheet-done" id="sh-done" onclick="closeSettings()">Done</button>
-  </div>
-</div>
-
-<!-- ══ NOTES MODAL ══ -->
-<div id="notesModal">
-  <div class="modal-backdrop" onclick="closeNotes()"></div>
-  <div class="modal-panel">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="notes-title">Trip Notes</div>
-    <div class="modal-sub" id="notes-sub">Jot down anything about your commute.</div>
-    <textarea class="notes-area" id="tripNoteInput" placeholder="e.g. Umuulan, madaming tao sa Cubao..."></textarea>
-    <button class="modal-btn" onclick="saveNote()" id="notes-save">Save Note</button>
-    <button class="modal-btn modal-btn-cancel" onclick="shareNotes()" id="notes-share">📤 Share Notes</button>
-    <button class="modal-btn modal-btn-cancel" onclick="closeNotes()" id="notes-cancel">Cancel</button>
-    <div class="notes-history" id="notesHistory"></div>
-  </div>
-</div>
-
-<div id="scrollToast"></div>
-
-<div id="tutorialOverlay" class="tutorial-overlay">
-  <div class="tutorial-backdrop" onclick="dismissTutorial()"></div>
-  <div class="tutorial-bubble" id="tutorialBubble">
-    <div class="tutorial-arrow"></div>
-    <div class="tutorial-text" id="tutorialText">This small text under each stop shows nearby landmarks.</div>
-    <button class="tutorial-next-btn" onclick="dismissTutorial()" id="tutorialNextBtn">Next →</button>
   </div>
 </div>
 
 <script>
-const STOPS = [
-  { name:"Monumento", coords:[[14.65730,120.98838],[14.65724,120.98836],[14.65722,120.98835],[14.65732,120.98832],[14.65710,120.99674],[14.65727,120.99671],[14.65708,120.99682],[14.65742,120.98791],[14.65737,120.98795],[14.65732,120.98635]], landmarks:"Motortrade · Jollibee · KFC · Goldilocks · Greenwich · Tapa King · Shakey's · MCU · Honda · PNB" },
-  { name:"Bagong Barrio", coords:[[14.65729,120.99717]], landmarks:"Uncle John's · Pag-Ibig Fund Caloocan-EDSA" },
-  { name:"Balintawak", coords:[[14.65753,121.00486],[14.65737,121.00545]], landmarks:"Puregold Balintawak" },
-  { name:"Kaingin / Royal", coords:[[14.65754,121.01111],[14.65776,121.01122],[14.65747,121.01186],[14.65745,121.01183]], landmarks:"Floor Center · Apolonio Samson" },
-  { name:"Fernando Poe Jr. (Roosevelt) / Muñoz", coords:[[14.65786,121.01987],[14.65773,121.02024],[14.65759,121.01922],[14.65764,121.01937],[14.65763,121.01928]], landmarks:"Muñoz Market · Jollibee" },
-  { name:"SM North EDSA", coords:[[14.65614,121.02858],[14.65612,121.02863],[14.65579,121.02829],[14.65576,121.02835]], landmarks:"SM North· Word of Hope · Santo Cristo" },
-  { name:"North Avenue", coords:[[14.65169,121.03289],[14.65161,121.03229],[14.65160,121.03230],[14.65159,121.03235]], landmarks:"Trinoma" },
-  { name:"Philam Quezon City", coords:[[14.64763,121.03563],[14.64700,121.03576],[14.64748,121.03520]], landmarks:"Vertis North" },
-  { name:"Quezon Avenue", coords:[[14.64170,121.03940],[14.64190,121.03937]], landmarks:"Cyberpod Two · Kenny Rogers · Tokyo Tokyo · Pinyahan" },
-  { name:"Kamuning", coords:[[14.63610,121.04210],[14.63599,121.04223]], landmarks:"GMA· Victoria Sports Tower · VS Hotel · South Triangle" },
-  { name:"Nepa Q-Mart", coords:[[14.62801,121.04712],[14.62837,121.04689],[14.62799,121.04713]], landmarks:"Nepa Q-Mart" },
-  { name:"Main Avenue (Cubao)", coords:[[14.61437,121.05326],[14.61419,121.05355],[14.61435,121.05334]], landmarks:"SM Hypermarket · INGCO" },
-  { name:"Santolan - Annapolis", coords:[[14.60880,121.05593]], landmarks:"PNP" },
-  { name:"Ortigas", coords:[[14.58651,121.05617],[14.58635,121.05621]], landmarks:"SM Megamall" }
+// Official Clean Coordinate Matrix (Monumento to Ortigas)
+const ALL_STOPS = [
+  { id:0, name:"Monumento", coords:[[14.65730,120.98838],[14.65737,120.98795]], landmarks:"SM Grand Central · MCU · Samson Rd" },
+  { id:1, name:"Bagong Barrio", coords:[[14.65729,120.99717]], landmarks:"Uncle John's · Pag-Ibig Fund Caloocan-EDSA" },
+  { id:2, name:"Balintawak", coords:[[14.65753,121.00486],[14.65737,121.00545]], landmarks:"LRT Balintawak · Puregold" },
+  { id:3, name:"Kaingin / Royal", coords:[[14.65754,121.01111],[14.65776,121.01122]], landmarks:"Floor Center · Apolonio Samson" },
+  { id:4, name:"Fernando Poe Jr. (Roosevelt)", coords:[[14.65786,121.01987],[14.65773,121.02024]], landmarks:"LRT FPJ · Muñoz Market · Congressional Ave" },
+  { id:5, name:"SM North EDSA", coords:[[14.65614,121.02858],[14.65579,121.02829]], landmarks:"SM North Sky Garden · Grand Terminal" },
+  { id:6, name:"North Avenue", coords:[[14.65169,121.03289],[14.65161,121.03229]], landmarks:"MRT North Ave · TriNoma · Vertis North" },
+  { id:7, name:"Philam Quezon City", coords:[[14.64763,121.03563],[14.64700,121.03576]], landmarks:"Philam Gate · West Avenue footbridge" },
+  { id:8, name:"Quezon Avenue", coords:[[14.64170,121.03940],[14.64190,121.03937]], landmarks:"MRT Quezon Ave · Centris Walk" },
+  { id:9, name:"Kamuning", coords:[[14.63610,121.04210],[14.63599,121.04223]], landmarks:"GMA Network · MRT Kamuning" },
+  { id:10, name:"Nepa Q-Mart", coords:[[14.62801,121.04712],[14.62837,121.04689]], landmarks:"Nepa Q-Mart · Mega Q-Mart footbridge" },
+  { id:11, name:"Main Avenue (Cubao)", coords:[[14.61437,121.05326],[14.61419,121.05355]], landmarks:"SM Hypermarket Cubao · Ali Mall" },
+  { id:12, name:"Santolan - Annapolis", coords:[[14.60880,121.05593]], landmarks:"Camp Crame · Greenhills bound" },
+  { id:13, name:"Ortigas", coords:[[14.58651,121.05617],[14.58635,121.05621]], landmarks:"SM Megamall · Robinsons Galleria" }
 ];
 
-const T = {
-  en: {
-    ob_title:"Where are you headed?", ob_sub:"Choose your destination so we can alert you when you're almost there.",
-    ob_sec_label:"Bus Stops", ob_skip_title:"I don't know yet / Just track me",
-    ob_skip_sub:"We'll show you which stop you're at", ob_btn_start:"Let's Go",
-    ob_btn_dest:n=>`Going to ${n} →`,
-    tk_main:"Have your ticket ready for inspection.", tk_sub:"Keep it — conductor may check anytime.",
-    nav_label:"ROUTE", cur_pill:"📍 You are here", cur_next_prefix:"Next stop:",
-    cur_last:"🎉 Last stop — Ortigas!", nogps_title:"Enable GPS",
-    nogps_sub:"Enable GPS in Settings (⚙️) to start tracking.",
-    rem1:"Close your bag or backpack zipper.", rem2:"Check your wallet or coin purse.",
-    rem3:"Don't leave your stuff on the seat.", rem4:"Hold on to your phone.",
-    rem5:"Keep your valuables in front of you.", rem7:"Hold the handrail while standing.",
-    rem10:"Be aware of your surroundings.", rem11:"Take all belongings before getting off.",
-    list_label:"Bus Stops", btn_stop:"Stop Tracking",
-    btn_back:"↩ Change Destination", tag_here:"📍 You're here", tag_next:"Next →", tag_dest:"🏁 Get off here",
-    next_station_label:"Next Station:",
-    skip_next_label:"Next Stop:", skip_locating:"Locating…",
-    dest_alert_arrive:n=>`<b>Get off now! ${n}</b> — this is your stop.`,
-    dest_alert_near:(n,d)=>`Almost at <b>${n}</b> — only ${d} away!`,
-    missed_alert:n=>`Did you miss <b>${n}</b>?`,
-    stop_of:(i,t)=>`Stop ${i} of ${t}`,
-    gps_on:"GPS On", gps_searching:"Locating…", gps_off:"GPS Off",
-    gps_label_on:"GPS is active", gps_label_searching:"Locating…", gps_label_off:"GPS is off",
-    gps_btn_on:"Stop GPS", gps_btn_off:"Enable GPS",
-    err_denied:"Location permission denied. Check your browser settings.",
-    err_unavail:"Can't detect location. Try going outside.", err_title:"Location Error",
-    sh_title:"Settings", sh_gps:"GPS Tracking", sh_lang:"Language", sh_theme:"Appearance",
-    sh_font:"Text Size", sh_rem:"Reminders", sh_rem_acc:"View reminders",
-    theme_dark:"🌙 Dark", theme_oled:"⚫ OLED", theme_light:"☀️ Light",
-    notes_placeholder:"e.g. It's raining, lots of people at Cubao...", notes_history_label:"Past Notes", notes_copied:"Notes copied",
-    notes_share:"📤 Share Notes",
-    tutorial_landmarks:"This small text under each stop name shows nearby landmarks — helpful for spotting your stop.", tutorial_next:"Next →",
-    sh_tools:"Tools", sh_notes:"Trip Notes", sh_notes_sub:"Write notes about your commute",
-    sh_report:"Report an Issue", sh_report_sub:"Wrong stop info, broken coords, etc.", sh_done:"Done",
-    notes_title:"Trip Notes", notes_sub:"Jot down anything about your commute.", notes_save:"Save Note", notes_cancel:"Cancel",
-    scroll_locked:"🔒", scroll_unlocked:"🔓",
-    toast_locked:"Auto-scroll off", toast_unlocked:"Auto-scroll on",
-    eta_prefix:"~", eta_min:"min",
-    arr_headline:"You're here! 🎉", arr_sub:"You've reached your destination.",
-    arr_lm_label:"Landmarks nearby", arr_close:"Done 👋",
-    rm_title:"Before you go", rm_sub:"Quick reminders before boarding.",
-    rm1:"Close your bag or backpack zipper.", rm2:"Check your wallet or coin purse.",
-    rm5:"Keep your valuables in front of you.", rm6:"Hold the handrail while standing.",
-    rm7:"Be aware of your surroundings.", rm8:"Take all belongings before getting off.",
-    rm_go:"Let's go! 🚀",
-    conf_title:"Stop Tracking?", conf_sub:"This will reset your trip and return to the main screen.",
-    conf_yes:"Yes, Stop", conf_no:"Cancel",
-  },
-  tl: {
-    ob_title:"Saan ka pupunta?", ob_sub:"Piliin ang iyong destinasyon para ma-alert ka kapag malapit ka na.",
-    ob_sec_label:"Mga Hintuan", ob_skip_title:"Hindi pa alam / I-track lang ako",
-    ob_skip_sub:"Ipapakita namin kung saang hintuan ka na", ob_btn_start:"Magsimula",
-    ob_btn_dest:n=>`Pupunta sa ${n} →`,
-    tk_main:"I-ready ang ticket para sa inspection.", tk_sub:"Huwag itapon — maaaring mag-check ang kondaktor.",
-    nav_label:"RUTA", cur_pill:"📍 Nandito ka", cur_next_prefix:"Susunod:",
-    cur_last:"🎉 Last stop na — Ortigas!", nogps_title:"I-enable ang GPS",
-    nogps_sub:"I-enable ang GPS sa Settings (⚙️) para magsimulang mag-track.",
-    rem1:"Isara ang zipper ng bag o backpack mo.", rem2:"I-check ang wallet o coin purse mo.",
-    rem3:"Huwag mag-iwan ng gamit sa upuan.", rem4:"Hawakan ang phone mo.",
-    rem5:"Ilagay sa harap ang mga importanteng gamit mo.", rem7:"Kumapit sa handrail kung nakatayo.",
-    rem10:"Maging alerto sa paligid mo.", rem11:"Siguraduhing dala mo lahat bago bumaba.",
-    list_label:"Mga Hintuan", btn_stop:"I-stop ang Tracking",
-    btn_back:"↩ Baguhin ang Destinasyon", tag_here:"📍 Nandito ka", tag_next:"Susunod →", tag_dest:"🏁 Bababa dito",
-    next_station_label:"Susunod na Hintuan:",
-    skip_next_label:"Susunod na Hinto:", skip_locating:"Hinahanap…",
-    dest_alert_arrive:n=>`<b>Bababa ka na! ${n}</b> — ito na ang stop mo.`,
-    dest_alert_near:(n,d)=>`Malapit na ang <b>${n}</b> — ${d} na lang!`,
-    missed_alert:n=>`Nalagpasan mo ba ang <b>${n}</b>?`,
-    stop_of:(i,t)=>`Stop ${i} ng ${t}`,
-    gps_on:"GPS On", gps_searching:"Hinahanap…", gps_off:"GPS Off",
-    gps_label_on:"Aktibo ang GPS", gps_label_searching:"Hinahanap…", gps_label_off:"Naka-off ang GPS",
-    gps_btn_on:"I-stop ang GPS", gps_btn_off:"I-enable ang GPS",
-    err_denied:"Hindi pinayagan ang location. I-check ang settings ng browser mo.",
-    err_unavail:"Hindi ma-detect ang location. Subukan sa labas.", err_title:"Location Error",
-    sh_title:"Mga Setting", sh_gps:"GPS Tracking", sh_lang:"Wika", sh_theme:"Hitsura",
-    sh_font:"Laki ng Teksto", sh_rem:"Huwag kalimutan", sh_rem_acc:"Tingnan ang mga paalala",
-    theme_dark:"🌙 Madilim", theme_oled:"⚫ OLED", theme_light:"☀️ Maliwanag",
-    notes_placeholder:"e.g. Umuulan, madaming tao sa Cubao...", notes_history_label:"Nakaraang Tala", notes_copied:"Na-copy na ang mga tala",
-    notes_share:"📤 I-share ang Notes",
-    tutorial_landmarks:"Ang maliit na text na 'to sa ilalim ng bawat stop ay mga landmark — makakatulong ito para makilala mo agad ang stop mo.", tutorial_next:"Susunod →",
-    sh_tools:"Mga Kasangkapan", sh_notes:"Trip Notes", sh_notes_sub:"Mag-sulat tungkol sa biyahe mo",
-    sh_report:"Mag-report ng Issue", sh_report_sub:"Maling impormasyon, coords, atbp.", sh_done:"Tapos na",
-    notes_title:"Trip Notes", notes_sub:"Isulat ang tungkol sa iyong biyahe.", notes_save:"I-save", notes_cancel:"Kanselahin",
-    scroll_locked:"🔒", scroll_unlocked:"🔓",
-    toast_locked:"Naka-off ang auto-scroll", toast_unlocked:"Naka-on ang auto-scroll",
-    eta_prefix:"~", eta_min:"min",
-    arr_headline:"Nandito ka na! 🎉", arr_sub:"Nakarating ka na sa iyong destinasyon.",
-    arr_lm_label:"Mga landmark sa paligid", arr_close:"Tapos na 👋",
-    rm_title:"Bago ka sumakay", rm_sub:"Mabilis na paalala bago mag-byahe.",
-    rm1:"Isara ang zipper ng bag o backpack mo.", rm2:"I-check ang wallet o coin purse mo.",
-    rm5:"Ilagay sa harap ang mga importanteng gamit mo.", rm6:"Kumapit sa handrail kung nakatayo.",
-    rm7:"Maging alerto sa paligid mo.", rm8:"Siguraduhing dala mo lahat bago bumaba.",
-    rm_go:"Tara na! 🚀",
-    conf_title:"I-stop ang Tracking?", conf_sub:"Mire-reset ang trip mo at babalik sa main screen.",
-    conf_yes:"Oo, I-stop", conf_no:"Kanselahin",
-  }
-};
+let selectedDirection = null; // 'SB', 'NB', or 'TRACK_ME'
+let chosenDestId = null;
+let activeTripStops = [];
+let userLat = null, userLng = null, watchId = null;
+let currentStationId = -1;
+let lastSpeed = 0, speedHistory = [], prevLat = null, prevLng = null, lastTimestamp = 0;
+let isMoving = false, scrollLocked = false, arrivalShown = false;
 
-let lang='en', theme='dark', fontSize='small';
-let selectedDest=null, tracking=false;
-let watchId=null, userLat=null, userLng=null, gpsState='off', lastAccuracy=null;
-let scrollLocked=false, wakeLock=null;
-let lastSpeed=0, speedHistory=[];
-let countdownFired={};
-let arrivalShown=false, toastTimer=null;
-let tripNotes=(()=>{ try{ return JSON.parse(localStorage.getItem('lambNotes')||'[]'); }catch(e){ return []; } })();
-let selectedReportType=null;
-let remAccOpen=false;
-// Trip-scoping: only show stops between where the trip started and the chosen destination
-let tripOriginIdx=null, tripStops=[], tripDirection=1, tripCum=[0], tripTotal=1, tripStopsDirty=true;
-// "Just track me" (no destination) mode: current + next stop only, direction inferred live from movement
-let skipLastIdx=null, skipDirection=1;
-// Movement detection: animations only turn on once the trip is actually moving
-let prevLat=null, prevLng=null, isMoving=false;
-const MOVE_DIST_THRESHOLD=20, MOVE_SPEED_THRESHOLD=0.6;
+const MAX_ACCURACY = 65;
+const ARRIVAL_RADIUS = 75;
+const DEPARTURE_RADIUS = 110;
 
-// ── HAVERSINE ──
-function hav(la1,lo1,la2,lo2){ const R=6371000,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180,a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
-function distToStop(i){ if(userLat===null) return Infinity; return Math.min(...STOPS[i].coords.map(([la,lo])=>hav(userLat,userLng,la,lo))); }
-function fmt(m){return m<1000?`${Math.round(m)}m`:`${(m/1000).toFixed(1)}km`;}
-
-const CENTROIDS=STOPS.map(s=>{ const la=s.coords.map(c=>c[0]),lo=s.coords.map(c=>c[1]); return [la.reduce((a,b)=>a+b,0)/la.length,lo.reduce((a,b)=>a+b,0)/lo.length]; });
-
-function computeETA(destIdx){ if(userLat===null||destIdx<0||lastSpeed<0.5) return null; const d=distToStop(destIdx); return d===Infinity?null:Math.ceil(d/lastSpeed/60); }
-
-const THRESHOLD=80;
-
-// ── TRIP SCOPING (direction-aware, origin→destination only) ──
-function nearestStopIndex(){
-  let ci=0,cd=Infinity;
-  STOPS.forEach((_,i)=>{const d=distToStop(i);if(d<cd){cd=d;ci=i;}});
-  return {ci,cd};
+function hav(la1,lo1,la2,lo2){
+  const R=6371000, dLa=(la2-la1)*Math.PI/180, dLo=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
-function buildTripStops(){
-  if(selectedDest<0){
-    // No specific destination chosen — track across the full route as before
-    tripStops=STOPS.map((_,i)=>i); tripDirection=1;
-  } else if(tripOriginIdx===null){
-    // GPS origin not known yet — best-guess range until a real fix arrives
-    if(selectedDest===0){ tripStops=STOPS.map((_,i)=>i).slice().reverse(); tripDirection=-1; }
-    else { tripStops=STOPS.slice(0,selectedDest+1).map((_,i)=>i); tripDirection=1; }
+function distToStop(s){
+  if(userLat===null) return Infinity;
+  return Math.min(...s.coords.map(([la,lo])=>hav(userLat,userLng,la,lo)));
+}
+function fmt(m){ return m<1000?`${Math.round(m)}m`:`${(m/1000).toFixed(1)}km`; }
+
+const CENTROIDS = ALL_STOPS.map(s=>{
+  const la=s.coords.map(c=>c[0]), lo=s.coords.map(c=>c[1]);
+  return [la.reduce((a,b)=>a+b,0)/la.length, lo.reduce((a,b)=>a+b,0)/lo.length];
+});
+
+function setDirection(dir){
+  selectedDirection = dir;
+  document.getElementById('dirSB').classList.toggle('selected', dir==='SB');
+  document.getElementById('dirNB').classList.toggle('selected', dir==='NB');
+  document.getElementById('skipBtn').classList.toggle('selected', dir==='TRACK_ME');
+
+  const destSec = document.getElementById('destSection');
+  const btnStart = document.getElementById('btnStart');
+
+  if(dir === 'TRACK_ME'){
+    destSec.style.display = 'none';
+    chosenDestId = -1;
+    btnStart.classList.add('ready');
   } else {
-    tripDirection = selectedDest>=tripOriginIdx?1:-1;
-    tripStops=[];
-    for(let i=tripOriginIdx; tripDirection===1? i<=selectedDest : i>=selectedDest; i+=tripDirection){ tripStops.push(i); }
+    destSec.style.display = 'block';
+    chosenDestId = null;
+    btnStart.classList.remove('ready');
+    renderDestinationOptions();
   }
-  tripCum=[0];
-  for(let k=1;k<tripStops.length;k++){
-    const a=CENTROIDS[tripStops[k-1]], b=CENTROIDS[tripStops[k]];
-    tripCum.push(tripCum[k-1]+hav(a[0],a[1],b[0],b[1]));
-  }
-  tripTotal=tripCum[tripCum.length-1]||1;
-  tripStopsDirty=true;
 }
-function computeTripProgress(localIdx){
-  if(userLat===null||localIdx<0||tripStops.length<2) return 0;
-  const n=tripStops.length;
-  if(localIdx===0) return 0;
-  if(localIdx>=n-1) return 1;
-  const origPrev=tripStops[localIdx-1], origCur=tripStops[localIdx], origNext=tripStops[localIdx+1];
-  const dPrev=hav(userLat,userLng,...CENTROIDS[origPrev]);
-  const dCur=distToStop(origCur), dNxt=distToStop(origNext);
-  const dCurCentroid=hav(userLat,userLng,...CENTROIDS[origCur]);
-  if(dNxt<dPrev){
-    const seg=hav(...CENTROIDS[origCur],...CENTROIDS[origNext]);
-    const f=Math.max(0,Math.min(1,dCur/(dCur+dNxt+0.001)));
-    return (tripCum[localIdx]+f*seg)/tripTotal;
+
+function renderDestinationOptions(){
+  // Auto-filter: Kung Southbound at may GPS, alisin ang mga stops sa likod
+  let nearestIdx = 0;
+  if(userLat!==null){
+    let minD = Infinity;
+    ALL_STOPS.forEach((s, idx)=>{
+      const d = distToStop(s);
+      if(d < minD){ minD = d; nearestIdx = idx; }
+    });
+  }
+
+  let candidates = [];
+  if(selectedDirection === 'SB'){
+    // Mula current stop pasulong papuntang Ortigas
+    const startFrom = (userLat !== null && nearestIdx < ALL_STOPS.length - 1) ? nearestIdx + 1 : 1;
+    candidates = ALL_STOPS.slice(startFrom);
   } else {
-    const seg=hav(...CENTROIDS[origPrev],...CENTROIDS[origCur]);
-    const f=Math.max(0,Math.min(1,dPrev/(dPrev+dCurCentroid+0.001)));
-    return (tripCum[localIdx-1]+f*seg)/tripTotal;
+    // Mula current stop pabalik ng Monumento
+    const endAt = (userLat !== null && nearestIdx > 0) ? nearestIdx : ALL_STOPS.length - 1;
+    candidates = ALL_STOPS.slice(0, endAt).reverse();
   }
-}
 
-function saveSettings(){ try{ localStorage.setItem('lambSettings', JSON.stringify({theme,lang,fontSize})); }catch(e){} }
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('lambSettings')); return s||null; }catch(e){ return null; } }
-
-// ── SETTINGS ──
-function openSettings(){ updateGpsSettingUI(); document.getElementById('settingsSheet').classList.add('open'); }
-function closeSettings(){ document.getElementById('settingsSheet').classList.remove('open'); }
-function setTheme(t){ theme=t; document.body.classList.toggle('light-mode',t==='light'); document.body.classList.toggle('oled-mode',t==='oled'); ['sh-dark','sh-oled','sh-light'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('active',(t==='dark'&&id==='sh-dark')||(t==='oled'&&id==='sh-oled')||(t==='light'&&id==='sh-light')); }); saveSettings(); }
-function setFontSize(size){ fontSize=size; const sc={small:0.9,normal:1,large:1.15}; document.documentElement.style.setProperty('--font-scale',sc[size]); ['fs-small','fs-normal','fs-large'].forEach(id=>document.getElementById(id).classList.toggle('active',id===`fs-${size}`)); saveSettings(); }
-function setLang(l){ lang=l; document.getElementById('sh-en').classList.toggle('active',l==='en'); document.getElementById('sh-tl').classList.toggle('active',l==='tl'); saveSettings(); applyTranslations(); buildDestList(); if(tracking||userLat!==null) render(); else renderList(); }
-
-// Reminders accordion
-function toggleRemAcc(){
-  remAccOpen=!remAccOpen;
-  document.getElementById('remAccBody').classList.toggle('open',remAccOpen);
-  document.getElementById('remAccArrow').classList.toggle('open',remAccOpen);
-}
-
-function applyTranslations(){
-  const s=(id,k)=>{const el=document.getElementById(id);if(el&&T[lang][k]!==undefined)el.textContent=T[lang][k];};
-  const ph=(id,k)=>{const el=document.getElementById(id);if(el&&T[lang][k]!==undefined)el.placeholder=T[lang][k];};
-  ph('tripNoteInput','notes_placeholder');
-  [['ob-title','ob_title'],['ob-sub','ob_sub'],['ob-sec-label','ob_sec_label'],
-   ['ob-skip-title','ob_skip_title'],['ob-skip-sub','ob_skip_sub'],
-   ['tk-main','tk_main'],['tk-sub','tk_sub'],['nav-label','nav_label'],
-   ['cur-pill-label','cur_pill'],['nogps-title','nogps_title'],['nogps-sub','nogps_sub'],
-   ['sh-dark','theme_dark'],['sh-oled','theme_oled'],['sh-light','theme_light'],
-   ['rem1','rem1'],['rem2','rem2'],['rem3','rem3'],['rem4','rem4'],
-   ['rem5','rem5'],['rem7','rem7'],['rem10','rem10'],['rem11','rem11'],
-   ['listLabel','list_label'],['btn-back','btn_back'],['btn-stop-text','btn_stop'],
-   ['sh-title','sh_title'],['sh-gps-label','sh_gps'],['sh-lang-label','sh_lang'],
-   ['sh-theme-label','sh_theme'],['sh-font-label','sh_font'],
-   ['sh-rem-label','sh_rem'],['sh-rem-acc-label','sh_rem_acc'],
-   ['sh-tools-label','sh_tools'],['sh-notes-label','sh_notes'],['sh-notes-sub','sh_notes_sub'],
-   ['sh-report-label','sh_report'],['sh-report-sub','sh_report_sub'],['sh-done','sh_done'],
-   ['notes-title','notes_title'],['notes-sub','notes_sub'],['notes-save','notes_save'],['notes-cancel','notes_cancel'],
-   ['arr-headline','arr_headline'],['arr-sub','arr_sub'],['arr-lm-label','arr_lm_label'],['arr-close-btn','arr_close'],
-   ['rm-title','rm_title'],['rm-sub','rm_sub'],['rm1','rm1'],['rm2','rm2'],
-   ['rm5','rm5'],['rm6','rm6'],['rm7','rm7'],['rm8','rm8'],['rm-go-btn','rm_go'],
-   ['conf-title','conf_title'],['conf-sub','conf_sub'],['conf-yes','conf_yes'],['conf-no','conf_no'],
-   ['skipNextPrefix','skip_next_label'],['skipPillLabel','cur_pill'],
-   ['tutorialText','tutorial_landmarks'],['tutorialNextBtn','tutorial_next'],
-   ['notes-share','notes_share'],
-  ].forEach(([id,k])=>s(id,k));
-  document.getElementById('ob-btn-start').textContent=selectedDest===null||selectedDest===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[selectedDest].name);
-  updateScrollLockBtn(); updateGpsSettingUI();
-}
-
-// ── GPS SETTING UI ──
-function updateGpsAccuracyLabel(){
-  const el=document.getElementById('gpsAccuracyLabel');
-  if(!el) return;
-  el.textContent = (gpsState==='on' && lastAccuracy!==null) ? `± ${lastAccuracy}m` : '';
-}
-function updateGpsSettingUI(){
-  const pip=document.getElementById('gpsPipBig');
-  const lbl=document.getElementById('gpsStatusLabel');
-  const btn=document.getElementById('gpsToggleBtn');
-  if(!pip) return;
-  if(gpsState==='on'){ pip.className='gps-pip-big on'; lbl.textContent=T[lang].gps_label_on; btn.textContent=T[lang].gps_btn_on; btn.classList.add('on'); }
-  else if(gpsState==='searching'){ pip.className='gps-pip-big searching'; lbl.textContent=T[lang].gps_label_searching; btn.textContent=T[lang].gps_btn_on; btn.classList.remove('on'); }
-  else { pip.className='gps-pip-big'; lbl.textContent=T[lang].gps_label_off; btn.textContent=T[lang].gps_btn_off; btn.classList.remove('on'); }
-  updateGpsAccuracyLabel();
-}
-
-// ── SCROLL LOCK ──
-function toggleScrollLock(){
-  scrollLocked=!scrollLocked;
-  document.body.classList.toggle('scroll-locked-mode', scrollLocked);
-  document.getElementById('stopList').classList.toggle('scroll-locked', scrollLocked);
-  updateScrollLockBtn();
-  showToast(scrollLocked?T[lang].toast_locked:T[lang].toast_unlocked);
-}
-function updateScrollLockBtn(){ const btn=document.getElementById('scrollLockBtn'); if(!btn) return; btn.textContent=scrollLocked?T[lang].scroll_locked:T[lang].scroll_unlocked; btn.classList.toggle('locked',scrollLocked); }
-function showToast(msg){ const t=document.getElementById('scrollToast'); t.textContent=msg; t.classList.add('show'); if(toastTimer) clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
-
-// ── WAKE LOCK ──
-async function requestWakeLock(){ try{ if('wakeLock' in navigator){ wakeLock=await navigator.wakeLock.request('screen'); } }catch(e){} }
-function releaseWakeLock(){ try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){} }
-
-// ── AUDIO ──
-function playAudio(type){ try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); if(type==='arrive'){osc.frequency.value=880;gain.gain.setValueAtTime(0.3,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);osc.start();osc.stop(ctx.currentTime+0.6);}else if(type==='near'){osc.frequency.value=660;gain.gain.setValueAtTime(0.2,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);osc.start();osc.stop(ctx.currentTime+0.4);}else{osc.frequency.value=440;gain.gain.setValueAtTime(0.15,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);osc.start();osc.stop(ctx.currentTime+0.3);} }catch(e){} }
-
-// ── ARRIVAL ──
-function showArrival(stop){ document.getElementById('arr-stop-name').textContent=stop.name; document.getElementById('arr-landmarks').textContent=stop.landmarks; document.getElementById('arrivalModal').classList.add('open'); }
-function closeArrival(){ document.getElementById('arrivalModal').classList.remove('open'); }
-
-// ── STOP CONFIRM ──
-function requestStop(){ document.getElementById('stopConfirmModal').classList.add('open'); }
-function closeStopConfirm(){ document.getElementById('stopConfirmModal').classList.remove('open'); }
-function confirmStop(){
-  closeStopConfirm();
-  clearTripState();
-  stopGps(); releaseWakeLock(); closeSettings(); closeArrival();
-  // Unlock scroll if locked
-  if(scrollLocked){ scrollLocked=false; document.body.classList.remove('scroll-locked-mode'); document.getElementById('stopList').classList.remove('scroll-locked'); }
-  document.getElementById('remindersModal').classList.remove('open');
-  document.getElementById('screenTracker').classList.add('hidden');
-  document.getElementById('screenOnboard').classList.remove('hidden');
-  // Full reset
-  document.getElementById('noGps').classList.add('show');
-  document.getElementById('curCard').classList.remove('show');
-  document.getElementById('destAlert').classList.remove('show');
-  document.getElementById('missedAlert').classList.remove('show');
-  document.getElementById('etaChip').classList.remove('show');
-  document.getElementById('scrollLockBtn').classList.remove('show');
-  document.getElementById('ticketBanner').classList.remove('gone');
-  arrivalShown=false; countdownFired={};
-  tripOriginIdx=null; tripStops=[]; tripStopsDirty=true;
-  skipLastIdx=null; skipDirection=1;
-  document.getElementById('skipView').classList.remove('show');
-  isMoving=false; prevLat=null; prevLng=null;
-  document.body.classList.remove('trip-moving');
-  selectedDest=null;
-  document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
-  document.getElementById('skipBtn').classList.remove('selected');
-  document.getElementById('btnStart').classList.remove('ready');
-  document.getElementById('ob-btn-start').textContent=T[lang].ob_btn_start;
-  updateScrollLockBtn();
-  // Reload page to fully reset
-  setTimeout(()=>location.reload(), 100);
-}
-
-// ── ONBOARDING ──
-function buildDestList(){
-  document.getElementById('destList').innerHTML=STOPS.map((s,i)=>`
-    <div class="dest-item${selectedDest===i?' selected':''}" id="di${i}" onclick="selectDest(${i})">
-      <div class="dest-num">${i+1}</div>
-      <div class="dest-info"><div class="dest-name">${s.name}</div><div class="dest-lm">${s.landmarks}</div></div>
+  document.getElementById('destList').innerHTML = candidates.map(s=>`
+    <div class="dest-item ${chosenDestId===s.id?'selected':''}" onclick="selectDestination(${s.id})">
+      <div class="dest-num">${s.id+1}</div>
+      <div class="dest-info">
+        <div class="dest-name">${s.name}</div>
+        <div class="dest-lm">${s.landmarks}</div>
+      </div>
       <div class="dest-check">✓</div>
-    </div>`).join('');
+    </div>
+  `).join('');
 }
-function selectDest(idx){ selectedDest=idx; document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected')); document.getElementById('skipBtn').classList.remove('selected'); if(idx===-1) document.getElementById('skipBtn').classList.add('selected'); else{ const el=document.getElementById(`di${idx}`);if(el)el.classList.add('selected'); showTutorialIfNeeded(idx); } document.getElementById('btnStart').classList.add('ready'); document.getElementById('ob-btn-start').textContent=idx===-1?T[lang].ob_btn_start:T[lang].ob_btn_dest(STOPS[idx].name); }
+
+function selectDestination(id){
+  chosenDestId = id;
+  document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  document.getElementById('btnStart').classList.add('ready');
+}
 
 function startApp(){
-  if(selectedDest===null) return;
-  applyTranslations();
   document.getElementById('remindersModal').classList.add('open');
 }
-function closeRemindersModal(){
-  document.getElementById('remindersModal').classList.remove('open');
-}
-function confirmRemindersAndGo(){
-  document.getElementById('remindersModal').classList.remove('open');
-  launchTracker();
-}
-function saveTripState(){ try{ localStorage.setItem('lambActiveTrip', JSON.stringify({selectedDest})); }catch(e){} }
-function loadTripState(){ try{ return JSON.parse(localStorage.getItem('lambActiveTrip')); }catch(e){ return null; } }
-function clearTripState(){ try{ localStorage.removeItem('lambActiveTrip'); }catch(e){} }
+function closeRemindersModal(){ document.getElementById('remindersModal').classList.remove('open'); }
 
-function launchTracker(){
+function confirmRemindersAndGo(){
+  closeRemindersModal();
   document.getElementById('screenOnboard').classList.add('hidden');
   document.getElementById('screenTracker').classList.remove('hidden');
-  document.getElementById('curCard').classList.remove('show');
-  document.getElementById('destAlert').classList.remove('show');
-  document.getElementById('missedAlert').classList.remove('show');
-  document.getElementById('etaChip').classList.remove('show');
-  const isSkip = selectedDest===-1;
-  // Capture the real starting point from GPS if we already have a fix;
-  // otherwise buildTripStops() falls back to a best guess until one arrives
-  tripOriginIdx = (userLat!==null) ? nearestStopIndex().ci : null;
-  buildTripStops();
-  skipLastIdx = (isSkip && userLat!==null) ? nearestStopIndex().ci : null;
-  skipDirection = 1;
-  // Route label — reflects the actual detected origin once known, falls back to Monumento/Ortigas otherwise
-  let originName = tripOriginIdx!==null ? STOPS[tripOriginIdx].name : (isSkip ? T[lang].skip_locating : (selectedDest===0 ? 'Ortigas' : 'Monumento'));
-  let routeText;
-  if(isSkip) routeText = originName;
-  else if(selectedDest>=0) routeText = `${originName} → ${STOPS[selectedDest].name}`;
-  else routeText = originName;
-  document.getElementById('navRouteName').textContent=routeText;
-  document.getElementById('skipView').classList.toggle('show', isSkip);
-  document.getElementById('listLabel').classList.toggle('show', !isSkip);
-  document.getElementById('stopList').style.display = isSkip ? 'none' : '';
-  document.getElementById('scrollLockBtn').classList.toggle('show', !isSkip);
-  arrivalShown=false; countdownFired={};
-  applyTranslations();
-  if(isSkip){ document.getElementById('stopList').innerHTML=''; } else { renderList(); }
+
+  // Set animation direction classes
+  document.body.classList.toggle('flow-south', selectedDirection==='SB');
+  document.body.classList.toggle('flow-north', selectedDirection==='NB');
+
+  // Build Route Sequences
+  let nearestIdx = 0;
+  if(userLat!==null){
+    let minD = Infinity;
+    ALL_STOPS.forEach((s, idx)=>{
+      const d = distToStop(s);
+      if(d < minD){ minD = d; nearestIdx = idx; }
+    });
+  }
+
+  if(selectedDirection === 'TRACK_ME'){
+    activeTripStops = ALL_STOPS.slice();
+    document.getElementById('skipView').classList.add('show');
+    document.getElementById('stopList').style.display = 'none';
+    document.getElementById('navRouteName').textContent = "Just Track Me Mode";
+  } else {
+    document.getElementById('skipView').classList.remove('show');
+    document.getElementById('stopList').style.display = 'block';
+
+    const destIdx = ALL_STOPS.findIndex(s=>s.id === chosenDestId);
+    if(selectedDirection === 'SB'){
+      const startIdx = Math.min(nearestIdx, destIdx);
+      activeTripStops = ALL_STOPS.slice(startIdx, destIdx + 1);
+    } else {
+      const startIdx = Math.max(nearestIdx, destIdx);
+      activeTripStops = ALL_STOPS.slice(destIdx, startIdx + 1).reverse();
+    }
+
+    document.getElementById('navRouteName').textContent = `${activeTripStops[0].name} → ${activeTripStops[activeTripStops.length-1].name}`;
+    renderTrackerList();
+  }
+
   if(userLat!==null) render();
-  saveTripState();
-}
-function goBack(){
-  clearTripState();
-  releaseWakeLock(); closeSettings(); closeArrival();
-  if(scrollLocked){ scrollLocked=false; document.body.classList.remove('scroll-locked-mode'); document.getElementById('stopList').classList.remove('scroll-locked'); }
-  document.getElementById('remindersModal').classList.remove('open');
-  document.getElementById('screenTracker').classList.add('hidden');
-  document.getElementById('screenOnboard').classList.remove('hidden');
-  document.getElementById('noGps').classList.toggle('show', !tracking);
-  document.getElementById('curCard').classList.remove('show');
-  document.getElementById('destAlert').classList.remove('show');
-  document.getElementById('missedAlert').classList.remove('show');
-  document.getElementById('etaChip').classList.remove('show');
-  document.getElementById('scrollLockBtn').classList.remove('show');
-  scrollLocked=false; arrivalShown=false; countdownFired={};
-  updateScrollLockBtn();
-  // Reset trip scoping so the next launch recalculates origin from wherever the user is now
-  tripOriginIdx=null; tripStops=[]; tripStopsDirty=true;
-  skipLastIdx=null; skipDirection=1;
-  document.getElementById('skipView').classList.remove('show');
-  isMoving=false; prevLat=null; prevLng=null;
-  document.body.classList.remove('trip-moving');
-  selectedDest=null;
-  document.querySelectorAll('.dest-item').forEach(el=>el.classList.remove('selected'));
-  document.getElementById('skipBtn').classList.remove('selected');
-  document.getElementById('btnStart').classList.remove('ready');
-  document.getElementById('ob-btn-start').textContent=T[lang].ob_btn_start;
-}
-function dismissTicket(){ document.getElementById('ticketBanner').classList.add('gone'); }
-
-// ── LANDMARKS TUTORIAL (first visit only) ──
-function showTutorialIfNeeded(idx){
-  let seen=false;
-  try{ seen = localStorage.getItem('lambTutorialSeen')==='1'; }catch(e){}
-  if(seen) return;
-  setTimeout(()=>{
-    const target = document.querySelector(`#di${idx} .dest-lm`);
-    const bubble = document.getElementById('tutorialBubble');
-    if(!target||!bubble) return;
-    const rect = target.getBoundingClientRect();
-    bubble.style.top = (rect.bottom + 12) + 'px';
-    bubble.style.left = Math.max(16, Math.min(rect.left, window.innerWidth-266)) + 'px';
-    document.getElementById('tutorialOverlay').classList.add('show');
-  }, 150);
-}
-function dismissTutorial(){
-  document.getElementById('tutorialOverlay').classList.remove('show');
-  try{ localStorage.setItem('lambTutorialSeen','1'); }catch(e){}
 }
 
-// ── GPS ──
-function toggleGps(){ tracking?stopGps():startGps(); updateGpsSettingUI(); }
+function renderTrackerList(){
+  document.getElementById('stopList').innerHTML = activeTripStops.map((s, i)=>{
+    const isFirst = i === 0, isLast = i === activeTripStops.length - 1;
+    return `
+      <div class="stop-row ${isFirst?'stop-first':''} ${isLast?'stop-last':''}" id="row-${s.id}">
+        <div class="tl-col">
+          <div class="tl-dot"></div>
+          <div class="tl-seg" style="--fill:0"></div>
+        </div>
+        <div class="stop-card">
+          <div class="stop-seq-num">Stop ${i+1} of ${activeTripStops.length}</div>
+          <div class="stop-name-main">${s.name}</div>
+          <div class="stop-lm">${s.landmarks}</div>
+          <div class="stop-tags"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── GPS TRACKING ENGINE ──
 function startGps(){
-  if(!navigator.geolocation){alert("GPS not supported.");return;}
-  gpsState='searching'; updateGpsSettingUI(); requestWakeLock();
-  watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:3000,timeout:15000});
+  if(!navigator.geolocation) return;
+  watchId = navigator.geolocation.watchPosition(onPos, onErr, {
+    enableHighAccuracy: true,
+    maximumAge: 1000,
+    timeout: 12000
+  });
 }
-function stopGps(){
-  if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
-  tracking=false;userLat=null;userLng=null;gpsState='off';lastSpeed=0;speedHistory=[];lastAccuracy=null;
-  updateGpsSettingUI(); releaseWakeLock();
-  document.getElementById('noGps').classList.add('show');
-  document.getElementById('curCard').classList.remove('show');
-  document.getElementById('destAlert').classList.remove('show');
-  document.getElementById('missedAlert').classList.remove('show');
-  document.getElementById('etaChip').classList.remove('show');
-  if(selectedDest!==-1) renderList();
-}
+
 function onPos(pos){
-  if(pos.coords.speed!==null&&pos.coords.speed>=0){speedHistory.push(pos.coords.speed);if(speedHistory.length>5)speedHistory.shift();lastSpeed=speedHistory.reduce((a,b)=>a+b,0)/speedHistory.length;}
-  userLat=pos.coords.latitude;userLng=pos.coords.longitude;
-  lastAccuracy = (typeof pos.coords.accuracy==='number') ? Math.round(pos.coords.accuracy) : null;
-  if(!tracking){tracking=true;gpsState='on';updateGpsSettingUI();document.getElementById('noGps').classList.remove('show');}
-  updateGpsAccuracyLabel();
+  const acc = pos.coords.accuracy;
+  if(acc > MAX_ACCURACY) return; // Drop bad accuracy
+
+  const curTime = pos.timestamp || Date.now();
+  const cLat = pos.coords.latitude, cLng = pos.coords.longitude;
+
+  if(prevLat!==null && lastTimestamp > 0){
+    const dMoved = hav(prevLat, prevLng, cLat, cLng);
+    const dt = (curTime - lastTimestamp) / 1000;
+    if(dt > 0.5){
+      let speed = (pos.coords.speed !== null && pos.coords.speed >= 0) ? pos.coords.speed : (dMoved / dt);
+      speedHistory.push(speed);
+      if(speedHistory.length > 5) speedHistory.shift();
+      lastSpeed = speedHistory.reduce((a,b)=>a+b, 0) / speedHistory.length;
+      isMoving = lastSpeed > 0.6 || dMoved > 12;
+    }
+  }
+
+  prevLat = cLat; prevLng = cLng; lastTimestamp = curTime;
+  userLat = cLat; userLng = cLng;
+
+  document.body.classList.toggle('trip-moving', isMoving);
+  document.getElementById('noGps').classList.remove('show');
+
+  // If in onboarding, refresh dynamic list as user moves
+  if(!document.getElementById('screenOnboard').classList.contains('hidden') && selectedDirection !== null && selectedDirection !== 'TRACK_ME'){
+    renderDestinationOptions();
+  }
+
   render();
 }
-function onErr(e){
-  gpsState='off'; updateGpsSettingUI();
-  const msg=e.code===1?T[lang].err_denied:T[lang].err_unavail;
-  document.getElementById('noGps').innerHTML=`<div class="no-gps-icon">❌</div><div class="no-gps-title">${T[lang].err_title}</div><div class="no-gps-sub">${msg}</div>`;
+
+function onErr(){
   document.getElementById('noGps').classList.add('show');
 }
 
-// ── RENDER ──
-function render(){
-  if(userLat===null) return;
-  if(document.getElementById('screenTracker').classList.contains('hidden')) return;
-  const {ci,cd}=nearestStopIndex();
-  const atStop=cd<=THRESHOLD, rawCurrentIdx=atStop?ci:-1;
-
-  // "Just track me" mode uses its own simple current+next view — bypass the full-list logic entirely
-  if(selectedDest===-1){ renderSkipView(ci,atStop); return; }
-
-  // Capture the real trip origin as soon as we get a GPS fix, if we didn't have one at launch
-  if(selectedDest>=0 && tripOriginIdx===null){ tripOriginIdx=ci; buildTripStops(); }
-
-  // Position within the trip-scoped, direction-aware list (not the raw STOPS index)
-  const currentIdx = rawCurrentIdx>=0 ? tripStops.indexOf(rawCurrentIdx) : -1;
-
-  // Movement detection — animations only switch on once we detect real motion
-  if(prevLat!==null){
-    const moved=hav(prevLat,prevLng,userLat,userLng);
-    if((lastSpeed>MOVE_SPEED_THRESHOLD)||(moved>MOVE_DIST_THRESHOLD)) isMoving=true;
-  }
-  prevLat=userLat; prevLng=userLng;
-  document.body.classList.toggle('trip-moving', isMoving);
-
-  document.getElementById('cur-pill-label').textContent=T[lang].cur_pill;
-  const card=document.getElementById('curCard');
-  if(atStop){
-    card.classList.add('show');
-    document.getElementById('curName').textContent=STOPS[ci].name;
-    document.getElementById('curLandmark').textContent=STOPS[ci].landmarks;
-    const nxtOrig = currentIdx>=0 && currentIdx+1<tripStops.length ? tripStops[currentIdx+1] : null;
-    document.getElementById('curNext').innerHTML = nxtOrig!==null ? `${T[lang].cur_next_prefix} <b>${STOPS[nxtOrig].name}</b>` : `<b>${T[lang].cur_last}</b>`;
-  } else card.classList.remove('show');
-
-  const etaChip=document.getElementById('etaChip');
-  if(selectedDest>=0){ const mins=computeETA(selectedDest); if(mins!==null){etaChip.textContent=`${T[lang].eta_prefix}${mins} ${T[lang].eta_min}`;etaChip.classList.add('show');}else etaChip.classList.remove('show'); } else etaChip.classList.remove('show');
-
-  const da=document.getElementById('destAlert');
-  if(selectedDest>=0){
-    if(atStop&&rawCurrentIdx===selectedDest&&!arrivalShown){ arrivalShown=true; showArrival(STOPS[selectedDest]); da.classList.remove('show'); playAudio('arrive'); vibrate([200,100,200,100,400]); }
-    else if(atStop&&rawCurrentIdx===selectedDest){ da.classList.add('show'); document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_arrive(STOPS[selectedDest].name); }
-    else { const d=distToStop(selectedDest); if(d<1500&&d>THRESHOLD){da.classList.add('show');document.getElementById('destAlertText').innerHTML=T[lang].dest_alert_near(STOPS[selectedDest].name,fmt(d));playAudio('near');} else if(!(atStop&&rawCurrentIdx===selectedDest)) da.classList.remove('show'); }
-  }
-
-  const ma=document.getElementById('missedAlert');
-  const missed = selectedDest>=0 && rawCurrentIdx>=0 && tripStops.indexOf(rawCurrentIdx)===-1 &&
-    ((tripDirection===1 && rawCurrentIdx>selectedDest) || (tripDirection===-1 && rawCurrentIdx<selectedDest));
-  if(missed){ document.getElementById('missedAlertText').innerHTML=T[lang].missed_alert(STOPS[selectedDest].name); ma.classList.add('show'); } else ma.classList.remove('show');
-
-  if(selectedDest>=0&&currentIdx>=0){ const stopsAway=(tripStops.length-1)-currentIdx; if(stopsAway>=1&&stopsAway<=3&&!countdownFired[stopsAway]){ countdownFired[stopsAway]=true; vibrate(stopsAway===1?[300,100,300]:stopsAway===2?[200,100,200]:[150]); playAudio('countdown'); } }
-
-  const progress=computeTripProgress(currentIdx);
-  const newFills=tripStops.map((_,i)=>{
-    if(i>=tripStops.length-1) return 0;
-    const s=tripCum[i]/tripTotal,e=tripCum[i+1]/tripTotal,len=e-s;
-    return len===0?0:Math.max(0,Math.min(1,(progress-s)/len));
+function getBestStop(){
+  let closest = null, minD = Infinity;
+  ALL_STOPS.forEach(s=>{
+    const d = distToStop(s);
+    if(d < minD){ minD = d; closest = s; }
   });
 
-  const list=document.getElementById('stopList');
-  if(tripStopsDirty){ tripStopsDirty=false; renderList(currentIdx,ci,newFills); }
-  else {
-    const segs=list.querySelectorAll('.tl-seg');
-    segs.forEach((seg,i)=>{const f=(newFills[i]||0).toFixed(3);if(seg.style.getPropertyValue('--fill')!==f)seg.style.setProperty('--fill',f);});
-    updateDotsAndCards(currentIdx,ci);
+  // Hysteresis Check
+  if(currentStationId !== -1){
+    const active = ALL_STOPS.find(s=>s.id === currentStationId);
+    if(active && distToStop(active) <= DEPARTURE_RADIUS){
+      return { station: active, isAt: true, dist: distToStop(active) };
+    } else {
+      currentStationId = -1;
+    }
   }
 
-  if(!scrollLocked&&currentIdx>=0){ setTimeout(()=>{const rows=list.querySelectorAll('.stop-row:not(.peek-row)');if(rows[currentIdx])rows[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});},200); }
+  if(minD <= ARRIVAL_RADIUS){
+    currentStationId = closest.id;
+    return { station: closest, isAt: true, dist: minD };
+  }
+
+  return { station: closest, isAt: false, dist: minD };
 }
 
-// ── SKIP MODE RENDER — current stop circle + next stop box only, no destination bound ──
-function projectProgress(pLat,pLng,aLat,aLng,bLat,bLng){
-  // Flat local projection (accurate enough for stop-to-stop distances): how far along line A->B does P fall, 0-1
-  const R=6371000, rad=Math.PI/180, cosLat=Math.cos(aLat*rad);
-  const toXY=(la,lo)=>[R*(lo*rad)*cosLat, R*(la*rad)];
-  const [ax,ay]=toXY(aLat,aLng), [bx,by]=toXY(bLat,bLng), [px,py]=toXY(pLat,pLng);
-  const abx=bx-ax, aby=by-ay, apx=px-ax, apy=py-ay;
-  const abLenSq=abx*abx+aby*aby;
-  if(abLenSq===0) return 0;
-  return Math.max(0,Math.min(1,(apx*abx+apy*aby)/abLenSq));
-}
-function renderSkipView(ci,atStop){
-  if(!atStop && skipLastIdx===null){
-    document.getElementById('skipCurName').textContent=T[lang].skip_locating;
-    document.getElementById('skipNextName').textContent='—';
-    document.getElementById('skipDrain').style.width='0%';
-    document.getElementById('skipNextFill').style.width='0%';
-    document.getElementById('skipNextDist').textContent='';
+function render(){
+  if(userLat===null || document.getElementById('screenTracker').classList.contains('hidden')) return;
+
+  const { station, isAt, dist } = getBestStop();
+
+  // "Just Track Me" View
+  if(selectedDirection === 'TRACK_ME'){
+    document.getElementById('skipCurName').textContent = station ? station.name : "Locating...";
+    const curIdx = ALL_STOPS.findIndex(s=>s.id === station.id);
+    const nxt = ALL_STOPS[Math.min(ALL_STOPS.length-1, curIdx+1)];
+    document.getElementById('skipNextName').textContent = nxt ? nxt.name : "—";
+    document.getElementById('skipNextDist').textContent = isAt ? "" : `${fmt(distToStop(nxt))} away`;
     return;
   }
-  // Only trust an arrival if it's the immediate adjacent stop — a farther jump is almost
-  // certainly GPS noise, so we ignore it instead of letting it flip the direction wrongly
-  if(atStop){
-    if(skipLastIdx===null){ skipLastIdx=ci; }
-    else if(ci!==skipLastIdx && Math.abs(ci-skipLastIdx)===1){
-      skipDirection = ci>skipLastIdx ? 1 : -1;
-      skipLastIdx=ci;
-    }
+
+  // Active Station Banner
+  const card = document.getElementById('curCard');
+  if(isAt && station){
+    card.classList.add('show');
+    document.getElementById('curName').textContent = station.name;
+    document.getElementById('curLandmark').textContent = station.landmarks;
+    const curIdxInTrip = activeTripStops.findIndex(s=>s.id === station.id);
+    const nxt = activeTripStops[curIdxInTrip + 1];
+    document.getElementById('curNext').innerHTML = nxt ? `Next stop: <b>${nxt.name}</b>` : `<b>Huling hintuan na!</b>`;
+  } else {
+    card.classList.remove('show');
   }
-  const curIdx=skipLastIdx;
-  let nextIdx=curIdx+skipDirection;
-  if(nextIdx<0){ nextIdx=1; skipDirection=1; }
-  if(nextIdx>STOPS.length-1){ nextIdx=STOPS.length-2; skipDirection=-1; }
 
-  document.getElementById('skipCurName').textContent=STOPS[curIdx].name;
-  document.getElementById('skipNextName').textContent=STOPS[nextIdx].name;
+  // Update Trip List Progress
+  let currentLocalIdx = activeTripStops.findIndex(s=>s.id === station.id);
+  activeTripStops.forEach((s, idx)=>{
+    const row = document.getElementById(`row-${s.id}`);
+    if(!row) return;
 
-  const dNext=hav(userLat,userLng,...CENTROIDS[nextIdx]);
-  document.getElementById('skipNextDist').textContent = atStop ? '' : fmt(dNext)+(lang==='tl'?' pa':' away');
-  // Freshly at a stop = full circle, empty box. Otherwise, accurate projection along the current->next line.
-  const progress = atStop ? 0 : projectProgress(userLat,userLng, ...CENTROIDS[curIdx], ...CENTROIDS[nextIdx]);
-  document.getElementById('skipDrain').style.width=(progress*100)+'%';
-  document.getElementById('skipNextFill').style.width=(progress*100)+'%';
-}
+    const isCurrent = isAt && s.id === station.id;
+    const isPassed = currentLocalIdx !== -1 && idx < currentLocalIdx;
+    const isDest = s.id === chosenDestId;
 
-function updateDotsAndCards(currentIdx,closestIdx){
-  const list=document.getElementById('stopList');
-  const rows=list.querySelectorAll('.stop-row:not(.peek-row)');
-  rows.forEach((row,i)=>{
-    const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
-    const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===tripStops.length-1;
-    const dot=row.querySelector('.tl-dot');
-    if(dot) dot.className='tl-dot'+(isCurrent?' current':'');
-    const card=row.querySelector('.stop-card');
-    if(card) card.className='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isNext?' next':'');
-    const nextChip=row.querySelector('.next-station-chip');
-    if(nextChip) nextChip.remove();
-    if(isNext&&card){
-      const chip=document.createElement('div');
-      chip.className='next-station-chip';
-      chip.innerHTML=`<span>${T[lang].next_station_label}</span>`;
-      card.insertBefore(chip,card.firstChild);
+    row.querySelector('.tl-dot').className = `tl-dot ${isCurrent?'current':''}`;
+    const cardEl = row.querySelector('.stop-card');
+    cardEl.className = `stop-card ${isCurrent ? (isDest ? 'current dest-card' : 'current') : isPassed ? 'passed' : isDest ? 'dest-card' : ''}`;
+
+    // Fill line to next stop
+    const seg = row.querySelector('.tl-seg');
+    if(seg){
+      if(isPassed) seg.style.setProperty('--fill', '1');
+      else if(isCurrent){
+        const nextStop = activeTripStops[idx+1];
+        if(nextStop){
+          const dNext = distToStop(nextStop);
+          const totalSeg = hav(...CENTROIDS[s.id], ...CENTROIDS[nextStop.id]);
+          const fillAmt = Math.max(0, Math.min(1, 1 - (dNext / (totalSeg || 1))));
+          seg.style.setProperty('--fill', fillAmt.toFixed(2));
+        }
+      } else seg.style.setProperty('--fill', '0');
     }
-    const tagsEl=row.querySelector('.stop-tags');
-    let tags='';
-    if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
-    if(isDest&&!isCurrent)tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
-    if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(tripStops[i]);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
-    if(tagsEl)tagsEl.innerHTML=tags;
   });
-}
 
-function renderList(currentIdx=-1,closestIdx=-1,fills=null){
-  const list=document.getElementById('stopList');
-  const visCount=tripStops.length;
-
-  let html=tripStops.map((origIdx,i)=>{
-    const stop=STOPS[origIdx];
-    const isPassed=userLat!==null&&currentIdx!==-1&&i<currentIdx;
-    const isCurrent=i===currentIdx,isNext=currentIdx!==-1&&i===currentIdx+1,isDest=selectedDest>=0&&i===visCount-1;
-    const isFirst=i===0, isLast=i===visCount-1;
-    const fill=fills?(fills[i]||0):0;
-    const dotCls='tl-dot'+(isCurrent?' current':'');
-    const cardCls='stop-card'+(isCurrent?(isDest?' current dest-card':' current'):isPassed?' passed':isDest?' dest-card':isNext?' next':'');
-    let tags='';
-    if(isCurrent)tags+=`<span class="tag tag-here">${T[lang].tag_here}</span>`;
-    if(isDest&&!isCurrent)tags+=`<span class="tag tag-dest">${T[lang].tag_dest}</span>`;
-    if(userLat!==null&&!isCurrent&&!isPassed){const d=distToStop(origIdx);tags+=`<span class="tag tag-dist">${fmt(d)}</span>`;}
-    const etaMins=computeETA(origIdx);
-    const etaHtml=etaMins!==null&&!isCurrent&&!isPassed?`<div class="stop-eta">~${etaMins} min</div>`:'';
-    const nextChipHtml=isNext?`<div class="next-station-chip"><span>${T[lang].next_station_label}</span></div>`:'';
-    return `<div class="stop-row${isFirst?' stop-first':''}${isLast?' stop-last':''}">
-      <div class="tl-col">
-        <div class="${dotCls}"></div>
-        <div class="tl-seg" style="--fill:${fill.toFixed(3)}"></div>
-      </div>
-      <div class="${cardCls}">
-        ${nextChipHtml}
-        <div class="stop-seq-num">${T[lang].stop_of(i+1,visCount)}</div>
-        <div class="stop-name-main">${stop.name}</div>
-        <div class="stop-lm">${stop.landmarks}</div>
-        ${etaHtml}${tags?`<div class="stop-tags">${tags}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-
-  list.innerHTML=html;
-}
-
-function vibrate(pattern){ if(navigator.vibrate) navigator.vibrate(pattern); }
-
-// Report & Notes
-function openReport(){
-  closeSettings();
-  // Opens the Google Form for reporting issues in a new tab
-  let url = 'https://forms.gle/cLA1as7fntzBnJV37';
-  window.open(url, '_blank');
-}
-function openNotes(){ closeSettings();document.getElementById('tripNoteInput').value='';renderNoteHistory();document.getElementById('notesModal').classList.add('open'); }
-function closeNotes(){ document.getElementById('notesModal').classList.remove('open'); }
-function saveNote(){
-  const txt=document.getElementById('tripNoteInput').value.trim();if(!txt)return;
-  let nearStop=null;
-  if(userLat!==null){ const {ci,cd}=nearestStopIndex(); if(cd<=800) nearStop=STOPS[ci].name; }
-  tripNotes.unshift({text:txt,date:new Date().toLocaleString(),near:nearStop});
-  try{ localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30))); }catch(e){}
-  vibrate([80]);
-  document.getElementById('tripNoteInput').value='';renderNoteHistory();
-}
-function deleteNote(idx){
-  tripNotes.splice(idx,1);
-  try{ localStorage.setItem('lambNotes',JSON.stringify(tripNotes.slice(0,30))); }catch(e){}
-  renderNoteHistory();
-}
-function shareNotes(){
-  if(!tripNotes.length) return;
-  const text=tripNotes.map(n=>`${n.date}${n.near?' ('+n.near+')':''}\n${n.text}`).join('\n\n');
-  if(navigator.share){ navigator.share({title:'LambRoute Trip Notes', text}).catch(()=>{}); }
-  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>showToast(T[lang].notes_copied)).catch(()=>{}); }
-}
-function renderNoteHistory(){ const hist=document.getElementById('notesHistory');if(!tripNotes.length){hist.innerHTML='';return;}hist.innerHTML=`<div class="notes-history-label">${T[lang].notes_history_label}</div>`+tripNotes.slice(0,5).map((n,i)=>`<div class="note-entry"><div class="note-entry-date"><span>${n.date}${n.near?' · <span class=\"note-entry-loc\">'+n.near+'</span>':''}</span><button class="note-delete-btn" onclick="deleteNote(${i})">✕</button></div>${n.text}</div>`).join(''); }
-
-const savedSettings=loadSettings();
-if(savedSettings){
-  if(savedSettings.theme) setTheme(savedSettings.theme);
-  if(savedSettings.fontSize) setFontSize(savedSettings.fontSize);
-  if(savedSettings.lang){
-    lang=savedSettings.lang;
-    document.getElementById('sh-en').classList.toggle('active',lang==='en');
-    document.getElementById('sh-tl').classList.toggle('active',lang==='tl');
+  // Check destination arrival
+  if(isAt && station.id === chosenDestId && !arrivalShown){
+    arrivalShown = true;
+    document.getElementById('arr-stop-name').textContent = station.name;
+    document.getElementById('arr-landmarks').textContent = station.landmarks;
+    document.getElementById('arrivalModal').classList.add('open');
+    if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
   }
 }
-applyTranslations();
-buildDestList();
-renderList();
-// Resume an in-progress trip if the page was refreshed mid-trip, instead of resetting to onboarding
-const savedTrip=loadTripState();
-if(savedTrip && typeof savedTrip.selectedDest==='number'){
-  selectedDest=savedTrip.selectedDest;
-  launchTracker();
+
+function requestStop(){ document.getElementById('stopConfirmModal').classList.add('open'); }
+function closeStopConfirm(){ document.getElementById('stopConfirmModal').classList.remove('open'); }
+function confirmStop(){ location.reload(); }
+function goBack(){ location.reload(); }
+function closeArrival(){ document.getElementById('arrivalModal').classList.remove('open'); }
+function toggleScrollLock(){
+  scrollLocked = !scrollLocked;
+  document.getElementById('stopList').style.overflowY = scrollLocked ? 'hidden' : 'auto';
+  document.getElementById('scrollLockBtn').textContent = scrollLocked ? '🔒' : '🔓';
 }
-// Always ask for the user's current location as soon as LambRoute opens
+
 startGps();
-// Offline support — cache the app shell so LambRoute still opens without signal
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  });
-}
 </script>
 </body>
 </html>
